@@ -1,0 +1,64 @@
+<div class="navbar-fixed-bottom">
+    <div class="row">
+        <div class="col-md-4 pull-right" style="margin-right:40px;">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <span class="glyphicon glyphicon-comment"></span> SENAI
+                    <div class="btn-group pull-right">
+                        <button id="s2tToggler" type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" onclick="toggleS2T();" style="margin-right:10px;">
+                            <span class="glyphicon glyphicon-volume-off"></span>
+                        </button>
+                        <button id="chatTogglerBtn" type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" onClick="toggleChatWindow();">
+                            <span class="glyphicon glyphicon-chevron-down"></span>
+                        </button>
+                        <ul class="dropdown-menu slidedown">
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-refresh">
+                            </span>Refresh</a></li>
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-ok-sign">
+                            </span>Available</a></li>
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-remove">
+                            </span>Busy</a></li>
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-time"></span>
+                                Away</a></li>
+                            <li class="divider"></li>
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-off"></span>
+                                Sign Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <ul class="chat" id="chat-history">
+                    <!--    <li class="left clearfix"><span class="chat-img pull-left">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MTRDRUIwRTY4NUM2MTFFNjg1NTk5NjcwRDVBMzNCNjEiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MTRDRUIwRTc4NUM2MTFFNjg1NTk5NjcwRDVBMzNCNjEiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDoxNENFQjBFNDg1QzYxMUU2ODU1OTk2NzBENUEzM0I2MSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDoxNENFQjBFNTg1QzYxMUU2ODU1OTk2NzBENUEzM0I2MSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PtPn0T0AAAMAUExURdTV2e2Nj5dm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" alt="User Avatar" class="img-circle" />
+                        </span>
+                            <div class="chat-body clearfix">
+                                <div class="header">
+                                    <strong class="primary-font">Assistente</strong> <small class="pull-right text-muted">
+                                        <span class="glyphicon glyphicon-time"></span>agora</small>
+                                </div>
+                                <p>
+                                    Olá, eu sou a sua assistente para assuntos relacionados a Certificação Digital. Fui treinada para tirar dúvidas sobre tipos de certificados, consultar as suas informações de pedidos, orientações técnicas para instalação de certificados e dúvidas mais frequentes sobre certificados digitais.
+                                    
+                                </p>
+                            </div>
+                        </li> -->
+                    </ul>
+                </div>
+                <div class="panel-footer hidden" >
+                    <div class="input-group">
+                        <input id="btn-input" type="text" class="form-control input-sm" placeholder="Digite sua mensagem aqui..." />
+                        <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat">
+                                Enviar</button>
+                                <button id="mic" type="button" class="btn btn-mic">
+                            <i class="fa fa-microphone"></i>
+                        </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+ <div id="id_contextdump" style="display:none;"></div>
+

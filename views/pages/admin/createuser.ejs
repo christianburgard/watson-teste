@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<% include ../../partials/head %>
+<link href="/assets/css/login.css" rel="stylesheet">
+</head>
+<body>
+<div id="wrapper">
+<% include ../../partials/top %>
+
+<div class="main-container">
+    <div class = "container-fluid">
+        <div class="wrapper">
+            <form action="/admin/createuser" method="post" name="Login_Form" class="form-signin">       
+                <h3 class="form-signin-heading">Criar Usuário</h3>
+                <hr class="colorgraph"><br>
+                <input type="text" class="form-control" name="fullname" id="fullname" placeholder="Nome" required="" autofocus="" />
+                <input type="text" class="form-control" name="email" id="email" placeholder="E-Mail" required="" autofocus="" />
+                <input type="text" class="form-control" name="username" id="username" placeholder="Usuário" required="" autofocus="" />
+                <input type="password" class="form-control" name="password" "password" placeholder="Senha" required=""/>     		  
+                
+                <button class="btn btn-lg btn-primary btn-block"  name="Submit" value="Login" type="Submit">Entrar</button>  			
+            </form>			
+        </div>
+    </div>
+</div>
+
+<% include ../../partials/footer %>
+
+</div>
+ 
+<% include ../../partials/footer_scripts %>
+ 
+<script src="assets/js/script.js"></script>
+
+</body>
+</html>

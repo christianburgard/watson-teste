@@ -1,0 +1,19 @@
+{
+    "title": null,
+    "output": {
+        "text": {
+            "values": [""],
+            "selection_policy": "sequential"
+        }
+    },
+    "parent": null,
+    "context": null,
+    "created": "2017-08-14T13:55:19.265Z",
+    "updated": "2017-08-14T14:31:40.634Z",
+    "metadata": null,
+    "next_step": null,
+    "conditions": "#sobre_produto",
+    "description": null,
+    "dialog_node": "Sobre",
+    "previous_sibling": null
+}

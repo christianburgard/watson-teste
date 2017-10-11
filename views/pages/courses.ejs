@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<% include ../partials/head %>
+</head>
+<body>
+<div id="wrapper">
+<% include ../partials/top %>
+
+<div class="main-container">
+    <div class="container-fluid">
+        <div class="row">
+
+            <div id="filter_intent" class="col-sm-2 page-sidebar mobile-filter-sidebar">
+                <aside>
+                    <div class="inner-box">
+                        <div class=" list-filter">
+                            <h5 class="list-title"><strong><a href="#">Cursos</a></strong></h5>
+                            <div class="filter-date filter-content">
+                                <input type="text" class="form-control input" placeholder="buscar..." style="margin-bottom:5px;" id="intent_search" />
+                                 <div class="loader"></div>
+                                <ul id="courses_list" class="menu-tema">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="clear:both"></div>
+                    </div>
+
+                </aside>
+            </div>
+            <!-- Answers -->
+            <div class="col-sm-6" id="answers">
+                <h1><!--titulo da intent--></h1>
+                <div id="alert" class="hide"></div>
+                <textarea id="answer_input" rows="5" type="text" class="form-control input-lg keyword" placeholder="Aqui será a lista de cursos que vieram da integração do WebService"></textarea>
+
+
+                <div class="item_list">
+                    <div class="loader" style="display: none;"></div>
+                    <ul id="courses_list" class="">
+
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-sm-3" style="white-space:nowrap">
+                <h5 class="list-title"><strong><a href="#">Última Sincronização</a></strong></h5>
+                2017-09-14 23:44:07
+                <div>
+                  <button id="sync_now" class="btn  btn-default">Sincronizar agora!</button>
+                </div>
+            </div>
+
+            <!-- fim da pesquisa -->
+        </div>
+    </div>
+</div>
+<% include ../partials/modal %>
+<% include ../partials/footer %>
+
+</div>
+ 
+<% include ../partials/footer_scripts %>
+
+<script src="scripts/answers.js"></script>
+
+</body>
+</html>

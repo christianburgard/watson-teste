@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<% include ../partials/head %>
+<link href="assets/css/login.css" rel="stylesheet">
+</head>
+<body>
+<div id="wrapper">
+<% include ../partials/top %>
+
+<div class="main-container">
+    <div class = "container-fluid">
+        <div class="wrapper">
+            <form action="/login" method="post" name="Login_Form" id="login_form" class="form-signin">       
+                <h3 class="form-signin-heading">Bem-vindo! Por favor, efetue o login!</h3>
+                <hr class="colorgraph"><br>
+                <p class="text-danger"></p>
+                <input type="text" class="form-control" name="username" id="username" placeholder="Usuário" required="" autofocus="" />
+                <input type="password" class="form-control" name="password" "password" placeholder="Senha" required=""/>     		  
+                <button class="btn btn-lg btn-primary btn-block"  name="Submit" value="Login" type="Submit">Entrar</button>  			
+            </form>			
+        </div>
+    </div>
+</div>
+
+<% include ../partials/footer %>
+
+</div>
+ 
+<% include ../partials/footer_scripts %>
+
+<script>
+    var error = "<%= (error)%>";
+    if(error === "1"){
+        $("#login_form p.text-danger").text("Usuário ou senha inválidos.");
+    }   
+</script>
+
+</body>
+</html>

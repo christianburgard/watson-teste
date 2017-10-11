@@ -1,0 +1,44 @@
+{"cloudantNoSQLDB":[{
+  "credentials": {
+    "username": "0e0ffaa0-f574-4199-83f3-75e4b1f377e3-bluemix",
+    "password": "815a5051cd8e8528707b65e86ef9bb3d9ada49d9ceb693ed5ff411e44001479c",
+    "host": "0e0ffaa0-f574-4199-83f3-75e4b1f377e3-bluemix.cloudant.com",
+    "port": 443,
+    "url": "https://0e0ffaa0-f574-4199-83f3-75e4b1f377e3-bluemix:815a5051cd8e8528707b65e86ef9bb3d9ada49d9ceb693ed5ff411e44001479c@0e0ffaa0-f574-4199-83f3-75e4b1f377e3-bluemix.cloudant.com"
+  },
+  "syslog_drain_url": null,
+  "volume_mounts": [
+
+  ],
+  "label": "cloudantNoSQLDB",
+  "provider": null,
+  "plan": "Standard",
+  "name": "Chat-Senai-cloudantNoSQLDB",
+  "tags": [
+    "data_management",
+    "ibm_created",
+    "lite",
+    "ibm_dedicated_public"
+  ]
+}],"conversation":[{
+  "credentials": {
+    "url": "https://gateway.watsonplatform.net/conversation/api",
+    "username": "10a6e314-ed0a-4604-8538-8012ec3ddf0f",
+    "password": "dRE1PK7g0Ut1"
+  },
+  "syslog_drain_url": null,
+  "volume_mounts": [
+
+  ],
+  "label": "conversation",
+  "provider": null,
+  "plan": "standard",
+  "name": "Chat-Senai-conversation",
+  "tags": [
+    "watson",
+    "ibm_created",
+    "ibm_dedicated_public",
+    "lite"
+  ]
+}]}
+

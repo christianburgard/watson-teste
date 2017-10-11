@@ -1,0 +1,21 @@
+{
+    "intent": "produtos_sobre",
+    "created": "2017-08-11T22:02:55.738Z",
+    "updated": "2017-08-11T22:03:43.279Z",
+    "examples": [
+        {
+            "text": "quais produtos a EDS comercializa",
+            "created": "2017-08-11T22:03:10.368Z",
+            "updated": "2017-08-11T22:03:10.368Z"
+        }, {
+            "text": "A EDS trabalha com quais soluções",
+            "created": "2017-08-11T22:03:14.108Z",
+            "updated": "2017-08-11T22:03:14.108Z"
+        }, {
+            "text": "A EDS trabalha com Oracle Rightnow",
+            "created": "2017-08-11T22:03:26.021Z",
+            "updated": "2017-08-11T22:03:26.021Z"
+        }
+    ],
+    "description": null
+}

@@ -1,0 +1,107 @@
+<html>
+<head>
+  <base href="/">
+  <title>FIERGS Conversation Chat Test App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta property="og:image" content="conversation.svg" />
+  <meta property="og:title" content="Conversation Chat Simple" />
+  <meta property="og:description" content="Sample application that shows how to use the Conversation API to identify user intents" />
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/style/chat.css">
+</head>
+<body>
+  <div id="view-change-button" class="button" onclick="PayloadPanel.togglePanel(event, this)">
+    <img class="option full" src="data:image/png;base64,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">
+    <img class="option not-full" src="data:image/png;base64,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
+6HsC/wKCTR2VOj2N4AAAAABJRU5ErkJggg==">
+  </div>
+  <div id="contentParent" class="responsive-columns-wrapper">
+    <div id="chat-column-holder" class="responsive-column content-column">
+      <div class="chat-column">
+       
+        <div id="scrollingChat"></div>
+        <label for="textInput" class="inputOutline">
+          <input id="textInput" class="input responsive-column"
+            placeholder="Digite uma mensagem" type="text"
+            onkeydown="ConversationPanel.inputKeyDown(event, this)">
+        </label>
+      </div>
+    </div>
+    <div id="payload-column" class="fixed-column content-column">
+      <div id="payload-initial-message">
+        Digite alguma coisa para ver o resultado
+      </div>
+      <div id="payload-request" class="payload"></div>
+      <div id="payload-response" class="payload"></div>
+    </div>
+  </div>
+
+  <script src="/scripts/chat.js"></script>
+</body>
+</html>
+

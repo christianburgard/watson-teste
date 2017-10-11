@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<% include ../partials/head %>
+</head>
+<body>
+<div id="wrapper">
+<% include ../partials/top %>
+
+<div class="main-container">
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-sm-2 page-sidebar mobile-filter-sidebar">
+                <aside>
+                    <div class="inner-box">
+                        <div id="filter_theme" class=" list-filter">
+                            <h5 class="list-title"><strong><a href="#">Temas</a></strong></h5>
+                            <div class="filter-date filter-content">
+                                 <div class="loader"></div>
+                                <ul id="theme_list" class="menu-tema">
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="clear:both"></div>
+                    </div>
+
+                </aside>
+            </div>
+            <!-- Theme Display -->
+                    
+            <div class="col-sm-4" id="theme_details">
+            <img id="theme_image" class="img-rounded img-responsive" src="#" style="margin-bottom:5px;" />
+            <h1 id="theme_name"></h1>
+            <p id="theme_description"></p>    
+            </div>
+            <!-- Questions -->
+
+            <div class="col-sm-6" id="addresses">
+                <div class="input-group">
+                    <input id="address_input" type="text" class="form-control input-lg keyword" placeholder="Unidades...">
+                    <span class="input-group-btn">
+                        <button  id="send_item" class="btn btn-primary" type="button">Enviar <i class="fa"></i></button>
+                    </span>
+                </div>
+                
+
+                    <div class="item_list">
+                        <div class="loader" style="display: none;"></div>
+                        <ul id="address_list" class="">
+                            
+                        </ul>
+                    </div>
+
+            </div>
+
+
+
+            <!-- fim da pesquisa -->
+        </div>
+    </div>
+</div>
+
+<% include ../partials/footer %>
+
+</div>
+ 
+<% include ../partials/footer_scripts %>
+ 
+<script src="assets/js/script.js"></script>
+
+<script src="scripts/addresses.js"></script>
+</body>
+</html>

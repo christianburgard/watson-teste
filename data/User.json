@@ -1,0 +1,10 @@
+{
+    "_id": "8450c10e1539cce830db71650b6ab735",
+    "_rev": "2-591fc3929fdcbbdebad438ad8ab517bb",
+    "type": "user",
+    "username": "lucasmatis",
+    "password": "$2a$10$J.EUrCl7LR1oRVai4jKfS.01K2XinHgk1JK9G3q7xYyL1Ktt.SpP2",
+    "name": "Lucas Pereira",
+    "email": "lucas.pereira@extremedigital.com.br",
+    "role": "admin"
+}
