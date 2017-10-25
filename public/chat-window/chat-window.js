@@ -1,33 +1,46 @@
 function toggleChatWindow(){
-        $("label.inputOutline").toggle("slow", function() {
+        jQuery.fx.off = true;
+        jQuery("div#chat-close-button").toggle("slow", function() {
         });
-        $("div#scrollingChat").toggle("slow", function() {
+        jQuery("label.inputOutline").toggle("slow", function() {
+        });
+        jQuery("div#scrollingChat").toggle("slow", function() {
             // Animation complete.
-                if($("div#scrollingChat").is(":hidden")){
-                    $("#chatTogglerBtn span").removeClass("glyphicon-chevron-down");
-                    $("#chatTogglerBtn span").addClass("glyphicon-chevron-up");
+                if(jQuery("div#scrollingChat").is(":hidden")){
+                    jQuery("div#titlebar").removeClass("chat-titlebar");
+                    jQuery("div#titlebar").addClass("chat-button");
+                    jQuery("span#titlebarlabel").html("Chat online");
+                    jQuery("div#chatcolumn").addClass("minimized-chat");
+                    jQuery("div#chatcolumn").removeClass("restored-chat");
+                    jQuery("div#titlebar").removeClass("restored-chat");
+                    jQuery("div#inputBar").removeClass("restored-chat");
                 } else {
-                    $("#chatTogglerBtn span").removeClass("glyphicon-chevron-up");
-                    $("#chatTogglerBtn span").addClass("glyphicon-chevron-down");
+                    jQuery("div#titlebar").removeClass("chat-button");
+                    jQuery("div#titlebar").addClass("chat-titlebar");
+                    jQuery("span#titlebarlabel").html("Lis - Assistente SENAI");
+                    jQuery("div#chatcolumn").removeClass("minimized-chat");
+                    jQuery("div#chatcolumn").addClass("restored-chat");
+                    jQuery("div#titlebar").addClass("restored-chat");
+                    jQuery("div#inputBar").addClass("restored-chat");
                 }
-                $("div#scrollingChat").css('overflow-y','scroll');
+                jQuery("div#scrollingChat").css('overflow-y','scroll');
         });
     }
-      $(document).ready(function() {
-          $("#ChatContent").load("/chat-window/chat-window.html"); 
+      jQuery(document).ready(function() {
+          jQuery("#ChatContent").load("http://chatsenai.mybluemix.net/chat-window/chat-window.html"); 
           javascriptCheck();
-            $('#id_contextdump').hide();
-			 $("#btn-chat").click(function() {
+            jQuery('#id_contextdump').hide();
+			 jQuery("#btn-chat").click(function() {
 		 		onChatClick();
 	  		 });
 			//enter 			 
-			$( "#btn-input" ).keypress(function( event ) {
+			jQuery( "#btn-input" ).keypress(function( event ) {
 			  if ( event.which == 13 ) {
 				 event.preventDefault();
 				onChatClick();
 			  }
 			});
-			 $("#btn-chat-init").click(function(){
+			 jQuery("#btn-chat-init").click(function(){
 			     onInitClick();
 			 });
 			
@@ -38,7 +51,7 @@ function toggleChatWindow(){
       // if javascript is enabled on the browser then can
       // remove the warning message
       function javascriptCheck() {
-        $('#no-script').remove();
+        jQuery('#no-script').remove();
       }
 
 function getTimeStamp(){
@@ -180,7 +193,7 @@ var Common = (function() {
 var Api = (function() {
   var requestPayload;
   var responsePayload;
-  var messageEndpoint = '/api/message';
+  var messageEndpoint = 'http://chatsenai.mybluemix.net/api/message';
 
   // Publicly accessible methods defined
   return {

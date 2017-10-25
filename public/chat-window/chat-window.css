@@ -2,22 +2,50 @@
   background: white;
   border-radius: 20px;
   padding: 0px; 
-  width: 400px;
   border: 1px solid #f5f5f5;
+}
+.chat-column a {
+    cursor:pointer;
+    cursor:hand;
+}
+#floating-footer {
+  margin-right: 20px;
+}
+.minimized-chat {
+  width: 150px;
+}
+.restored-chat {
+  width: 400px;
 }
 .navbar-fixed-top, .navbar-fixed-bottom {
   left: auto;
 }
 #titlebar {
+  cursor:pointer;
+  cursor:hand;
   background-position: 10px 10px;
   background-repeat: no-repeat;
   padding: 10px;
   padding-left: 20px;
   padding-right: 15px;
   color: white;
+/*
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
+*/
   background:#00913e;
+}
+.chat-titlebar {
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+#chat-close-button {
+  display: none;
+}
+.chat-button {
+  width: 150px;
+  border-radius: 20px;
+  margin-bottom: 10px;
 }
 #scrollingChat {
   display: none;
@@ -26,6 +54,7 @@
   padding: 10px; 
   height: 450px;
   overflow-y: scroll;
+  width: 400px;
 }
 .chat-column .inputOutline {
   display: none;
@@ -49,7 +78,7 @@
 .from-user {
   background: #f5f5f5;
   border-radius: 15px;
-  background-image: url('http://placehold.it/50/333/fff/&text=EU');
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAvCAIAAAATh2/FAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4QoZAAAf+2VvxgAAB/xJREFUWMOVWVlTE00U7e7ZMoSBsEUqCGhJ2EuK0mf/vA++ihDEosiCWhCRSAwwme6Z7u/h4KW/yaLMAzXp6eX0vefee7rhxhg28GithRDGGM45Y2zwxX4ww9B2GmV3wOSDi/KhUDBea+04Ds2YpqnrukmS/Pr1q9Pp3Nzc9Hq9JEm01owxIUQQBFEUlUql2dnZmZmZIAiMMRjOOTfGZFnmui4b8YyDAgTYRJZlnU7ny5cvt7e3d3d3xhigBA48QgjOeZZlnPNisTg5OVmtVsvlMhodx8nN/E9Q0JvGf/369eTkpNfrMcayLGOMof2v78aY6enp9fX1lZUVxphSSghBmP4JCnzBGOt0OrVa7fr62hiTpim3HpiEcw7Ha62NMTCM+fNwzrXWrusuLi6ur6/Pzc0B6FA0Ix2ktT4/Pz85Ofn9+zf2h2W01nCK4zj4maYpY8x1XTAdJhFCwK3ALaWMomh3d3d1dfXJXDk6Ojo7O0uSxPM82EkIAd5QXBAlh/4E62E5NAohVldX9/f3nwDl48ePzWZTSun7PjaNHQONHRT56f54B46jpEDcD4KgUqm8fft2cFEBa8OqeD88PDw7O4NHycJYleIWL3AQ+YI8S4CIQ2gRQiilWq3WwcEBzYZuWZYJoMaqQohms1mv10e502YiaOH7vlJKSlkoFMgpYBKBG3zq9Xqz2QTfAcVxHNfmc6/Xq9VqSZKMijcKjVKptLy8PDs7OzExwTl3HEdKeX9/3+12v3371m63YZtRUNI0PTg4WFhYCIKAkh4nRzLG3r9/3263XdcdtSF029zcrFarmCKXrxBQzWbz5OREKTUKiuM4aZqWy+V3794RrwVx7eLiot1uO44zZgql1MbGxubmpuu6UkqMTdMUhIDLfd9fW1t79eoVG/1IKV3Xvby8vLi4eIwvgNJaf/78WQiBPDZqiqmpqZcvX8KQvu/DDMgoGOV5HsK+Wq0Wi8VR84C/vu8fHh7a5UVkWXZ9fd3pdJBkRxGFMTYzMxOGIUJGaw2mU0jDrXCc7/vz8/NjHBQEQb/fv7u7u7y8fEiJ+NBoNLAnY8wYB01NTRHnUU2InghDojZjLIqiUfNkWSalDMMwy7JWq/WYV6SUgAbLu65r6wz7xf5p852C3EY2qGOoBaNgxcvLSyml1loYY7rdrh0yFLF2DrVnpHc7MVDdofVyM4yaPMuybrdrjBGc86urK5IdNMZePpdt8dOePbd1/MyyjIoA4bPnpPi/urrinLtCiE6nk+uR04LUAnJQvORsg0YaCEfbMwzqSHTudDoPtO31eoMOtneDv67rTk9P50KdVrK3jpZSqYSqPpR29loQZS4SzlBu2stQfA4uOZQQnPO5uTkq7FQXBzFBzTDGhK1PbafYyDC153nY5VAKDz6e51FxIKLYk9t0Mca49jfwH061e9NXEgmDZxG7P9EWEU58IjFK76D2g4QwxuCUANVIpcQOE3xFRqfZh4om27PgOOSELWWQONANiwKAcBwHVE/T1NY49r4xXkrZ7XZtXQ1YhD6XBeI4llJiVzZiOuyRdEe1EYwxaI4cH+1chE9SyuPjY6xtyxF8dRwHRQ6Nt7e3Hz58kFLaps3FAe1zYmLigbYzMzNIA5TLc9GEAVrri4uLOI7J5XbipzoHCzUajZ8/f8JUuQRoa2QsCgCCMTY/P08nhpwxconSGPP9+/fB2W21Cyjn5+dBENCoofamSoQaLjjnpVKpUCgopWxH2iNtnp6dncVxTMKYutnmaTab/X6/3+/bliBb0uGBc66UKhQKpVLpQcXhQJDLIjQ+F6u3t7fn5+e5tWnfQohut1ur1UDGwfxkJ3E8lUolCALG2ENRWFpacl0XVZ4CxD7y2EQ7Pj5GKA2W7jRNj46Oci7OHdsoRSHUl5aWHmoZeiwuLkZRZJcrRIR9MCaiSSmRqimOyIOO49zc3OT0gH1qtMknhIii6NmzZw/4iG7b29tKKYhTO8XhACCl9DwPgOxYozMskoTWOgxDHJHobsY+aQMiLlqUUtvb24/HR8JbqVRWVlbiOPZ9H4LXTgOUZJMkcV0XsPCVOEEQ0zT1PI/yArIOyU3HcTzPi+N4ZWUFHAWFhW3h3d3dyclJpF1kYdLidG0UhmG5XC4UCrmsBWRCiBcvXhSLxTiOsbYto6huZFk2OTm5u7try7H/1b8oivb29uDFLMvQ6bGrEEEQrK+v7+/vwwu5VAHQa2trW1tbCwsLSimlFEwI9W5nvL29vSiKaGljDLcP4nDE8fFxrVZDMdNaB0GA26Lnz5/v7OygSqRpivsVuhcipU01q9VqnZ6exnEMn+J0jc4bGxs7Ozv2/eP/LjXsLH54eHh6egqGKqUqlcrm5ub8/HzuctFeePD0BLvW6/V6vR7HMThULBYXFxffvHmTk6GMMY6kidixP3z69KnRaIRhuLW1tby8PPR2dNQFX05ax3HcarUajUYcx2tra69fv7a7YWmt9chbpyRJrq6ugiBYWFgYenU79JgzRtT9+PFDKVUul0nw/tOtEyGFAA7D0Pf93F7HXCHnMCVJgpQYhiGy1NOuBSmy0jTt9XpBEEBVjEFga0fq0+/3pZTFYhGFJXe6+zsUm55U8O7v74UQvu/bN9KjnIJgUUrhmG2DeLJVhl7jIPFDJtLtqF29qYJ6nofEb1sOIfI0q+RImlvPLm9jPJVTXuNJ/Reu5NRTbpc5Zgy9xh0ENOY/H/8BUK8Jf/KZHa8AAAAASUVORK5CYII=');
  background-position: right 10px top 10px;
  background-repeat: no-repeat;
  min-height: 70px;
