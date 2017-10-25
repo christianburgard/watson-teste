@@ -19,8 +19,10 @@
     "passport": "0.3.2",
     "passport-local": "1.0.0",
     "watson-developer-cloud": "^2.39.0",
-    "googlemaps":"1.12.0",
-    "geolib":"2.0.23"
+    "@google/maps":"0.4.3",
+    "cors":"2.8.4",
+    "geolib":"2.0.23",
+    "connect-cloudant-store":"0.1.1"
   },
   "repository": {},
   "engines": {
