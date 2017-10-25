@@ -6,15 +6,45 @@ const express = require('express'),
     routes = require('./routes'),
     user = require('./routes/user'),
     http = require('http'),
+    https = require('https'),
+    fs = require('fs'),
     path = require('path');
 const util = require('./app/util');
 
+const USE_HTTPS = false;
+
 const session = require('express-session');
+//const CloudantStore = require('connect-cloudant-store')(session);
+
 const passport = require('passport');
 
 const app = express();
-
-
+function getStoreCredentialsUrl(jsonData) {
+  var vcapServices = JSON.parse(jsonData);
+  for (var vcapService in vcapServices) {
+    if (vcapService.match(/cloudant/i)) {
+      return vcapServices[vcapService][0].credentials.url;
+    }
+  }
+}    
+if (process.env.VCAP_SERVICES) {
+  storeUrl = getStoreCredentialsUrl(process.env.VCAP_SERVICES);
+} else {
+  storeUrl = getStoreCredentialsUrl(fs.readFileSync("vcap-local.json", "utf-8"));
+}
+/*
+var store = new CloudantStore(
+    {
+      url: storeUrl
+    }
+);
+app.use(session({
+    saveUninitialized: true,
+    resave: true,
+    store: store,
+    secret: 'energiaIgualMassaVezesVelocidadeDaLuz'
+}));
+*/
 require('./app/authentication').init(app)
 
 
@@ -27,6 +57,9 @@ var logger = require('morgan');
 var errorHandler = require('errorhandler');
 var multipart = require('connect-multiparty')
 var multipartMiddleware = multipart();
+
+var cors = require('cors');
+app.use(cors());
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -60,7 +93,6 @@ app.use(function(req, res, next){
     } 
     next();
 });
-
 
 // development only
 if ('development' == app.get('env')) {
@@ -307,7 +339,6 @@ app.delete('/api/addresses', function (request, response) {
     });
 
 });
-    
 
 require('./app/admin').init(app);
 require('./app/user').init(app);
@@ -316,6 +347,22 @@ require('./app/address').init(app);
 require('./app/api').init(app);
 require('./app/chat').init(app);
 
+// Secure HTTPS
+if (USE_HTTPS) {
+  var privateKey  = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.key', 'utf8');
+  var certificate = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.cer', 'utf8');
+  var credentials = {key: privateKey, cert: certificate};
+  http.createServer(credentials,app).listen(app.get('port'), '0.0.0.0', function() {
+    console.log('Express server over HTTPS listening on port ' + app.get('port'));
+  });
+} else {
+  http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
+    console.log('Express server over Plain HTTP listening on port ' + app.get('port'));
+  });
+}
+/*
+// plain HTTP
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
     console.log('Express server listening on port ' + app.get('port'));
 });
+*/
