@@ -411,9 +411,22 @@ function callWatsonApi (req, res) {
                      for (course in courses) {
                        response_text = response_text + "<hr/><strong>"+course+"</strong>:<br/>";
                        for (var m = 0; m < courses[course].length; m++) {
-                         if (!courses[course][m].turno)
-                           courses[course][m].turno = "NÃO INFORMADO"
-                         response_text = response_text + "• <a onclick=\"ConversationPanel.tapClick('Tenho interesse na turma "+courses[course][m]._id+" do curso "+course+".')\">"+courses[course][m]._id+" (turno: "+ courses[course][m].turno +")</a><br/>";
+                         var additional_info = []
+                         if ((courses[course][m].turno)||(courses[course][m].dataInicioPrevista)) {
+                           if (courses[course][m].turno) {
+                             additional_info.push(courses[course][m].turno);
+                           }
+                           if (courses[course][m].dataInicioPrevista) {
+                             // PAREI TRATANDO O UNIX TIMESTAMP PARA EXIBIR COMO DD/MM/AAAA
+                             var dataInicioPrevista = new Date(courses[course][m].dataInicioPrevista);
+                             dataInicioPrevista = "início "+dataInicioPrevista.getDate()+'/'+(dataInicioPrevista.getMonth()+1)+'/'+dataInicioPrevista.getFullYear();
+                             additional_info.push(dataInicioPrevista);
+                           }
+                         }
+                         additional_info = additional_info.join(", ");
+                         if (additional_info.length > 0)
+                           additional_info = " ("+additional_info+")";
+                         response_text = response_text + "• <a onclick=\"ConversationPanel.tapClick('Tenho interesse na turma "+courses[course][m]._id+" do curso "+course+".')\">"+courses[course][m]._id+additional_info+"</a><br/>";
                        }
                      }
                      var callback_parameters = {};
