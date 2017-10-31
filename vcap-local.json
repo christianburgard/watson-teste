@@ -40,5 +40,35 @@
     "ibm_dedicated_public",
     "lite"
   ]
-}]}
-
+}],"memcachedcloud": [
+   {
+    "credentials": {
+     "password": "ZagnIvqoJf9rybrE",
+     "servers": "pub-memcache-19724.dal-05.1.sl.garantiadata.com:19724",
+     "username": "6d5b396b-0990-48ea-a2ad-69c7d9f2cf10"
+    },
+    "label": "memcachedcloud",
+    "name": "Memcached Cloud-r2",
+    "plan": "30mb",
+    "provider": null,
+    "syslog_drain_url": null,
+    "tags": [
+     "DBA",
+     "(S) Cloud",
+     "web_and_app",
+     "Bluemix",
+     "Yes",
+     "Service",
+     "Runs on SoftLayer",
+     "(S) IT Infrastructure",
+     "Analytics",
+     "(P) Analytics",
+     "ibm_dedicated_public",
+     "Data Scientist",
+     "Development",
+     "Application",
+     "ibm_third_party"
+    ]
+   }
+  ]
+}

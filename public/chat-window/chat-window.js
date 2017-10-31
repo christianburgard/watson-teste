@@ -246,6 +246,7 @@ var Api = (function() {
     }
 
     // Send request
+    http.withCredentials = true;
     http.send(params);
   }
 }());
@@ -279,12 +280,14 @@ var ConversationPanel = (function() {
   return {
     init: init,
     inputKeyDown: inputKeyDown,
-    tapClick: tapClick
+    tapClick: tapClick,
+    getChatLog: getChatLog
   };
 
   // Initialize the module
   function init() {
     chatUpdateSetup();
+//    getChatLog();
     Api.sendRequest( '', null );
     setupInputBox();
   }
@@ -327,7 +330,7 @@ var ConversationPanel = (function() {
       };
 
       dummy = Common.buildDomElement(dummyJson);
-      document.body.appendChild(dummy);
+//      document.body.appendChild(dummy);
     }
 
     function adjustInput() {
@@ -364,13 +367,36 @@ var ConversationPanel = (function() {
     }
 
     // Any time the input changes, or the window resizes, adjust the size of the input box
-    input.addEventListener('input', adjustInput);
+//    input.addEventListener('input', adjustInput);
     window.addEventListener('resize', adjustInput);
 
     // Trigger the input event once to set up the input box and dummy element
     Common.fireEvent(input, 'input');
   }
 
+  function getChatLog() {
+    var http = new XMLHttpRequest();
+    http.open('GET', "http://chatsenai.mybluemix.net/api/message?chatlog=true", true);
+    http.setRequestHeader('Content-type', 'application/json');
+    http.onreadystatechange = function() {
+      if (http.readyState === 4 && http.status === 200 && http.responseText) {
+        var messages = JSON.parse(http.responseText);
+        var i=0;
+        for (i=0; i < messages.length; i++) {
+          if (messages[i].from == "user") {
+            displayMessage({"input":{"text":messages[i].message}},"user");
+          } else if (messages[i].from == "watson") {
+            displayMessage({"output":{"text":messages[i].message}},"watson");
+          }
+        }
+        if (i == 0) {
+          Api.sendRequest( '', null );
+        }
+      }
+    };
+    http.withCredentials = true;
+    http.send();
+  }
   // Display a user or Watson message that has just been sent/received
   function displayMessage(newPayload, typeValue) {
     var isUser = isUserMessage(typeValue);
@@ -690,9 +716,7 @@ var PayloadPanel = (function() {
 // Other JS files required to be loaded first: apis.js, conversation.js, payload.js
 (function() {
   // Initialize all modules
-/*
-  ConversationPanel.init();
-  PayloadPanel.init();
-*/
+//  ConversationPanel.init();
+//  PayloadPanel.init();
 })();
 

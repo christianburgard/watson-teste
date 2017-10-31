@@ -2,7 +2,7 @@ const passport = require('passport');
 const routes = require('../../routes');
 const request = require('request');
 const geolib = require('geolib');
-const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : '1a520d31-a3c8-436f-9fa7-8ed3d99149c0';
+const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : '3ac660cd-5da3-4f2f-b6ac-534644227690';
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
 
 //const WORKSPACE_ID = '1a520d31-a3c8-436f-9fa7-8ed3d99149c0';   //Dev
@@ -14,6 +14,8 @@ const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCES
 
 var db = new(require('../../db'))();
 db.init('data');
+var db_chatlog = new(require('../../db'))();
+db_chatlog.init('chatlog');
 
 /******************************************/
 function getConversationCredentials(jsonData) {
@@ -141,10 +143,41 @@ function initApi (app) {
     }
   });
   app.get('/api/message', function(req, res) {
+    console.log("query = ",req.query);
     if (req.query['hub.mode'] === 'subscribe' &&
         req.query['hub.verify_token'] === 'carneirinhosdonortenaoandamnaneve') {
       console.log("Validating webhook");
       res.status(200).send(req.query['hub.challenge']);
+    } else if (req.query['chatlog']) {
+      console.log("Pedido de histórico via /api/message?chatlog");
+      console.log("session.conversation_id = ",req.session.conversation_id);
+      if (req.session.conversation_id) {
+        var conversation_id = req.session.conversation_id;
+        db_chatlog.find({selector:{_id: conversation_id} },function (err,result) {
+          if (err) {
+            console.log("Error: ",err);
+          } else {
+            var conversation_log = {};
+  
+            if (result.docs.length > 0) {
+              console.log("Conversation_id",conversation_id,"encontrado");
+              conversation_log = result.docs[0];
+              console.log("Conversation_log =",conversation_log);
+              var history_payloads = [];
+              for (var i=0; i < conversation_log.messages.length; i++) {
+                history_payloads.push({"message":conversation_log.messages[i].input.text,"from":"user"});
+                history_payloads.push({"message":conversation_log.messages[i].output.text,"from":"watson"});
+              }
+              console.log(history_payloads);
+              res.status(200).send(history_payloads);
+            } else {
+              console.log("Conversation_id",conversation_id,"nao encontrado");
+            }
+          }
+        });
+      } else {
+        res.status(200).send([]);
+      }
     } else {
       console.error("Failed validation. Make sure the validation tokens match.");
       res.sendStatus(403);          
@@ -215,6 +248,7 @@ function initApi (app) {
     } else if (data.object == null) {
       res.protocol = "ajax";
       console.log("Calling callWatsonApi(req, res) from ajax request");
+
       return callWatsonApi(req, res);
     } else {
       console.error("Failed validation. Make sure the validation tokens match.");
@@ -231,11 +265,56 @@ function callWatsonApi (req, res) {
 
   merged_parameters = req.body;
   merged_parameters.workspace_id = WORKSPACE_ID;
+  if (req.session.conversation_id) {
+    if (!merged_parameters.context)
+      merged_parameters.context = {};
+    merged_parameters.context.conversation_id = req.session.conversation_id;
+  }
   conversation.message(merged_parameters, function(err, response) {
        if (err) {
          console.error(err);
        } else {
+//         var conversation_id = {};
+//         if (req.session.conversation_id) {
+           //Conversa existente _@_
+           conversation_id = response.context.conversation_id;
+           console.log("_@_ BEFORE req.session.conversation_id =",conversation_id);
+           req.session.conversation_id = conversation_id;
+           req.session.save();
+           console.log("_@_ response.context.conversation_id =",conversation_id);
+           console.log("_@_ AFTER req.session.conversation_id =",conversation_id);
+           db_chatlog.find({selector:{_id: conversation_id} },function (err,result) {
+             if (err) {
+               console.log("Error: ",err);
+             } else {
+               var conversation_log = {};
 
+               if (result.docs.length > 0) {
+                 conversation_log = result.docs[0];
+                 console.log(result.docs[0]);
+                 conversation_log._rev = conversation_log._rev;
+               }
+
+               if (!conversation_log.messages) {
+                 conversation_log.messages = [];
+               }
+
+               conversation_log.messages.push(response);
+               console.log("_@_ Inserindo",conversation_log);
+               db_chatlog.insert(conversation_log,conversation_id,function(err, body, header) {
+                 if (err) {
+                   console.log('_@_ [data.insert] ', err.message);
+                 } else {
+                   console.log("_@_ Gravada conversa!");
+                 }
+               });
+             }
+           });
+//         } else {
+           // Como esta eh a primeira mensagem,
+           // cria nova conversa no conversation log
+//           conversation_id = req.session.conversation_id;
+//         }
          if ((response.context)&&(response.context.request)) {
            if (response.context.request.api_action == "near_addresses_by_city") {
              var city_name = response.context.request.args.city_name;
@@ -300,14 +379,17 @@ function callWatsonApi (req, res) {
                   var city_longitude = result.docs[i].geometry.coordinates[0];
         	    db.db.geo("address","address_points",{q: "type:'Unidade'",g:"POINT("+result.docs[i].geometry.coordinates[0]+" "+result.docs[i].geometry.coordinates[1]+")",nearest: true,include_docs: true,limit:20}, function (err2, result2) {
                     var unidades_hash = {};
+                    var unidades_hash2 = {};
         	      if (err2) {
         		console.log("Error: ",err2);
         	      } else {
                       var unidades = [];
+                      var unidades2 = [];
         		console.log("Nearest were: ",result2);
                       for (var j = 0; j < result2.rows.length; j++) {
                         unidades.push(""+result2.rows[j].id);
                         unidades_hash[result2.rows[j].id] = result2.rows[j].doc.nome;
+                        unidades2.push(result2.rows[j].doc.nome);
                         console.log("adicionando key=>value: "+result2.rows[j].id+"=>"+result2.rows[j].doc.nome);
                       }
                     } // end else
@@ -337,6 +419,26 @@ function callWatsonApi (req, res) {
                             near_addresses_with_courses[this.unidades_hash[result3.docs[l].unidade]] = [result3.docs[l].titulo];
                           }
                         }
+                        for (unidade2 in unidades2) {
+                          var address = unidades2[unidade2];
+                          if (near_addresses_with_courses[address]) {
+                            
+                            if (res.protocol == "facebook") {
+                              response_text = response_text + "** address **\r\n";
+                            } else {
+                              response_text = response_text + "<hr/><strong><a onclick=\"ConversationPanel.tapClick('Tenho interesse nos cursos da unidade "+address+".')\">" + address + "</strong>:<br/>";
+                            }
+                            for (var m = 0; m < near_addresses_with_courses[address].length; m++) {
+                              if (res.protocol == "facebook") {
+                                response_text = response_text + "• "+near_addresses_with_courses[address][m].toLowerCase()  + "\r\n";
+                              } else {
+                                response_text = response_text + "• <a onclick=\"ConversationPanel.tapClick('Tenho interesse no curso de "+near_addresses_with_courses[address][m].toLowerCase()+" da unidade "+address+"')\">"+near_addresses_with_courses[address][m].toLowerCase()  + "</a><br/>";
+                              }
+                            }
+                            console.log("@@@ UNIDADE:"+unidades2[unidade2]);
+                          }
+                        }
+/*
                         for (address in near_addresses_with_courses) {
                           if (res.protocol == "facebook") {
                             response_text = response_text + "** address **\r\n";
@@ -351,7 +453,7 @@ function callWatsonApi (req, res) {
                             }
                           }
                         }
-
+*/
                         var callback_parameters = {};
                         callback_parameters.workspace_id = WORKSPACE_ID;
                         callback_parameters.context = response.context;
@@ -380,19 +482,36 @@ function callWatsonApi (req, res) {
            } else if (response.context.request.api_action == "courses_schedule") {
              var address_name = response.context.request.args.address_name;
              var course_title = response.context.request.args.course_title;
+             var course_id_str = response.context.request.args.course_id;
+             var course_id = [];
+             if (!Array.isArray(course_id_str)) {
+                course_id_str = [parseInt(course_id_str)];
+             }
+             for (var course_i = 0; course_i < course_id_str.length; course_i++) {
+               course_id.push(parseInt(course_id_str[course_i]));
+             }
+             console.log("___ course_id = ",course_id);
+             console.log("___ resquest.args = ",response.context.request.args);
              var selector2 = {"selector": { "type": { "$eq": "Unidade" },"nome": {"$eq": address_name} }};
+
              db.find(selector2,function(err2,res2) {
                if (err2) {
                  console.log("Error: ",err2);
                } else {
-                 console.log("Result: ",res2);
+                 var course_id = this.course_id;
+                 console.log("___2 course_id = ",this.course_id);
+                 console.log("___ Result: ",res2);
                  var unidade_id = res2.docs[0]._id;
                  var selector3;
-                 if (course_title) {
+                 if (course_id.size >0) {
+                   //#####
+                   selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id},"idCurso": {"$in": course_id} }};
+                 } else if (course_title) {
                    selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id},"titulo": {"$eq": course_title} }};
                  } else {
                    selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id}}};
                  }
+                 console.log("___ selector3 = ",selector3);
                  db.find(selector3,function(err3,res3) {
                    if (err3) {
                      console.log("Error: ",err3);
@@ -417,7 +536,6 @@ function callWatsonApi (req, res) {
                              additional_info.push(courses[course][m].turno);
                            }
                            if (courses[course][m].dataInicioPrevista) {
-                             // PAREI TRATANDO O UNIX TIMESTAMP PARA EXIBIR COMO DD/MM/AAAA
                              var dataInicioPrevista = new Date(courses[course][m].dataInicioPrevista);
                              dataInicioPrevista = "início "+dataInicioPrevista.getDate()+'/'+(dataInicioPrevista.getMonth()+1)+'/'+dataInicioPrevista.getFullYear();
                              additional_info.push(dataInicioPrevista);
@@ -451,7 +569,7 @@ function callWatsonApi (req, res) {
                    }
                  });
                }
-             });
+             }.bind({course_id: course_id}));
            } else if (response.context.request.api_action == "courseclass_info") {
             var courseclass = response.context.request.args.courseclass;
             console.log("Trying to find courseclass = ",courseclass);
@@ -459,22 +577,31 @@ function callWatsonApi (req, res) {
               if (err) {
                 console.log("Error: ",err);
               } else {
-                var callback_parameters = {};
-                  callback_parameters.context = response.context;
-                  callback_parameters.input = {};
-                  callback_parameters.workspace_id = WORKSPACE_ID;
-                  callback_parameters.input.api_callback = {"action": "courseclass_info"};
-                  if ((result.docs) && (result.docs.length > 0)) {
-                    callback_parameters.input.courseclass = result.docs[0];
-                  }
-                  conversation.message(callback_parameters, function(err2, response2) {
-                  if (err2) {
-                    console.error(err2);
+                var selector = {"selector": {"_id": result.docs[0].unidade}}
+                var courseclass = result.docs[0];
+                db.find(selector,function (err,result) {
+                  if (err) {
+                    console.log("Error: ",err);
                   } else {
-                    console.log(JSON.stringify(response2, null, 2));
-                    res.sendByProtocol(response2);
-                  } //else
-                }); //conversation.message
+                    courseclass.unidade = result.docs[0];
+                    var callback_parameters = {};
+                    callback_parameters.context = response.context;
+                    callback_parameters.input = {};
+                    callback_parameters.workspace_id = WORKSPACE_ID;
+                    callback_parameters.input.api_callback = {"action": "courseclass_info"};
+                    if ((result.docs) && (result.docs.length > 0)) {
+                      callback_parameters.input.courseclass = courseclass;
+                    }
+                    conversation.message(callback_parameters, function(err2, response2) {
+                      if (err2) {
+                        console.error(err2);
+                      } else {
+                        console.log(JSON.stringify(response2, null, 2));
+                        res.sendByProtocol(response2);
+                      } //else
+                    }); //conversation.message
+                  }
+                });
               }
             });
            } else if (response.context.request.api_action == "address_contact_info") {
@@ -506,6 +633,7 @@ function callWatsonApi (req, res) {
                           descricao: result.docs[0].descricao,
                           telefone: result.docs[0].telefone,
                           email: result.docs[0].email,
+                          municipio: result.docs[0].municipio,
                           horarioFuncionamento: result.docs[0].horarioFuncionamento
                       }
                       conversation.message(callback_parameters, function(err2, response2) {

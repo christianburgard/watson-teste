@@ -22,7 +22,8 @@
     "@google/maps":"0.4.3",
     "cors":"2.8.4",
     "geolib":"2.0.23",
-    "connect-cloudant-store":"0.1.1"
+    "cookie-parser":"1.4.3",
+    "connect-memjs":"0.2.1"
   },
   "repository": {},
   "engines": {

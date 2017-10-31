@@ -179,13 +179,14 @@ var ConversationPanel = (function() {
   return {
     init: init,
     inputKeyDown: inputKeyDown,
-    tapClick: tapClick
+    tapClick: tapClick,
+    getChatLog: getChatLog
   };
 
   // Initialize the module
   function init() {
     chatUpdateSetup();
-    Api.sendRequest( '', null );
+//    Api.sendRequest( '', null );
     setupInputBox();
   }
   // Set up callbacks on payload setters in Api module
@@ -269,6 +270,25 @@ var ConversationPanel = (function() {
 
     // Trigger the input event once to set up the input box and dummy element
     Common.fireEvent(input, 'input');
+  }
+  function getChatLog() {
+    var http2 = new XMLHttpRequest();
+    http2.open('GET','/api/message?chatlog=true', true);
+    http2.setRequestHeader('Content-type', 'application/json');
+    http2.onreadystatechange = function() {
+      if (http2.readyState === 4 && http2.status === 200 && http2.responseText) {
+        var messages = JSON.parse(http2.responseText);
+        for (var i=0; i < messages.length; i++) {
+          if (messages[i].from == "user") {
+            displayMessage({"input":{"text":messages[i].message}},"user");
+          } else if (messages[i].from == "watson") {
+            displayMessage({"output":{"text":messages[i].message}},"watson");
+          }
+        }
+      }
+    };
+    // Send request
+    http2.send();
   }
 
   // Display a user or Watson message that has just been sent/received
@@ -592,5 +612,6 @@ var PayloadPanel = (function() {
   // Initialize all modules
   ConversationPanel.init();
   PayloadPanel.init();
+  ConversationPanel.getChatLog();
 })();
 
