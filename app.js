@@ -14,37 +14,52 @@ const util = require('./app/util');
 const USE_HTTPS = false;
 
 const session = require('express-session');
-//const CloudantStore = require('connect-cloudant-store')(session);
+
+var cookieParser = require('cookie-parser');
+var MemcachedStore = require('connect-memjs')(session);
 
 const passport = require('passport');
 
 const app = express();
-function getStoreCredentialsUrl(jsonData) {
+function getStoreCredentials(jsonData) {
   var vcapServices = JSON.parse(jsonData);
   for (var vcapService in vcapServices) {
-    if (vcapService.match(/cloudant/i)) {
-      return vcapServices[vcapService][0].credentials.url;
+    if (vcapService.match(/memcachedcloud/i)) {
+      vcapServices[vcapService][0].credentials.servers = [].concat(vcapServices[vcapService][0].credentials.servers);
+      return vcapServices[vcapService][0].credentials;
     }
   }
-}    
-if (process.env.VCAP_SERVICES) {
-  storeUrl = getStoreCredentialsUrl(process.env.VCAP_SERVICES);
-} else {
-  storeUrl = getStoreCredentialsUrl(fs.readFileSync("vcap-local.json", "utf-8"));
 }
-/*
-var store = new CloudantStore(
-    {
-      url: storeUrl
-    }
-);
+
+var storeCredentials = {};
+if (process.env.VCAP_SERVICES) {
+  storeCredentials = getStoreCredentials(process.env.VCAP_SERVICES);
+} else {
+  storeCredentials = getStoreCredentials(fs.readFileSync("vcap-local.json", "utf-8"));
+}
+app.use(cookieParser());
+var store = new MemcachedStore(storeCredentials);
+
+store.on('connect', function() {
+     // Cloudant Session store is ready for use 
+    console.log("CloudantStore connected succesfully!");
+});
+ 
+store.on('disconnect', function() {
+    // failed to connect to cloudant db - by default falls back to MemoryStore 
+    console.log("CloudantStore disconnected!");
+});
+ 
+store.on('error', function(err) {
+    // You can log the store errors to your app log 
+    console.log("CloudantStore Error:",err);
+});
 app.use(session({
-    saveUninitialized: true,
-    resave: true,
     store: store,
-    secret: 'energiaIgualMassaVezesVelocidadeDaLuz'
+    resave: false,
+    saveUninitialized: false,
+    secret: 'edsQAcookie'
 }));
-*/
 require('./app/authentication').init(app)
 
 
@@ -59,7 +74,7 @@ var multipart = require('connect-multiparty')
 var multipartMiddleware = multipart();
 
 var cors = require('cors');
-app.use(cors());
+app.use(cors({"credentials": true, "origin": "http://104.236.80.74"}));
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -76,12 +91,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/style', express.static(path.join(__dirname, '/views/style')));
 
 /* Session And authentication */
+/*
 app.use(session({
   secret: 'edsQAcookie',
   resave: false,
   saveUninitialized: false,
   //cookie: { secure: true }
 }));
+*/
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(function(req, res, next){
