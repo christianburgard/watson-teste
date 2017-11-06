@@ -76,7 +76,7 @@ function processTags(text_input) {
 
       case "unixtime":
           if (method_args[0]) {
-            var date = new Date(method_args[0]);
+            var date = new Date(parseInt(method_args[0]));
             text_output += date.getDate()+"/"+(date.getMonth()+1)+"/"+date.getFullYear();
           }
         break;
@@ -259,7 +259,7 @@ function initApi (app) {
       return callWatsonApi(req, res);
     } else {
       console.error("Failed validation. Make sure the validation tokens match.");
-      res.sendStatus(403);          
+      res.sendStatus(403);
     }
   });
 }
@@ -356,15 +356,19 @@ function callWatsonApi (req, res) {
                      callback_parameters.workspace_id = WORKSPACE_ID;
                      callback_parameters.input.api_callback = {"action": "near_addresses_by_city"};
                      callback_parameters.input.addresses = addresses;
-
-                     conversation.message(callback_parameters, function(err2, response2) {
+                     console.log("recursively calling callWatsonApi...");
+                     req2 = req;
+                     req2.body = callback_parameters;
+                     callWatsonApi(req2,res);
+/*                     conversation.message(callback_parameters, function(err2, response2) {
                        if (err2) {
                          console.error("Error: ",err2);
                        } else {
                          console.log("Respondendo:",JSON.stringify(response2, null, 2));
                          res.sendByProtocol(response2);
-                       } //else
+                       } //if
                      }); //conversation.message
+*/
         	     } //else
         	   });
                 }
@@ -471,7 +475,11 @@ function callWatsonApi (req, res) {
                         callback_parameters.input.api_callback = {"action": "near_courses_by_city"};
 
                         console.log("Callback parameters: ",callback_parameters);
-
+                        console.log("recursively calling callWatsonApi...");
+                        req2 = req;
+                        req2.body = callback_parameters;
+                        callWatsonApi(req2,res);
+/*
                         conversation.message(callback_parameters, function(err4, response4) {
                           if (err4) {
                             console.error(err4);
@@ -480,6 +488,7 @@ function callWatsonApi (req, res) {
                             res.sendByProtocol(response4);
                           } //else
                         }); //conversation.message
+*/
         	        } //end else
         	      }.bind({unidades_hash: unidades_hash})); //db.find
 		    }); //db.db.geo
@@ -495,7 +504,9 @@ function callWatsonApi (req, res) {
                 course_id_str = [parseInt(course_id_str)];
              }
              for (var course_i = 0; course_i < course_id_str.length; course_i++) {
-               course_id.push(parseInt(course_id_str[course_i]));
+	       var as_int = parseInt(course_id_str[course_i]);
+	       if (as_int > 0)
+                 course_id.push(parseInt(course_id_str[course_i]));
              }
              console.log("___ course_id = ",course_id);
              console.log("___ resquest.args = ",response.context.request.args);
@@ -505,12 +516,12 @@ function callWatsonApi (req, res) {
                if (err2) {
                  console.log("Error: ",err2);
                } else {
-                 var course_id = this.course_id;
+                 var course_id = [].concat(this.course_id);
                  console.log("___2 course_id = ",this.course_id);
                  console.log("___ Result: ",res2);
                  var unidade_id = res2.docs[0]._id;
                  var selector3;
-                 if (course_id.size >0) {
+                 if (course_id.length >0) {
                    //#####
                    selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id},"idCurso": {"$in": course_id} }};
                  } else if (course_title) {
@@ -565,6 +576,11 @@ function callWatsonApi (req, res) {
                      callback_parameters.workspace_id = WORKSPACE_ID;
                      callback_parameters.input.api_callback = {"action": "courses_schedule"};
 
+                     console.log("recursively calling callWatsonApi...");
+                     req2 = req;
+                     req2.body = callback_parameters;
+                     callWatsonApi(req2,res);
+/*
                      conversation.message(callback_parameters, function(err4, res4) {
                        if (err4) {
                          console.error(err4);
@@ -573,6 +589,7 @@ function callWatsonApi (req, res) {
                          res.sendByProtocol(res4);
                        } //else
                      }); //conversation.message
+*/
                    }
                  });
                }
@@ -599,6 +616,12 @@ function callWatsonApi (req, res) {
                     if ((result.docs) && (result.docs.length > 0)) {
                       callback_parameters.input.courseclass = courseclass;
                     }
+
+                    console.log("recursively calling callWatsonApi...");
+                    req2 = req;
+                    req2.body = callback_parameters;
+                    callWatsonApi(req2,res);
+	            /*
                     conversation.message(callback_parameters, function(err2, response2) {
                       if (err2) {
                         console.error(err2);
@@ -607,6 +630,7 @@ function callWatsonApi (req, res) {
                         res.sendByProtocol(response2);
                       } //else
                     }); //conversation.message
+		    */
                   }
                 });
               }
@@ -643,6 +667,11 @@ function callWatsonApi (req, res) {
                           municipio: result.docs[0].municipio,
                           horarioFuncionamento: result.docs[0].horarioFuncionamento
                       }
+                      console.log("recursively calling callWatsonApi...");
+                      req2 = req;
+                      req2.body = callback_parameters;
+                      callWatsonApi(req2,res);
+		      /*
                       conversation.message(callback_parameters, function(err2, response2) {
                         if (err2) {
                           console.error("Error: ",err2);
@@ -651,6 +680,7 @@ function callWatsonApi (req, res) {
                           res.sendByProtocol(response2);
                         } //else
                       }); //conversation.message
+		      */
               }
             });
            }
