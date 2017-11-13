@@ -329,7 +329,7 @@ function callWatsonApi (req, res) {
                    console.log('  Doc id: %s | Name: %s', result.docs[i]._id,result.docs[i].name);
                    var city_latitude = result.docs[i].geometry.coordinates[1];
                    var city_longitude = result.docs[i].geometry.coordinates[0];
-        	     db.db.geo("address","address_points",{q: "type:'Unidade'",g:"POINT("+result.docs[i].geometry.coordinates[0]+" "+result.docs[i].geometry.coordinates[1]+")",nearest: true,sort: ["distance"],include_docs: true,limit:20}, function (err2, result2) {
+                db.db.geo("address","address_points",{q: "type:'Unidade'",g:"POINT("+result.docs[i].geometry.coordinates[0]+" "+result.docs[i].geometry.coordinates[1]+")",nearest: true,sort: ["distance"],include_docs: true,limit:20}, function (err2, result2) {
 //          	     db.db.geo("addresses","geoIndex",{q: "type:'conga'",lon: result.docs[i].geometry.coordinates[0],lat: result.docs[i].geometry.coordinates[1],radius: 50000,include_docs: true,sort: ["distance"]}, function (err, result) {
         	     if (err2) {
         	       console.log("Error: ",err2);
@@ -377,7 +377,7 @@ function callWatsonApi (req, res) {
                   console.log('  Doc id: %s | Name: %s', result.docs[i]._id,result.docs[i].name);
                   var city_latitude = result.docs[i].geometry.coordinates[1];
                   var city_longitude = result.docs[i].geometry.coordinates[0];
-        	    db.db.geo("address","address_points",{q: "type:'Unidade'",g:"POINT("+result.docs[i].geometry.coordinates[0]+" "+result.docs[i].geometry.coordinates[1]+")",nearest: true,include_docs: true,limit:20}, function (err2, result2) {
+                  db.db.geo("address","address_points", {q: "type:'Unidade'", g:"POINT("+result.docs[i].geometry.coordinates[0]+" "+result.docs[i].geometry.coordinates[1]+")", nearest: true, include_docs: true, limit:20},  function (err2, result2) {
                     var unidades_hash = {};
                     var unidades_hash2 = {};
         	      if (err2) {
@@ -385,14 +385,14 @@ function callWatsonApi (req, res) {
         	      } else {
                       var unidades = [];
                       var unidades2 = [];
-        		console.log("Nearest were: ",result2);
+                      console.log("Nearest were: ",result2);
                       for (var j = 0; j < result2.rows.length; j++) {
                         unidades.push(""+result2.rows[j].id);
                         unidades_hash[result2.rows[j].id] = result2.rows[j].doc.nome;
                         unidades2.push(result2.rows[j].doc.nome);
                         console.log("adicionando key=>value: "+result2.rows[j].id+"=>"+result2.rows[j].doc.nome);
                       }
-                    } // end else
+                } // end else
                     var selector = { "selector": { "unidade": { "$in": unidades },"areaAtuacao": {"$eq": area_atuacao.toUpperCase()} } };
                     console.log("Find :",selector);
                     console.log("unidades_hash = ",unidades_hash);
