@@ -3,9 +3,8 @@ applications:
   memory: 512M
   instances: 1
   domain: mybluemix.net
-  name: ChatSenai-teste
-  host: chatsenai-teste
+  name: EDS_Chat_Senai
+  host: eds-chat-senai
   disk_quota: 1024M
   services:
-  - Cloudant_ChatSenai-teste
-  - Conversation_ChatSenai-teste
+  - Cloudant_FIERGS
