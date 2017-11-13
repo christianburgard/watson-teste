@@ -38,7 +38,7 @@ function initCourses (app) {
       resp.on('data', (chunk) => {
         data += chunk;
       });
-     
+    
       // The whole response has been received. Print out the result.
       resp.on('end', () => {
         var classrooms_json = JSON.parse(data);
