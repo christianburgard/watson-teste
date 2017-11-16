@@ -1,4 +1,4 @@
-const {initDb,getCloudant,isLocal} = require('dbInit')
+const {initDb,getCloudant,isLocal} = require('./dbInit')
 
 
 function db(){

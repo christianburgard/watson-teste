@@ -11,7 +11,19 @@ const express = require('express'),
     path = require('path');
 const util = require('./app/util');
 
+const {initDb}=require('./dbInit')
+
 const USE_HTTPS = false;
+
+
+initDb()
+    .then((ret)=>{
+        console.log('################### initDb EXECUTADO COM SUCESSO!! ##################',ret);
+    }).catch(err=>{
+        console.log('!!!!!!!!!!!!!!!!!!!!! ERRO AO INICIAR O initDb !!!!!!!!!!!!!!!!!!!!!',err);
+        process.exit(2);
+    });
+
 
 const session = require('express-session');
 

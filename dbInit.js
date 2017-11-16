@@ -1,5 +1,5 @@
 const isLocal=process.env.DBLOCAL;
-
+const fs=require('fs');
 function getCloudant() {
     var getDBCredentialsUrl = function (jsonData) {
         var vcapServices = JSON.parse(jsonData);
@@ -13,9 +13,10 @@ function getCloudant() {
         }
     } // getDBCredentialsUrl
 
-    var dbCredentials = {
+    /* var dbCredentials = {
         dbName: dbName
-    };
+    }; */
+    var dbCredentials={};
     //When running on Bluemix, this variable will be set to a json object
     //containing all the service credentials of all the bound services
     if (process.env.VCAP_SERVICES) {
@@ -38,7 +39,7 @@ function getCloudant() {
         } else {
             confs=fs.readFileSync("vcap-local.json", "utf-8")
         }
-        dbCredentials.url = this.getDBCredentialsUrl(confs);
+        dbCredentials.url = getDBCredentialsUrl(confs);
     }
     //cloudant = require('cloudant')(dbCredentials.url);
     //Incluindo Retry!
@@ -49,6 +50,9 @@ function getCloudant() {
     }
 
 } // getCloudant
+
+
+
 
 /**
  * serve p/ iniciar as db's necessárias e eventualmente inserir dados, será chamado uma vez só ao iniciar;
@@ -61,57 +65,76 @@ function initDb() {
     var util = require('util');
     var bcrypt = require('bcrypt');
 
-    cloudant.db.create(dbCredentials.dbName, function (err, res) {
+    /* cloudant.db.create(dbCredentials.dbName, function (err, resMaster) {
         if (err) {
             console.log('Could not create new db: ' + dbCredentials.dbName + ', it might already exist.');
             console.log(`code: ${err.headers.statusCode} --- error: ${err.error}`);
         } else {
             console.log('Created a new db: ' + dbCredentials.dbName + ', because it wasnt found.');
-            var mydb = cloudant.use(dbCredentials.dbName);
+            // var mydb = cloudant.use(dbCredentials.dbName);
             
-            const full_text_index = { "index": {}, "type": "text" };
-            mydb.index(full_text_index,function(er, result) {
-                if (er) {
-                    if(er.headers.statusCode === 503 && er.message == 'text') {
-                        console.log(`############## ERRO SOMENTE LOCAL ##########`);
-                        console.log(er.error);
-                        console.log(`############## ERRO SOMENTE LOCAL ##########`);
-                    } else {
-                        throw er;
-                    }
-                }
-                if(result) {
-                    if (result.result == "exists") {
-                        console.log('Index already existed: ', result);
-                    } else if (result.result == "created") {
-                        console.log('Index was created: ', result);
-                    }
-                }
-            }); 
-            var city_indexer = function(doc) {
-                if ((doc.type == "Unidade") && doc.geometry && doc.geometry.coordinates) {
-                    st_index(doc.geometry);
-                }
-            };
-            
-            var ddoc = {
-                _id: '_design/address',
-                st_indexes: {
-                    address_points: {
-                        index: city_indexer
-                    }
-                }
-            };
-            
-            mydb.insert(ddoc, function (er, result) {
-                if (er) {
-                    throw er;
+
+        }
+    }); */
+
+
+    /**
+     * será chamado na criação de todas as bases
+     * @param {*nome da db a ter seu index criado} dbName 
+     */
+    const createIndex=function(dbName) {
+        const mydb=cloudant.use(dbName);
+        const full_text_index = { "index": {}, "type": "text" };
+        mydb.index(full_text_index,function(er, result) {
+            if (er) {
+                if(er.headers.statusCode === 503 && er.message == 'text') {
+                    console.log(`############## ERRO SOMENTE LOCAL ##########`);
+                    console.log(er.error);
+                    console.log(`############## ERRO SOMENTE LOCAL ##########`);
                 } else {
-                    console.log('Created design document with city index');
+                    throw er;
+                    // return rej(er);
                 }
-            });
+            }
+            if(result) {
+                if (result.result == "exists") {
+                    console.log('Index already existed: ', result);
+                } else if (result.result == "created") {
+                    console.log('Index was created: ', result);
+                }
+            }
+        });
+    }
+
+
+
+
+    const initChatlog=new Promise((res,rej)=>{
+        return cloudant.db.create('chatlog', function (err, resultCreated) {
+            if(err) {
+                if(err.error=='file_exists')
+                    return res('Db "chatlog" já criada!');
+                
+                return rej(err);
+            }
             
-            if (dbCredentials.dbName == 'data') {
+            // const mydb=cloudant.use('chatlog');            
+            createIndex('chatlog');
+
+        });
+    }); // initChatLog
+
+
+
+    var initData=new Promise((res,rej)=>{
+            return cloudant.db.create('data', function (err, resultCreated) {   
+                if(err) {
+                    if(err.error=='file_exists')
+                        return res('Db "data" já criada!');
+                    
+                    return rej(err);
+                }             
+                const mydb=cloudant.use('data');
                 console.log('#################################################################');
                 console.log('########################### DATA AQUI ###########################');
                 console.log('#################################################################');
@@ -121,9 +144,11 @@ function initDb() {
                 mydb.bulk({docs:cidades_rs}, function(err, body) {
                     if (err) {
                         console.log("Error: ",err);
+                        return rej(err);
                     }
                     //   console.log("Body: ",body);
                     console.log("TOTAL DE CIDADE INSERIDAS: ",body.length);
+                    return res({totalCities:body.length});
                 });
                 /*
                 for(var i = 0; i < cidades_rs.length; i++) {
@@ -132,23 +157,77 @@ function initDb() {
                     mydb.insert(cidade);
                 }
                 */
-            } else if (dbCredentials.dbName = 'users') {
-                var saltRounds = 10;
-                var salt = bcrypt.genSaltSync(saltRounds);
+                createIndex('data');
                 
-                var hash = bcrypt.hashSync("eds@2017", salt);
-                var user = {
-                    type: "user",
-                    name: "Admin",
-                    email: "admin@extremedigital.com.br",
-                    username: "admin",
-                    password: hash
-                }
-                mydb.insert(user);
-                console.log('Since its a new "users" database, admin user created with default password!');
+                // CITY INDEXER [Inicio]
+                var city_indexer = function(doc) {
+                    if ((doc.type == "Unidade") && doc.geometry && doc.geometry.coordinates) {
+                        st_index(doc.geometry);
+                    }
+                };
+                var ddoc = {
+                    _id: '_design/address',
+                    st_indexes: {
+                        address_points: {
+                            index: city_indexer
+                        }
+                    }
+                };
+                mydb.insert(ddoc, function (er, result) {
+                    if (er) {
+                        return rej(er);
+                        // throw er;
+                    } else {
+                        console.log('Created design document with city index');
+                        return res({result});
+                    }
+                });
+                // CITY INDEXER [Fim]
+            });
+
+
+    }); // initData
+
+    
+    // } else if (dbCredentials.dbName = 'users') {
+    var initUser=new Promise((res,rej)=>{
+            // return rej('error 1');
+        return cloudant.db.create('users', function (err, resultCreated) {
+            if(err) {
+                if(err.error=='file_exists')
+                    return res('Db "users" já criada!');
+
+                return rej(err);
             }
-        }
-    });
+            const mydb=cloudant.use('users');
+            var saltRounds = 10;
+            var salt = bcrypt.genSaltSync(saltRounds);
+
+            var hash = bcrypt.hashSync("eds@2017", salt);
+            var user = {
+                type: "user",
+                name: "Admin",
+                email: "admin@extremedigital.com.br",
+                username: "admin",
+                password: hash
+            }
+            mydb.insert(user,function(err,result){
+                if(err) {
+                    return rej(err);
+                }
+                console.log('Since its a new "users" database, admin user created with default password!');
+                return res(result);
+            });
+            createIndex('users');
+        });
+    }); // initUser
+
+    const arr=[
+        initChatlog,
+        initData,
+        initUser
+    ]
+    return Promise.all(arr);
 } // initDb
 
 module.exports={initDb,getCloudant,isLocal};
