@@ -16,6 +16,7 @@ const {initDb}=require('./dbInit')
 const USE_HTTPS = false;
 
 
+console.log('%%%%%%%%% Iniciando pré-configurações %%%%%%%%%');
 initDb()
     .then((ret)=>{
         console.log('################### initDb EXECUTADO COM SUCESSO!! ##################',ret);

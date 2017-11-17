@@ -53,12 +53,16 @@ function getCloudant() {
 
 
 
-
 /**
  * serve p/ iniciar as db's necessárias e eventualmente inserir dados, será chamado uma vez só ao iniciar;
  * retorna promise, se rejeitar, derruba a aplicação!
+ * @argument funcs - array opcional com lista de funcs que devem ser executadas ['initChatlog'|'initData'|'initUser'];
+ * @argument params - obj de parâmetros {remove:['chatlog'|'data'|'users']}; db's a serem removidas antes de serem criadas;
+ * **APENAS A REMOÇÃO DA DB 'data' ESTÁ IMPLEMENTADA**
  */
-function initDb() {
+function initDb(funcs,params) {
+    if(!params) params={}
+    var removeDb=params.remove || [];
     var fs = require('fs');
     var cidades_rs;
     const {cloudant}=getCloudant();
@@ -109,124 +113,165 @@ function initDb() {
 
 
 
-    const initChatlog=new Promise((res,rej)=>{
-        return cloudant.db.create('chatlog', function (err, resultCreated) {
-            if(err) {
-                if(err.error=='file_exists')
-                    return res('Db "chatlog" já criada!');
-                
-                return rej(err);
-            }
-            
-            // const mydb=cloudant.use('chatlog');            
-            createIndex('chatlog');
-
-        });
-    }); // initChatLog
-
-
-
-    var initData=new Promise((res,rej)=>{
-            return cloudant.db.create('data', function (err, resultCreated) {   
+    const initChatlog=function() {
+        return new Promise((res,rej)=>{
+            return cloudant.db.create('chatlog', function (err, resultCreated) {
                 if(err) {
                     if(err.error=='file_exists')
-                        return res('Db "data" já criada!');
+                    return res('Db "chatlog" já criada!');
                     
                     return rej(err);
-                }             
-                const mydb=cloudant.use('data');
-                console.log('#################################################################');
-                console.log('########################### DATA AQUI ###########################');
-                console.log('#################################################################');
-                console.log('Since its a new "data" database, populating with cidades_rs.json data...');
-                cidades_rs = require('./cidades_rs.json');
-                console.log('ID 0 = ',cidades_rs[0]);
-                mydb.bulk({docs:cidades_rs}, function(err, body) {
-                    if (err) {
-                        console.log("Error: ",err);
-                        return rej(err);
-                    }
-                    //   console.log("Body: ",body);
-                    console.log("TOTAL DE CIDADE INSERIDAS: ",body.length);
-                    return res({totalCities:body.length});
-                });
-                /*
-                for(var i = 0; i < cidades_rs.length; i++) {
-                    var cidade = cidades_rs[i];
-                    console.log('Inserting ',cidade);
-                    mydb.insert(cidade);
                 }
-                */
-                createIndex('data');
                 
-                // CITY INDEXER [Inicio]
-                var city_indexer = function(doc) {
-                    if ((doc.type == "Unidade") && doc.geometry && doc.geometry.coordinates) {
-                        st_index(doc.geometry);
-                    }
-                };
-                var ddoc = {
-                    _id: '_design/address',
-                    st_indexes: {
-                        address_points: {
-                            index: city_indexer
-                        }
-                    }
-                };
-                mydb.insert(ddoc, function (er, result) {
-                    if (er) {
-                        return rej(er);
-                        // throw er;
+                // const mydb=cloudant.use('chatlog');            
+                createIndex('chatlog');
+                
+            });
+        }); // initChatLog
+    }
+        
+
+
+    var removeData=function() {
+        return new Promise((res,rej)=>{
+            if(removeDb.indexOf('data') > -1) {
+                console.log('########## REMOVENDO DB \'data\'...');
+                return cloudant.db.destroy('data',function(err) {
+                    if(err) {
+                        if(err.statusCode==404)
+                        return rej(err);
                     } else {
-                        console.log('Created design document with city index');
-                        return res({result});
+                        console.log('########## DB \'data\' REMOVIDA COM SUCESSO! ########## ');
                     }
+                    return res({ok:true});
                 });
-                // CITY INDEXER [Fim]
+            } else {
+                return res({ok:true});
+            }
+        });
+    }
+    var initData=function() {
+        return removeData()
+        .then(ret=>{
+            // removemos com sucesso a db 'data', ou não fomos solicitados a remover;
+            return new Promise((res,rej)=>{
+                cloudant.db.create('data', function (err, resultCreated) {
+                    if(err) {
+                        if(err.error=='file_exists')
+                            return res('Db "data" já criada!');
+                        
+                        return rej(err);
+                    }             
+                    const mydb=cloudant.use('data');
+                    console.log('#################################################################');
+                    console.log('########################### DATA AQUI ###########################');
+                    console.log('#################################################################');
+                    console.log('Since its a new "data" database, populating with cidades_rs.json data...');
+                    cidades_rs = require('./cidades_rs.json');
+                    console.log('ID 0 = ',cidades_rs[0]);
+                    mydb.bulk({docs:cidades_rs}, function(err, body) {
+                        if (err) {
+                            console.log("Error: ",err);
+                            return rej(err);
+                        }
+                        //   console.log("Body: ",body);
+                        console.log("TOTAL DE CIDADES INSERIDAS: ",body.length);
+                        return res({totalCities:body.length});
+                    });
+                    /*
+                    for(var i = 0; i < cidades_rs.length; i++) {
+                        var cidade = cidades_rs[i];
+                        console.log('Inserting ',cidade);
+                        mydb.insert(cidade);
+                    }
+                    */
+                    createIndex('data');
+                    
+                    // CITY INDEXER [Inicio]
+                    var city_indexer = function(doc) {
+                        if ((doc.type == "Unidade") && doc.geometry && doc.geometry.coordinates) {
+                            st_index(doc.geometry);
+                        }
+                    };
+                    var ddoc = {
+                        _id: '_design/address',
+                        st_indexes: {
+                            address_points: {
+                                index: city_indexer
+                            }
+                        }
+                    };
+                    mydb.insert(ddoc, function (er, result) {
+                        if (er) {
+                            return rej(er);
+                            // throw er;
+                        } else {
+                            console.log('Created design document with city index');
+                            return res({result});
+                        }
+                    });
+                    // CITY INDEXER [Fim]
+                });
+            },err=>{
+                // erro ao remover a db 'data' e não é erro 404 (not found)...
+                return rej(err);
             });
 
-
-    }); // initData
+        }); // initData
+    }
 
     
     // } else if (dbCredentials.dbName = 'users') {
-    var initUser=new Promise((res,rej)=>{
+    var initUser=function() {
+        return new Promise((res,rej)=>{
             // return rej('error 1');
-        return cloudant.db.create('users', function (err, resultCreated) {
-            if(err) {
-                if(err.error=='file_exists')
-                    return res('Db "users" já criada!');
-
-                return rej(err);
-            }
-            const mydb=cloudant.use('users');
-            var saltRounds = 10;
-            var salt = bcrypt.genSaltSync(saltRounds);
-
-            var hash = bcrypt.hashSync("eds@2017", salt);
-            var user = {
-                type: "user",
-                name: "Admin",
-                email: "admin@extremedigital.com.br",
-                username: "admin",
-                password: hash
-            }
-            mydb.insert(user,function(err,result){
+            return cloudant.db.create('users', function (err, resultCreated) {
                 if(err) {
+                    if(err.error=='file_exists')
+                    return res('Db "users" já criada!');
+                    
                     return rej(err);
                 }
-                console.log('Since its a new "users" database, admin user created with default password!');
-                return res(result);
+                const mydb=cloudant.use('users');
+                var saltRounds = 10;
+                var salt = bcrypt.genSaltSync(saltRounds);
+                
+                var hash = bcrypt.hashSync("eds@2017", salt);
+                var user = {
+                    type: "user",
+                    name: "Admin",
+                    email: "admin@extremedigital.com.br",
+                    username: "admin",
+                    password: hash
+                }
+                mydb.insert(user,function(err,result){
+                    if(err) {
+                        return rej(err);
+                    }
+                    console.log('Since its a new "users" database, admin user created with default password!');
+                    return res(result);
+                });
+                createIndex('users');
             });
-            createIndex('users');
-        });
-    }); // initUser
+        }); // initUser
+    }
 
-    const arr=[
-        initChatlog,
-        initData,
-        initUser
-    ]
+    var arr=[];
+    if(funcs) {
+        try {
+            funcs.forEach(elem=>{
+                arr.push(eval(elem)());
+            });
+        } catch(e) {
+            return Promise.reject({error:'Argumento "funcs inválido. [initChatlog|initData|initUser]"'});
+        }
+    } else {
+        arr=[
+            initChatlog(),
+            initData(),
+            initUser()
+        ]
+    }
     return Promise.all(arr);
 } // initDb
 

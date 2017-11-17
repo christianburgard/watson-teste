@@ -18,10 +18,10 @@ function initCourses (app) {
         return syncCourses()
             .then((ret)=>{
                 console.log('retorno do syncCourse RESOLVED!%%%%%%%%');
-                return response.redirect('/');
+                return response.json(ret);
             },err=>{
                 // aqui deu erro, o que fazer?
-                return response.redirect('/');
+                return response.json(err);
             });
     });
 }
