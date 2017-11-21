@@ -12,49 +12,37 @@ db.init('data');
 /******************************************/
 
 function syncCourses(app) {
-    const dbLog=new(require('../../db'))();
-    dbLog.init('general_log');
-    return new Promise((resMaster,rejMaster)=>{
+    return initDb(['initData'],{remove:['data']}).then(ret=>{
+        return new Promise((resMaster,rejMaster)=>{
 
-        var http = require('http');
-        var googleMapsClient = require('@google/maps').createClient({
-            key: 'AIzaSyD7yHgFYKXzy0cbhulswqPEQN7kTFRFE_g'
-        });
-
-        var username = 'psf.ginfo';
-        var password = 'xisto917';
-        var options = {
-            host: 'wwwapp.sistemafiergs.org.br',
-            port: 7880,
-            path: '/psf/api/senai/programacao-cursos',
-            headers: {
-                'Authorization': 'Basic ' + new Buffer(username + ':' + password).toString('base64')
-            }
-        };
-        // auth is: 'Basic VGVzdDoxMjM='
-
-        http.get(options, (resp) => {
-            let data = '';
-
-            // A chunk of data has been recieved.
-            resp.on('data', (chunk) => {
-                data += chunk;
+            var http = require('http');
+            var googleMapsClient = require('@google/maps').createClient({
+                key: 'AIzaSyD7yHgFYKXzy0cbhulswqPEQN7kTFRFE_g'
             });
 
-            // The whole response has been received. Print out the result.
-            resp.on('end', () => {
-                var classrooms_json = JSON.parse(data);
-
-                // validações aqui!
-                if(classrooms_json.length < 2) {
-                    return rejMaster({error:'Resposta inválida, não há dados!'});
+            var username = 'psf.ginfo';
+            var password = 'xisto917';
+            var options = {
+                host: 'wwwapp.sistemafiergs.org.br',
+                port: 7880,
+                path: '/psf/api/senai/programacao-cursos',
+                headers: {
+                    'Authorization': 'Basic ' + new Buffer(username + ':' + password).toString('base64')
                 }
+            };
+            // auth is: 'Basic VGVzdDoxMjM='
 
+            http.get(options, (resp) => {
+                let data = '';
 
-                // OS DADOS JÁ DEVEM ESTAR VALIDADOS AQUI!
-                // a partir daqui, zeramos o banco e vamos fazer todo o procedimento de reinserção do dados
-                return initDb(['initData'],{remove:['data']}).then(ret=>{
+                // A chunk of data has been recieved.
+                resp.on('data', (chunk) => {
+                    data += chunk;
+                });
 
+                // The whole response has been received. Print out the result.
+                resp.on('end', () => {
+                    var classrooms_json = JSON.parse(data);
                     var current_batch = [];
                     var batch_number = 0;
                     var courses = {};
@@ -236,55 +224,18 @@ function syncCourses(app) {
                         // process.exit(2);
                     });
 
-                },err=>{
-                    // problema ao remover/recriar e inserir cidades na db 'data'
-                    throw err;
-                });
-
-                // console.log("Response finished!");
-            }); // res.on('end')
-        }).on("error", (err) => {
-            const errCode=err.code;
-            var error={error:'Houve um erro de rede!'}
-            if(errCode == 'ENOTFOUND') {
-                error.error='Não foi possível acessar o Webservice, houve um problema de rede.'
-            }
-            console.log("event error on http.get",err);
-            return rejMaster(error);
+                    // console.log("Response finished!");
+                }); // res.on('end')
+            }).on("error", (err) => {
+                console.log("Error: " + err.message);
+                return rejMaster(err.message);
+            });
         });
-    }) // Promise principal
-    .then(ret=>{
-        console.log('capturando o resolved pra gerar log*****',ret);
-
-        var total=ret[0].novos;
-        var totalAddress=ret[1].novos;
-        var totalCourses=ret[2].novos;
-        var log={
-            type:'log',
-            task:'syncCourses',
-            status:'success',
-            msg:`Registros: (${total})Geral; (${totalAddress})Endereços; (${totalCourses})Cursos;`
-        }
-        dbLog.insert2(log,0,{makeId:1});
-        return ret;
-    })
-    .catch(err=>{
-        console.log('capturando o erro pra gerar log$$$$$$$$$$$',err);
-        var error={
-            msg:err.error,
-            type:'log',
-            task:'syncCourses',
-            status:'fail'
-        }
-        dbLog.insert2(error,0,{makeId:1}).then(ret=>{
-            console.log('dbLog.insert2 RESOLVED');
-            throw ret;
-        },err=>{
-            console.log('dbLog.insert2 REJECTED');
-            throw err;
-        });
+    },err=>{
+        // problema ao remover/recriar e inserir cidades na db 'data'
         throw err;
     });
+    
 } // syncCourses
 
 

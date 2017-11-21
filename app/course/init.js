@@ -18,10 +18,17 @@ function initCourses (app) {
         return syncCourses()
             .then((ret)=>{
                 console.log('retorno do syncCourse RESOLVED!%%%%%%%%');
-                return response.json(ret);
+                const obj={
+                    ok:true,
+                    general:ret[0].novos,
+                    addresses:ret[1].novos,
+                    courses:ret[2].novos,
+                }
+                return response.json(obj);
             },err=>{
                 // aqui deu erro, o que fazer?
-                return response.json(err);
+                console.log('!!!!!!!!! PROMISE REJECTED !!!!!!!!!');
+                return response.status(500).json(err);
             });
     });
 }

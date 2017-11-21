@@ -113,18 +113,40 @@ function initDb(funcs,params) {
 
 
 
+    const initGeneralLog=function() {
+        return new Promise((res,rej)=>{
+            return cloudant.db.create('general_log', function (err, resultCreated) {
+                if(err) {
+                    if(err.error=='file_exists')
+                        return res('Db "general_log" já criada!');
+                        
+                    return rej(err);
+                }
+                    
+                // const mydb=cloudant.use('chatlog');            
+                createIndex('general_log');
+                return res('Db "general_log" criada com sucesso!');
+                
+            });
+        }); // initChatLog
+    }
+
+    /**
+     * apenas cria a db "chatlog", se não existir...
+     */
     const initChatlog=function() {
         return new Promise((res,rej)=>{
             return cloudant.db.create('chatlog', function (err, resultCreated) {
                 if(err) {
                     if(err.error=='file_exists')
-                    return res('Db "chatlog" já criada!');
-                    
+                        return res('Db "chatlog" já criada!');
+                        
                     return rej(err);
                 }
                 
                 // const mydb=cloudant.use('chatlog');            
                 createIndex('chatlog');
+                return res('Db "chatlog" criada com sucesso!');
                 
             });
         }); // initChatLog
@@ -132,6 +154,10 @@ function initDb(funcs,params) {
         
 
 
+    /**
+     * serve para zerar a db "data", opcional;
+     * no start da aplicação, logicamente, isso não é acionado, apenas quando executamos o sync de dados com o webservice
+     */
     var removeData=function() {
         return new Promise((res,rej)=>{
             if(removeDb.indexOf('data') > -1) {
@@ -150,6 +176,10 @@ function initDb(funcs,params) {
             }
         });
     }
+
+    /**
+     * inicia a db "data", opcionalmente apagando-a totalmente (usado somente no sync de dados com o webservice)
+     */
     var initData=function() {
         return removeData()
         .then(ret=>{
@@ -220,8 +250,10 @@ function initDb(funcs,params) {
         }); // initData
     }
 
-    
-    // } else if (dbCredentials.dbName = 'users') {
+
+    /**
+     * inicia a db "users"
+     */
     var initUser=function() {
         return new Promise((res,rej)=>{
             // return rej('error 1');
@@ -269,7 +301,8 @@ function initDb(funcs,params) {
         arr=[
             initChatlog(),
             initData(),
-            initUser()
+            initUser(),
+            initGeneralLog()
         ]
     }
     return Promise.all(arr);

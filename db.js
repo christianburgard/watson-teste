@@ -1,3 +1,4 @@
+const uuidv1=require('uuid/v1');
 const {initDb,getCloudant,isLocal} = require('./dbInit')
 
 
@@ -36,7 +37,7 @@ function db(){
     }
 
     this.init = function(dbName) {
-
+        
         // this.db = cloudant.use(dbCredentials.dbName);
         this.db = cloudant.use(dbName);
         this.find = this.db.find;
@@ -44,6 +45,29 @@ function db(){
         this.insert = this.db.insert;
         this.destroy = this.db.destroy;
         this.bulk = this.db.bulk;
+        
+        // versão Promise de insert
+        this.insert2=(data,id,params)=>{
+            if(!params) params={};
+            const makeId=params.makeId || false;
+            if(makeId===1) {
+                const uuid=uuidv1();
+                data._id=uuid;
+                id=uuid;
+            }
+            return new Promise((ret,res)=>{
+                // console.log('@@@@@@@@@ acionou promise insert2!!!!!');
+                return this.insert(data,id,function(err,body,header) {
+                    if(err) {
+                        console.log('@@@@@@@@@ error insert2!!!!!',err);
+                        return rej(err);
+                    }
+
+                    // console.log(`Sucesso:`,body);
+                    return res({body,header});
+                });
+            });
+        } // this.insert2
 
         this.getRevision = function (id, rev, callback){
             
