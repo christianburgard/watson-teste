@@ -10,7 +10,7 @@ var scheduler_init=function(params) {
     const dbPath=params.dbPath;
     const dbName=params.dbName;
     const path1=path.join(__dirname,'scheduler.js');
-    const scheduleProc=spawn('node',[path1],{
+    const scheduleProc=spawn('node',[ path1],{
         env:Object.assign({},process.env,{dbPath,dbName})
     });
 
@@ -30,7 +30,7 @@ var scheduler_init=function(params) {
         console.log(`CHILD EXITED!TYPE:(${typeEvent}) codeOrMsg: ${msg} --- signal: ${signal}`);
         const now2=new Date();
         if(now2.getTime() < (nowTime+maxWait)) {
-            // throw 'Não foi possível inicar o agendador!';
+            throw 'Não foi possível inicar o agendador!';
         }
 
     }

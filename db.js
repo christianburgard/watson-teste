@@ -11,6 +11,7 @@ function db(){
 
     const {cloudant}=getCloudant();
 
+    this.native=cloudant;
 
     this.saveDocument = function (id, obj, response) {
 
@@ -40,12 +41,13 @@ function db(){
         
         // this.db = cloudant.use(dbCredentials.dbName);
         this.db = cloudant.use(dbName);
+        this.create = this.db.create;
         this.find = this.db.find;
         this.get = this.db.get;
         this.insert = this.db.insert;
         this.destroy = this.db.destroy;
         this.bulk = this.db.bulk;
-        
+
         // versão Promise de insert
         this.insert2=(data,id,params)=>{
             if(!params) params={};
@@ -88,6 +90,7 @@ function db(){
 //          }
  
 //        }); 
+        return this;
     }
     return this;
 

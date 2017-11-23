@@ -93,7 +93,7 @@ function syncCourses(app) {
                         var classroom = classrooms_json[i];
                         current_batch.push(classroom);
                         if ((current_batch.length >= 300)||(i == (classrooms_json.length-1))) {
-                            console.log("Batch #",batch_number," = ",current_batch.length);
+                            // console.log("Batch #",batch_number," = ",current_batch.length);
                             batch_number++;
                             arrPromises.push(new Promise((res,rej)=>{
                                 return db.bulk({docs: current_batch},function (er, result) {
@@ -124,13 +124,13 @@ function syncCourses(app) {
                         for (var key in courses) {
                             current_batch.push(courses[key]);
                             if ((current_batch.length >= 300)||(j == (Object.keys(courses).length-1))) {
-                                console.log("Batch #",batch_number," = ",current_batch.length);
+                                // console.log("Batch #",batch_number," = ",current_batch.length);
                                 batch_number++;
                                 arrPromises.push(new Promise((res,rej)=>{
                                     return db.bulk({docs: current_batch},function (er, result) {
                                         resultsCourses.push(result);
                                         if (er) {
-                                            console.log("Error: ",er);
+                                            // console.log("Error: ",er);
                                             return rej(er);
                                         } else {
                                             // console.log("Result: ",result);
@@ -158,11 +158,11 @@ function syncCourses(app) {
                                 if (!err) {
                                     this.address.geometry = {type: "Point",coordinates: [response.json.results[0].geometry.location.lng,response.json.results[0].geometry.location.lat]};
                                     this.address.type = "Unidade";
-                                    console.log("Google Geo API Result: geometry=",this.address.geometry);
+                                    // console.log("Google Geo API Result: geometry=",this.address.geometry);
 
                                     return db.insert(this.address,this.address.id,function(err, body, header) {
                                         if(err) {
-                                            console.log('[data.insert] ', err.message);
+                                            // console.log('[data.insert] ', err.message);
                                             // console.log('[statusCode] ', err.statusCode);
 
                                             if(!(err.error=='conflict' && err.statusCode===409)) {
@@ -172,7 +172,7 @@ function syncCourses(app) {
                                             }
                                         } else {
                                             resultsAddresses.novos++;
-                                            console.log(body);
+                                            // console.log(body);
                                         }
                                         return res({ok:true});
                                     });
@@ -225,9 +225,9 @@ function syncCourses(app) {
                         resultsGeral.forEach(fncArray.bind({arrayIn:resultsGeral2}));
                         console.log('###########################################################');
                         console.log('OPERAÇÃO DE SINC ENCERRADA!!!');
-                        console.log('resultsGeral2',resultsGeral2);
-                        console.log('resultsCourses2',resultsCourses2);
-                        console.log('resultsAddresses',resultsAddresses);
+                        // console.log('resultsGeral2',resultsGeral2);
+                        // console.log('resultsCourses2',resultsCourses2);
+                        // console.log('resultsAddresses',resultsAddresses);
                         return resMaster([resultsGeral2,resultsAddresses,resultsCourses2]);
                     },err=>{
                         console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
@@ -254,7 +254,7 @@ function syncCourses(app) {
         });
     }) // Promise principal
     .then(ret=>{
-        console.log('capturando o resolved pra gerar log*****',ret);
+        // console.log('capturando o resolved pra gerar log*****',ret);
 
         var total=ret[0].novos;
         var totalAddress=ret[1].novos;
@@ -269,7 +269,7 @@ function syncCourses(app) {
         return ret;
     })
     .catch(err=>{
-        console.log('capturando o erro pra gerar log$$$$$$$$$$$',err);
+        // console.log('capturando o erro pra gerar log$$$$$$$$$$$',err);
         var error={
             msg:err.error,
             type:'log',

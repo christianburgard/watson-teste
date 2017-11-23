@@ -113,6 +113,31 @@ function initDb(funcs,params) {
 
 
 
+    /**
+     * apenas cria a db "general_settings", se não existir...
+     */
+    const initGeneralSettings=function() {
+        return new Promise((res,rej)=>{
+            return cloudant.db.create('general_settings', function (err, resultCreated) {
+                if(err) {
+                    if(err.error=='file_exists')
+                        return res('Db "general_settings" já criada!');
+                        
+                    return rej(err);
+                }
+                    
+                // const mydb=cloudant.use('chatlog');            
+                createIndex('general_settings');
+                return res('Db "general_settings" criada com sucesso!');
+                
+            });
+        }); // initChatLog
+    } // initGeneralSettings
+    
+
+    /**
+     * apenas cria a db "general_log", se não existir...
+     */
     const initGeneralLog=function() {
         return new Promise((res,rej)=>{
             return cloudant.db.create('general_log', function (err, resultCreated) {
@@ -129,7 +154,7 @@ function initDb(funcs,params) {
                 
             });
         }); // initChatLog
-    }
+    } // initGeneralLog
 
     /**
      * apenas cria a db "chatlog", se não existir...

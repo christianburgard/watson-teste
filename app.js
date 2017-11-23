@@ -380,7 +380,7 @@ require('./app/chat').init(app);
 // INICIANDO O AGENDADOR
 const {scheduler_init}=require('./scheduler/scheduler_init.js');
 scheduler_init({
-    dbPath:path.join(__dirname,'db.js'),
+    dbPath:path.join(__dirname,'./db.js'),
     dbName:'general_settings' // nome da db onde ficam os agendamentos (que têm um formato próprio; ver class Schedule)
 });
 

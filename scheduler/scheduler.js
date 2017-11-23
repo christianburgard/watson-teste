@@ -10,9 +10,27 @@ if(!dbName || dbName === 'undefined') {
 }
 
 
-const {cloudant}=require(dbPath);
+
+// aqui vamos precisar de um função que centraliza o tratamento o obj db
+// se tiver método "init", ou se for nativo, enfim, precisamos padronizar o formato dentro do agendador;
+function getDb(db) {
+    var retDbObj;
+    if(typeof db == 'function') {
+        retDbObj=new db();
+    } else {
+        retDbObj=db;
+    }
+    if(!retDbObj.init) {
+        retDbObj.init=retDbObj.use;
+    }
+    return retDbObj;
+}
 
 
+const preDb=require(dbPath);
+
+const cloudant=getDb(preDb);
+// console.log(cloudant.native);
 
 const now=new Date();
 // console.log(cloudant)
@@ -49,14 +67,15 @@ var dbLog; // conterá um obj db já apontando p/ a db de log "schedule_logs"
 
 function preConfig() {
     var dbLogName='schedule_logs';
-    cloudant.db.create(dbLogName,function(err,body) {
+    cloudant.native.db.create(dbLogName,function(err,body) {
         if(err && err.statusCode != 412) { // statusCode 412 = já existe a DB
             console.log('ERROR no pre-config',err);
             throw err;
             // process.abort();
         }
         // console.log('body da criação de "schedule_logs"',body);
-        dbLog=cloudant.use(dbLogName);
+        dbLog=getDb(preDb);
+        dbLog.init(dbLogName);
     });
 }
 
@@ -69,7 +88,14 @@ preConfig();
  */
 function schedulerRun(cloudant,params) {
     var dbName=params.dbName;
-    var db=cloudant.use(dbName);
+    var db;
+    
+    // aqui temos que ver o formato
+    if(cloudant.init) {
+        db=cloudant.init(dbName);
+    } else {
+        db=cloudant.use(dbName);
+    }
 
     db.find({selector:{
         type:"parameter",
@@ -113,7 +139,7 @@ function schedulerRun(cloudant,params) {
                 }).then(resolved=>{
                     // task executada com sucesso;
                     // função pós-sucesso;
-                    consoleLog1(`TASK(${schedule.task})  SUCESSO!`,resolved);
+                    consoleLog1(`(SUCESSO)(SUCESSO)(SUCESSO)(SUCESSO)(SUCESSO)TASK(${schedule.task})  SUCESSO!`,resolved);
 
                     taskReturn=resolved;
                     return ret.saveExec({
