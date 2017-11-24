@@ -266,7 +266,7 @@ function syncCourses(app) {
             msg:`Registros: (${total})Geral; (${totalAddress})Endereços; (${totalCourses})Cursos;`
         }
         dbLog.insert2(log,0,{makeId:1});
-        return ret;
+        return {msg:log.msg};
     })
     .catch(err=>{
         // console.log('capturando o erro pra gerar log$$$$$$$$$$$',err);
