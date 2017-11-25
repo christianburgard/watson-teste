@@ -59,7 +59,12 @@ cloudant2.find({selector:{
  * apenas p/ centralizar o processo de log
  */
 function consoleLog1(msg,msg2) {
-    console.log(msg,msg2);
+    // return true;
+    if(msg2 != undefined) {
+        console.log(msg,msg2);
+    } else {
+        console.log(msg);
+    }
 }
 
 

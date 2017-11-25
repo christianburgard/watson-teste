@@ -212,15 +212,17 @@ function initDb(funcs,params) {
             return new Promise((res,rej)=>{
                 cloudant.db.create('data', function (err, resultCreated) {
                     if(err) {
-                        if(err.error=='file_exists')
+                        if(err.error=='file_exists') {
+                            // replicateDATA();
                             return res('Db "data" já criada!');
+                        }
                         
                         return rej(err);
-                    }             
+                    }
                     const mydb=cloudant.use('data');
-                    console.log('#################################################################');
-                    console.log('########################### DATA AQUI ###########################');
-                    console.log('#################################################################');
+                    // console.log('#################################################################');
+                    // console.log('########################### DATA AQUI ###########################');
+                    // console.log('#################################################################');
                     console.log('Since its a new "data" database, populating with cidades_rs.json data...');
                     cidades_rs = require('./cidades_rs.json');
                     console.log('ID 0 = ',cidades_rs[0]);
@@ -231,6 +233,7 @@ function initDb(funcs,params) {
                         }
                         //   console.log("Body: ",body);
                         console.log("TOTAL DE CIDADES INSERIDAS: ",body.length);
+                        // replicateDATA();
                         return res({totalCities:body.length});
                     });
                     /*

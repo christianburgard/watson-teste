@@ -1,17 +1,84 @@
 const http = require('http');
 
-
+/*
+tirar o set status "running"/(done) do scheduler e passar para o cá (syncCourse);
+terminar a questão da replicação de data2=>data
+*/
 
 //DATABASE
 //**************** DB ********************//
 
 const {initDb}=require('../../dbInit');
-var db = new(require('../../db'))();
-db.init('data');
 
 /******************************************/
 
 function syncCourses(app) {
+    
+    var db = new(require('../../db'))();
+    // db.init('data');
+    
+    /**
+     * aqui estamos deletando a "data2" e recriando para podemos injetar os dados oriundos do webservice
+     */
+    var removeCreateData2=function() {
+        return new Promise((res,rej)=>{
+            console.log('########## REMOVENDO DB \'data2\'...');
+            return db.destroy.destroy('data2',function(err) {
+                if(err) {
+                    if(err.statusCode==404)
+                        return res({ok:true,msg:'Database not found'});
+                    
+                    return rej({error:err});
+                } else {
+                    console.log('########## DB \'data2\' REMOVIDA COM SUCESSO! ########## ');
+                }
+                return res({ok:true});
+            });
+        }).then(ret=>{
+            return new Promise((res,rej)=>{
+                return db.destroy.create('data2', function (err, resultCreated) {
+                    if(err) {
+                        if(err.error=='file_exists')
+                            return res('Db "data2" já criada!');
+                            
+                        return rej(err);
+                    }
+                    
+                    // createIndex('data2');
+                    return res('Db "data2" criada com sucesso!');
+                    
+                });
+            });
+        });
+    } // removeData2
+
+
+    /**
+     * Replica db: "data2" => "data"
+     */
+    var replicateDATA=function() {
+        console.log('########################### REPLICAÇÃO Inicio ###########################');
+        return removeData2(['data2']).then(ret=>{
+                return new Promise((res,rej)=>{
+                    return cloudant.db.replicate('data','data2',{create_target:true},function(err,body) {
+                        console.log('#################################################################');
+                        console.log('########################### REPLICAÇÃO ###########################');
+                        console.log('#################################################################');
+                        if(err) {
+                            console.log('(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)',err);
+                            return rej(err);
+                        }
+                        console.log('(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)',body);
+                        return res(body);
+                    });
+            });
+        });
+    }
+
+
+
+
+
     const dbLog=new(require('../../db'))();
     dbLog.init('general_log');
     return new Promise((resMaster,rejMaster)=>{
@@ -52,9 +119,9 @@ function syncCourses(app) {
 
 
                 // OS DADOS JÁ DEVEM ESTAR VALIDADOS AQUI!
-                // a partir daqui, zeramos o banco e vamos fazer todo o procedimento de reinserção do dados
-                return initDb(['initData'],{remove:['data']}).then(ret=>{
-
+                // a partir daqui, zeramos o banco ("data2" que será replicado p/ db "data"(oficial) ) e vamos fazer todo o procedimento de reinserção do dados
+                return removeCreateData2().then(ret=>{
+                    db.init('data2');
                     var current_batch = [];
                     var batch_number = 0;
                     var courses = {};
@@ -237,7 +304,7 @@ function syncCourses(app) {
                     });
 
                 },err=>{
-                    // problema ao remover/recriar e inserir cidades na db 'data'
+                    // problema ao remover/recriar a db "data2"
                     throw err;
                 });
 

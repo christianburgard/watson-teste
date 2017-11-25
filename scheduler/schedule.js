@@ -12,6 +12,18 @@ hou=d.getHours();
 const uuidv1=require('uuid/v1');
 
 
+/**
+ * apenas p/ centralizar o processo de log
+ */
+function consoleLog1(msg,msg2) {
+    // return true;
+    if(msg2 != undefined) {
+        console.log(msg,msg2);
+    } else {
+        console.log(msg);
+    }
+}
+
 class Schedule {
     /*  
         docNative: documento do banco; p/ fazer updates
@@ -49,9 +61,9 @@ class Schedule {
                 }
             }
         */
-        // console.log('######################## DOC NATIVE #####################');
-        // console.log(this.docNative);
-        // console.log('######################## DOC NATIVE #####################');
+        // consoleLog1('######################## DOC NATIVE #####################');
+        // consoleLog1(this.docNative);
+        // consoleLog1('######################## DOC NATIVE #####################');
         if(schedule) {
             this.daysOfWeek=schedule.daysOfWeek || null;
             this.daysOfMonth=schedule.daysOfMonth || null;
@@ -164,17 +176,17 @@ class Schedule {
 
         // DATA INÍCIO
         if(this.beginDate && this.beginDate > now) {
-            console.log(`ERROR: beginDate - agendado: ${this.beginDate.formatBr()}; atual: ${now.formatBr()}`);
+            consoleLog1(`ERROR: beginDate - agendado: ${this.beginDate.formatBr()}; atual: ${now.formatBr()}`);
             return false;
         }
         // DATA FIM
         if(this.endDate && this.endDate < now) {
-            console.log(`ERROR: endDate - agendado: ${this.endDate.formatBr()} ; atual: ${now}`);
+            consoleLog1(`ERROR: endDate - agendado: ${this.endDate.formatBr()} ; atual: ${now}`);
             return false;
         }
 
         if(this.status === 'running') {
-            console.log(`ERROR: tarefa ainda em execução!`);
+            consoleLog1(`ERROR: tarefa ainda em execução!`);
             return false;
         }
 
@@ -191,10 +203,10 @@ class Schedule {
             const time=now.getTime();
             // if(!(time > value2[0] && time < value2[1]) && lastExec) {
             if(!(time > value2) && lastExec) {
-                console.log(`lastExec: ${this.lastExec}`);
-                console.log(value2);
-                console.log(time);
-                console.log(`ERROR: tarefa fora do intervalo. Intervalo: ${value}`);
+                consoleLog1(`lastExec: ${this.lastExec}`);
+                consoleLog1(value2);
+                consoleLog1(time);
+                consoleLog1(`ERROR: tarefa fora do intervalo. Intervalo: ${value}`);
                 return false;
             }
 
@@ -208,7 +220,7 @@ class Schedule {
                 endObj.setHours(endHour,endMinute);
 
                 if(!(now > startObj && now < endObj)) {
-                    console.log(`ERROR: intervalo fora da condição estabelecida: intervalo:${value} -- condicao de-ate: ${startObj.formatBr()} - ${endObj.formatBr()}`);
+                    consoleLog1(`ERROR: intervalo fora da condição estabelecida: intervalo:${value} -- condicao de-ate: ${startObj.formatBr()} - ${endObj.formatBr()}`);
                     return false;
                 }
             }
@@ -218,27 +230,27 @@ class Schedule {
 
             // DIA DA SEMANA
             if(this.daysOfWeek && this.daysOfWeek.indexOf(objDate.dayOfWeek) === -1) {
-                console.log(`ERROR: day of week - agendado: ${this.daysOfWeek.join(',')} ; atual: ${objDate.dayOfWeek}`);
+                consoleLog1(`ERROR: day of week - agendado: ${this.daysOfWeek.join(',')} ; atual: ${objDate.dayOfWeek}`);
                 return false;
             }
             // DIA DO MES
             if(this.daysOfMonth && this.daysOfMonth.indexOf(objDate.dayOfMonth) === -1) {
-                console.log(`ERROR: day of Month - agendado: ${this.daysOfMonth.join(',')} ; atual: ${objDate.dayOfMonth}`);
+                consoleLog1(`ERROR: day of Month - agendado: ${this.daysOfMonth.join(',')} ; atual: ${objDate.dayOfMonth}`);
                 return false;
             }
             // MES
             if(this.months && this.months.indexOf(objDate.month) === -1) {
-                console.log(`ERROR: Month - agendado: ${this.months.join(',')} ; atual: ${objDate.month}`);
+                consoleLog1(`ERROR: Month - agendado: ${this.months.join(',')} ; atual: ${objDate.month}`);
                 return false;
             }
             // HORA
             if(this.hours && this.hours.indexOf(objDate.hour) === -1) {
-                console.log(`ERROR: Hours - agendado: ${this.hours.join(',')} ; atual: ${objDate.hour}`);
+                consoleLog1(`ERROR: Hours - agendado: ${this.hours.join(',')} ; atual: ${objDate.hour}`);
                 return false;
             }
             // MINUTO
             if(this.minutes && this.minutes.indexOf(objDate.minute) === -1) {
-                console.log(`ERROR: Minutes - agendado: ${this.minutes.join(',')} ; atual: ${objDate.minute}`);
+                consoleLog1(`ERROR: Minutes - agendado: ${this.minutes.join(',')} ; atual: ${objDate.minute}`);
                 return false;
             }
         }
@@ -267,7 +279,7 @@ class Schedule {
                             rev: '73-f87b77c9d2856555319d75d1d5fcab9f' }
                         */
                         this.docNative._rev=body.rev;
-                        // console.log('######### retorno salvo do setRunningStatus',body);
+                        // consoleLog1('######### retorno salvo do setRunningStatus',body);
                         return res({ok:true});
                     });
     
