@@ -7,8 +7,8 @@
 6 silly lifecycle cloudant_boilerplate_nodejs@0.0.2~prestart: no script for prestart, continuing
 7 info lifecycle cloudant_boilerplate_nodejs@0.0.2~start: cloudant_boilerplate_nodejs@0.0.2
 8 verbose lifecycle cloudant_boilerplate_nodejs@0.0.2~start: unsafe-perm in lifecycle true
-9 verbose lifecycle cloudant_boilerplate_nodejs@0.0.2~start: PATH: /usr/lib/node_modules/npm/bin/node-gyp-bin:/home/remy/projetos/extremedigital/fiergs/FIERGS_Senai/node_modules/.bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:/home/remy/.local/bin:/home/remy/bin
-10 verbose lifecycle cloudant_boilerplate_nodejs@0.0.2~start: CWD: /home/remy/projetos/extremedigital/fiergs/FIERGS_Senai
+9 verbose lifecycle cloudant_boilerplate_nodejs@0.0.2~start: PATH: /usr/lib/node_modules/npm/bin/node-gyp-bin:/home/remy/projetos/extremedigital/FIERGS_Senai/node_modules/.bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:/home/remy/.composer/vendor/bin:/usr/local/git/bin:/home/remy/.local/bin:/home/remy/bin:/usr/local/git/bin:/usr/local/git/bin
+10 verbose lifecycle cloudant_boilerplate_nodejs@0.0.2~start: CWD: /home/remy/projetos/extremedigital/FIERGS_Senai
 11 silly lifecycle cloudant_boilerplate_nodejs@0.0.2~start: Args: [ '-c', 'node app.js' ]
 12 silly lifecycle cloudant_boilerplate_nodejs@0.0.2~start: Returned: code: 1  signal: null
 13 info lifecycle cloudant_boilerplate_nodejs@0.0.2~start: Failed to exec start script
@@ -23,7 +23,7 @@
 14 verbose stack     at maybeClose (internal/child_process.js:920:16)
 14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:230:5)
 15 verbose pkgid cloudant_boilerplate_nodejs@0.0.2
-16 verbose cwd /home/remy/projetos/extremedigital/fiergs/FIERGS_Senai
+16 verbose cwd /home/remy/projetos/extremedigital/FIERGS_Senai
 17 error Linux 3.10.0-693.5.2.el7.x86_64
 18 error argv "/usr/bin/node" "/usr/bin/npm" "start"
 19 error node v6.11.3

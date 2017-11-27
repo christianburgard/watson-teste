@@ -104,7 +104,8 @@ function schedulerRun(cloudant,params) {
 
     db.find({selector:{
         type:"parameter",
-        schedule:{$type:"object"}
+        schedule:{$type:"object"},
+        "schedule.on":true
     }},function(err,result) {
         /* { docs: 
             [ { _id: 'e163d21160d0ed307942f4611237a3a5',
@@ -136,12 +137,15 @@ function schedulerRun(cloudant,params) {
                 // nome de um arquivo que será "required" no diretório ./tasks
                 var task=require('./tasks/'+schedule.task); // nome da função da tarefa, que será executada;
                 console.log('schedule.task',schedule.task);
-                ret.setRunningStatus({db:db}).then(ret=>{
+                
+                // esse trecho de código não fica mais aqui, cada task que cuide de seu status
+                /* ret.setRunningStatus({db:db}).then(ret=>{
                     return task();
                 },err=>{
                     // Não foi possível setar o status do agendamento p/ 'running'
                     console.log('ERROR: (não foi possível alterar o status p/ running)',err);
-                }).then(resolved=>{
+                }). */
+                task().then(resolved=>{
                     // task executada com sucesso;
                     // função pós-sucesso;
                     consoleLog1(`(SUCESSO)(SUCESSO)(SUCESSO)(SUCESSO)(SUCESSO)TASK(${schedule.task})  SUCESSO!`,resolved);

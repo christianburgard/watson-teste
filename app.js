@@ -377,6 +377,7 @@ require('./app/address').init(app);
 require('./app/api').init(app);
 require('./app/chat').init(app);
 
+
 // INICIANDO O AGENDADOR
 const {scheduler_init}=require('./scheduler/scheduler_init.js');
 scheduler_init({
@@ -385,20 +386,25 @@ scheduler_init({
 });
 
 
-
+var server;
 // Secure HTTPS
 if (USE_HTTPS) {
     var privateKey  = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.key', 'utf8');
     var certificate = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.cer', 'utf8');
     var credentials = {key: privateKey, cert: certificate};
-    http.createServer(credentials,app).listen(app.get('port'), '0.0.0.0', function() {
+    server=http.createServer(credentials,app).listen(app.get('port'), '0.0.0.0', function() {
         console.log('Express server over HTTPS listening on port ' + app.get('port'));
     });
 } else {
-    http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
+    server=http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
         console.log('Express server over Plain HTTP listening on port ' + app.get('port'));
     });
 }
+server.timeout=10000;
+server.on('timeout',(socket)=>{
+    // console.log(socket);
+    socket.destroy();
+});
 /*
 // plain HTTP
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {

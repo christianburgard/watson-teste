@@ -13,18 +13,18 @@ db.init('data');
 /******************************************/
 
 function initCourses (app) {
+    // app.timeout=10000;
+    // app.on('timeout',(socket)=>{
+    //     console.log(socket);
+    //     socket.destroy();
+    // });
     app.get('/courses', passport.authenticationMiddleware(), routes.courses)
     app.get('/courses/sync', function(req, response){
         return syncCourses()
             .then((ret)=>{
                 console.log('retorno do syncCourse RESOLVED!%%%%%%%%');
-                const obj={
-                    ok:true,
-                    general:ret[0].novos,
-                    addresses:ret[1].novos,
-                    courses:ret[2].novos,
-                }
-                return response.json(obj);
+
+                return response.json(ret);
             },err=>{
                 // aqui deu erro, o que fazer?
                 console.log('!!!!!!!!! PROMISE REJECTED !!!!!!!!!');

@@ -261,7 +261,7 @@ class Schedule {
 
         return {
             status:true,
-            setRunningStatus:(params)=>{
+            /* setRunningStatus:(params)=>{
                 const db=params.db;
                 // antes de iniciarmos a execução da tarefa, setamos p/ 'running'
                 return new Promise((res,rej)=>{
@@ -273,19 +273,19 @@ class Schedule {
                             return rej(err);
                         }
                         // quando salvar com sucesso, precisamos re-setar o rev
-                        /*
-                            SCHEDULE.STDOUT ######### retorno salvo do setRunningStatus { ok: true,
-                            id: 'e163d21160d0ed307942f4611237a3a5',
-                            rev: '73-f87b77c9d2856555319d75d1d5fcab9f' }
-                        */
+
+                            // SCHEDULE.STDOUT ######### retorno salvo do setRunningStatus { ok: true,
+                            // id: 'e163d21160d0ed307942f4611237a3a5',
+                            // rev: '73-f87b77c9d2856555319d75d1d5fcab9f' }
+
                         this.docNative._rev=body.rev;
                         // consoleLog1('######### retorno salvo do setRunningStatus',body);
                         return res({ok:true});
                     });
     
                 });
-            },
-            saveExec:(params)=>{
+            }, */
+            /* saveExec:(params)=>{
                 // essa func será executada após a task ter sido concluída;
                 // now2: obj Date a ser criado no momento em que a tarefa terminar;
                 var now2=params.now2;
@@ -306,14 +306,14 @@ class Schedule {
                     });
 
                 });
-            },
+            }, */
             saveLog:(params)=>{
                 // salvar log dessa execução;
                 var task=this.task;
                 var status=params.status;
                 var msg=params.msg;
                 var beginTime=now.getTime(); // epoch do inicio da tarefa;
-                var endTime=params.endTime.getTime(); // epoch do inicio da tarefa;
+                var endTime=params.endTime.getTime(); // epoch do término da tarefa;
                 var dbLog=params.dbLog; // obj db já apontado para a db de log;
                 var _id=uuidv1();
                 var toSave={status,msg,beginTime,endTime,task,_id};

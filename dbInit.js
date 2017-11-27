@@ -89,24 +89,27 @@ function initDb(funcs,params) {
     const createIndex=function(dbName) {
         const mydb=cloudant.use(dbName);
         const full_text_index = { "index": {}, "type": "text" };
-        mydb.index(full_text_index,function(er, result) {
-            if (er) {
-                if(er.headers.statusCode === 503 && er.message == 'text') {
-                    console.log(`############## ERRO SOMENTE LOCAL ##########`);
-                    console.log(er.error);
-                    console.log(`############## ERRO SOMENTE LOCAL ##########`);
-                } else {
-                    throw er;
-                    // return rej(er);
+        return new Promise((res,rej)=>{
+            return mydb.index(full_text_index,function(er, result) {
+                if (er) {
+                    if(er.headers.statusCode === 503 && er.message == 'text') {
+                        console.log(`############## ERRO SOMENTE LOCAL ##########`);
+                        console.log(er.error);
+                        console.log(`############## ERRO SOMENTE LOCAL ##########`);
+                    } else {
+                        // throw er;
+                        return rej(er);
+                    }
                 }
-            }
-            if(result) {
-                if (result.result == "exists") {
-                    console.log('Index already existed: ', result);
-                } else if (result.result == "created") {
-                    console.log('Index was created: ', result);
+                if(result) {
+                    if (result.result == "exists") {
+                        console.log('Index already existed: ', result);
+                    } else if (result.result == "created") {
+                        console.log('Index was created: ', result);
+                    }
                 }
-            }
+                return res({ok:true});
+            });
         });
     }
 
@@ -206,6 +209,7 @@ function initDb(funcs,params) {
      * inicia a db "data", opcionalmente apagando-a totalmente (usado somente no sync de dados com o webservice)
      */
     var initData=function() {
+        var mydb;
         return removeData()
         .then(ret=>{
             // removemos com sucesso a db 'data', ou não fomos solicitados a remover;
@@ -214,69 +218,85 @@ function initDb(funcs,params) {
                     if(err) {
                         if(err.error=='file_exists') {
                             // replicateDATA();
-                            return res('Db "data" já criada!');
+                            return res({msg:'Db "data" já criada!',exists:true});
                         }
                         
                         return rej(err);
                     }
-                    const mydb=cloudant.use('data');
-                    // console.log('#################################################################');
-                    // console.log('########################### DATA AQUI ###########################');
-                    // console.log('#################################################################');
-                    console.log('Since its a new "data" database, populating with cidades_rs.json data...');
-                    cidades_rs = require('./cidades_rs.json');
-                    console.log('ID 0 = ',cidades_rs[0]);
-                    mydb.bulk({docs:cidades_rs}, function(err, body) {
-                        if (err) {
-                            console.log("Error: ",err);
-                            return rej(err);
-                        }
-                        //   console.log("Body: ",body);
-                        console.log("TOTAL DE CIDADES INSERIDAS: ",body.length);
-                        // replicateDATA();
-                        return res({totalCities:body.length});
-                    });
-                    /*
-                    for(var i = 0; i < cidades_rs.length; i++) {
-                        var cidade = cidades_rs[i];
-                        console.log('Inserting ',cidade);
-                        mydb.insert(cidade);
-                    }
-                    */
-                    createIndex('data');
-                    
-                    // CITY INDEXER [Inicio]
-                    var city_indexer = function(doc) {
-                        if ((doc.type == "Unidade") && doc.geometry && doc.geometry.coordinates) {
-                            st_index(doc.geometry);
-                        }
-                    };
-                    var ddoc = {
-                        _id: '_design/address',
-                        st_indexes: {
-                            address_points: {
-                                index: city_indexer
-                            }
-                        }
-                    };
-                    mydb.insert(ddoc, function (er, result) {
-                        if (er) {
-                            return rej(er);
-                            // throw er;
-                        } else {
-                            console.log('Created design document with city index');
-                            return res({result});
-                        }
-                    });
-                    // CITY INDEXER [Fim]
+                    return res({ok:true});
                 });
-            },err=>{
-                // erro ao remover a db 'data' e não é erro 404 (not found)...
-                return rej(err);
             });
+        })
+        .then(ret=>{
+            // db data criada com sucesso!
+            mydb=cloudant.use('data');
+            if(ret && ret.exists) {
+                // não devemos inserir cidades, a db "data" já existe;
+                return ret;
+            }
 
+            // inserindo dados de cidades;
+            return new Promise((res,rej)=>{
+                // console.log('#################################################################');
+                // console.log('########################### DATA AQUI ###########################');
+                // console.log('#################################################################');
+                console.log('Since its a new "data" database, populating with cidades_rs.json data...');
+                cidades_rs = require('./cidades_rs.json');
+                console.log('ID 0 = ',cidades_rs[0]);
+                return mydb.bulk({docs:cidades_rs}, function(err, body) {
+                    if (err) {
+                        console.log("Error: ",err);
+                        return rej(err);
+                    }
+                    //   console.log("Body: ",body);
+                    console.log("TOTAL DE CIDADES INSERIDAS: ",body.length);
+                    // replicateDATA();
+                    return res({totalCities:body.length});
+                });
+            });
+        })
+        .then(ret=>{
+            // criando indice
+            return createIndex('data');
+        })
+        .then((ret)=>{
+            // indice de cidades
+            return new Promise((res,rej)=>{
+                // CITY INDEXER [Inicio]
+                var city_indexer = function(doc) {
+                    if ((doc.type == "Unidade") && doc.geometry && doc.geometry.coordinates) {
+                        st_index(doc.geometry);
+                    }
+                };
+                var ddoc = {
+                    _id: '_design/address',
+                    st_indexes: {
+                        address_points: {
+                            index: city_indexer
+                        }
+                    }
+                };
+                return mydb.insert(ddoc, function (er, result) {
+                    if(er) {
+                        if(er.statusCode==409 && er.error=='conflict') {
+                            return res({msg:'Index already exists!'});
+                        }
+                        return rej(er);
+                        // throw er;
+                    } else {
+                        console.log('Created design document with city index');
+                        return res({result});
+                    }
+                });
+                // CITY INDEXER [Fim]
+            });
+        })
+        .catch(err=>{
+            // catch geral;
+            throw err;
+            // return rej(err);
         }); // initData
-    }
+    } // initData
 
 
     /**
