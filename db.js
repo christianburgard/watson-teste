@@ -66,7 +66,7 @@ function db(){
                     }
 
                     // console.log(`Sucesso:`,body);
-                    return res({body,header});
+                    return res({id,body,header});
                 });
             });
         } // this.insert2

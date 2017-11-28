@@ -1,15 +1,13 @@
 const http = require('http');
+const fs=require('fs');
+const path=require('path');
 
-/*
-tirar o set status "running"/(done) do scheduler e passar para o cá (syncCourse);
-terminar a questão da replicação de data2=>data
-*/
+const coordinates=fs.readFileSync('./coordinates_rs.json');
+
 
 //DATABASE
 //**************** DB ********************//
-
 const {initDb}=require('../../dbInit');
-
 /******************************************/
 function syncCourses(app) {
     var doc; // documento que contém o registro da task, o schedule da task;
@@ -68,6 +66,24 @@ function syncCourses(app) {
         });
     } // setRunningStatus
 
+
+    var db = new(require('../../db'))();
+    
+    // apenas centralização do processo de bulk
+    var saveBulk=function(array) {
+        db.init('data');
+        return new Promise((res,rej)=>{
+            return db.bulk({docs: array},function (er, result) {
+                if (er) {
+                    // console.log("Error: ",er);
+                    return rej(er);
+                } else {
+                    return res({ok:true});
+                }
+            });
+        });
+    } // saveBulk
+
     var saveExec=(params)=>{
         // essa func será executada após a task ter sido concluída (success or fail);
         // now2: obj Date a ser criado no momento em que a tarefa terminar;
@@ -102,13 +118,12 @@ function syncCourses(app) {
 
 
     
-    var db = new(require('../../db'))();
     // db.init('data');
     
     /**
      * aqui estamos deletando a "data2" e recriando para podemos injetar os dados oriundos do webservice
      */
-    var removeCreateDatas=function(dbName) {
+    /* var removeCreateDatas=function(dbName) {
         return new Promise((res,rej)=>{
             console.log('########## REMOVENDO DB \''+dbName+'\'...');
             return db.native.db.destroy(dbName,function(err) {
@@ -139,43 +154,35 @@ function syncCourses(app) {
             });
         });
     } // removeCreateDatas
-
+    */
 
     /**
      * Replica db: "data2" => "data"
      */
-    var replicateDATA=function() {
+    /* var replicateDATA=function() {
         console.log('########################### REPLICAÇÃO Inicio ###########################');
         // return removeCreateDatas(['data2']).then(ret=>{
-        const {initDb}=require('../../dbInit');
-        initDb(['initData'],{remove:['data']});
-        return Promise.resolve(1).then(ret=>{
-                return new Promise((res,rej)=>{
-                    return db.native.db.replicate('data2','data',{create_target:true},function(err,body) {
-                        console.log('#################################################################');
-                        console.log('########################### REPLICAÇÃO ###########################');
-                        console.log('#################################################################');
-                        if(err) {
-                            console.log('(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)',err);
-                            return rej(err);
-                        }
-                        console.log('(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)',body.ok);
-                        return res(body);
-                    });
+        var promise=initDb(['initData'],{remove:['data']});
+        return Promise.resolve(promise).then(ret=>{
+            return new Promise((res,rej)=>{
+                return db.native.db.replicate('data2','data',{create_target:true},function(err,body) {
+
+                    if(err) {
+                        console.log('(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)(ERROR)',err);
+                        return rej(err);
+                    }
+                    console.log('(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)(BODYYYY)',body.ok);
+                    return res(body);
+                });
             });
+
         });
-    }
+    } */
 
 
-
-
-
-    const dbLog=new(require('../../db'))();
-    dbLog.init('general_log');
-    return setRunningStatus()
-    .then(ret=>{
-        return new Promise((resMaster,rejMaster)=>{
-
+    // traz as 3 arrays de dados do webservice;
+    var getData=()=>{
+        return new Promise((resMaster,rejMaster)=>{         
             var http = require('http');
             var googleMapsClient = require('@google/maps').createClient({
                 key: 'AIzaSyD7yHgFYKXzy0cbhulswqPEQN7kTFRFE_g'
@@ -210,199 +217,96 @@ function syncCourses(app) {
                         return rejMaster({error:'Resposta inválida, não há dados!'});
                     }
 
+                    var arrClassrooms=[]; // array de informações principais/gerais;
+                    var courses = {};
+                    var arrCourses=[]; // array de cursos;
+                    var addresses = {};
+                    var arrAddresses=[]; // array de endereços;
 
-                    // OS DADOS JÁ DEVEM ESTAR VALIDADOS AQUI!
-                    // a partir daqui, zeramos o banco ("data2" que será replicado p/ db "data"(oficial) ) e vamos fazer todo o procedimento de reinserção do dados
-                    return removeCreateDatas('data2').then(ret=>{
-                        db.init('data2');
-                        var current_batch = [];
-                        var batch_number = 0;
-                        var courses = {};
-                        var addresses = {};
-                        // armazenará todos os processos asyncs, para sabermos quando realmente terminou tudo...
-                        // será uma array de Promise's
-                        var arrPromises=[];
+                    // possível array com processamento de todas as coordenadas não encontradas no arquivo;
+                    // rodará uma vez, e raramente quando uma nova unidade for adicionada à lista;
+                    var arrAddrPromises=[];
+                    var addToCoord=[]; // dados a serem acrescentados no arq coodinates_rs.json
 
-                        // resultados
-                        var resultsGeral=[];
-                        var resultsCourses=[];
-                        var resultsAddresses={repetidos:0,novos:0};
+                    for(var i = 0; i < classrooms_json.length; i++) {
+                        classrooms_json[i]._id = "T"+classrooms_json[i].id.toString();
+                        classrooms_json[i].type = "Turma";
 
+                        addresses["U"+classrooms_json[i].unidade.id] = classrooms_json[i].unidade;
+                        addresses["U"+classrooms_json[i].unidade.id].type = "Unidade";
+                        addresses["U"+classrooms_json[i].unidade.id]._id = "U"+classrooms_json[i].unidade.id;
 
-                        for(var i = 0; i < classrooms_json.length; i++) {
-                            classrooms_json[i]._id = "T"+classrooms_json[i].id.toString();
-                            classrooms_json[i].type = "Turma";
-
-                            addresses["U"+classrooms_json[i].unidade.id] = classrooms_json[i].unidade;
-                            addresses["U"+classrooms_json[i].unidade.id].type = "Unidade";
-                            addresses["U"+classrooms_json[i].unidade.id]._id = "U"+classrooms_json[i].unidade.id;
-
-                            classrooms_json[i].unidade = "U"+classrooms_json[i].unidade.id;
-                            courses["C"+classrooms_json[i].idCurso] = {
-                                _id: "C"+classrooms_json[i].idCurso,
-                                titulo: classrooms_json[i].titulo,
-                                nivel: classrooms_json[i].nivel,
-                                type: "Curso",
-                                escolaridadeMinima: classrooms_json[i].escolaridadeMinima,
-                                idadeMinima: classrooms_json[i].idadeMinima,
-                                areaAtuacao: classrooms_json[i].areaAtuacao,
-                                perfilConclusao: classrooms_json[i].perfilConclusao
-                            }
-
-                            //console.log("Inserting '",classrooms_json[i].titulo,"' classroom...");
-                            var classroom = classrooms_json[i];
-                            current_batch.push(classroom);
-                            if ((current_batch.length >= 300)||(i == (classrooms_json.length-1))) {
-                                // console.log("Batch #",batch_number," = ",current_batch.length);
-                                batch_number++;
-                                arrPromises.push(new Promise((res,rej)=>{
-                                    return db.bulk({docs: current_batch},function (er, result) {
-                                        resultsGeral.push(result);
-                                        if (er) {
-                                            console.log("Error: ",er);
-                                            return rej(er);
-                                        } else {
-                                            // console.log("Result: ",result);
-                                                return res({ok:true});
-                                        }
-                                    });
-                                }));
-                                    current_batch = [];
-                                }
-                                /*
-                                db.insert(classroom,"T"+classrooms_json[i].id.toString(),function (er, result) {
-                                    if (er) {
-                                        console.log("Error: ",er);
-                                    }
-                                    console.log("Result: ",result);
-                                });
-                                */
-                            } // end of for
-                            batch_number = 100;
-                            current_batch = [];
-                            var j = 0;
-                            for (var key in courses) {
-                                current_batch.push(courses[key]);
-                                if ((current_batch.length >= 300)||(j == (Object.keys(courses).length-1))) {
-                                    // console.log("Batch #",batch_number," = ",current_batch.length);
-                                    batch_number++;
-                                    arrPromises.push(new Promise((res,rej)=>{
-                                        return db.bulk({docs: current_batch},function (er, result) {
-                                            resultsCourses.push(result);
-                                            if (er) {
-                                                // console.log("Error: ",er);
-                                                return rej(er);
-                                            } else {
-                                                // console.log("Result: ",result);
-                                                if(result && result.error=='conflict')
-                                                    resultsCourses.repetidos++;
-                                                else
-                                                    resultsCourses.novos++;
-                                                
-                                                return res({ok:true});
-                                            }
-                                        });
-                                    }));
-                                    current_batch = [];
-                                }
-                            j++;
+                        classrooms_json[i].unidade = "U"+classrooms_json[i].unidade.id;
+                        courses["C"+classrooms_json[i].idCurso] = {
+                            _id: "C"+classrooms_json[i].idCurso,
+                            titulo: classrooms_json[i].titulo,
+                            nivel: classrooms_json[i].nivel,
+                            type: "Curso",
+                            escolaridadeMinima: classrooms_json[i].escolaridadeMinima,
+                            idadeMinima: classrooms_json[i].idadeMinima,
+                            areaAtuacao: classrooms_json[i].areaAtuacao,
+                            perfilConclusao: classrooms_json[i].perfilConclusao
                         }
-                        batch_number = 200;
-                        current_batch = [];
-                        var l = 0;
+
+                        //console.log("Inserting '",classrooms_json[i].titulo,"' classroom...");
+                        var classroom = classrooms_json[i];
+                        arrClassrooms.push(classroom);
+                        
+                        for(var key in courses) {
+                            arrCourses.push(courses[key]);
+                        }
+
                         for (var key in addresses) {
-                            arrPromises.push(new Promise((res,rej)=>{
-                                return googleMapsClient.geocode({
-                                    address: addresses[key].nome+", "+addresses[key].municipio+", Rio Grande do Sul"
-                                }, function(err, response) {
-                                    if (!err) {
-                                        this.address.geometry = {type: "Point",coordinates: [response.json.results[0].geometry.location.lng,response.json.results[0].geometry.location.lat]};
+                            let nome=addresses[key].nome;
+                            let municipio=addresses[key].municipio;
+                            let coordObj=coordinates.find(elem=>{elem.nome==nome && elem.municipio==municipio});
+                            if(coordObj) {
+                                addresses[key].geometry={type: "Point",coordinates: coordObj.coordinates};
+                                addresses[key].type="Unidade";
+                                arrAddresses.push(addresses[key]);
+                            } else {
+                                arrAddrPromises.push(new Promise((res,rej)=>{
+                                    return googleMapsClient.geocode({
+                                        address: addresses[key].nome+", "+addresses[key].municipio+", Rio Grande do Sul"
+                                    }, function(err, response) {
+                                        if (err) {
+                                            console.log('$$$$$$$$$ ERRO COM O googleMpasClient.geocode',err);
+                                            return rej('$$$$$$$$$ ERRO COM O googleMpasClient.geocode');
+                                        }
+                                        let coords=[response.json.results[0].geometry.location.lng,response.json.results[0].geometry.location.lat];
+                                        this.address.geometry = {type: "Point",coordinates: coords};
                                         this.address.type = "Unidade";
                                         // console.log("Google Geo API Result: geometry=",this.address.geometry);
 
-                                        return db.insert(this.address,this.address.id,function(err, body, header) {
-                                            if(err) {
-                                                // console.log('[data.insert] ', err.message);
-                                                // console.log('[statusCode] ', err.statusCode);
-
-                                                if(!(err.error=='conflict' && err.statusCode===409)) {
-                                                    return rej(err);
-                                                } else {
-                                                    resultsAddresses.repetidos++;
-                                                }
-                                            } else {
-                                                resultsAddresses.novos++;
-                                                // console.log(body);
-                                            }
-                                            return res({ok:true});
+                                        addToCoord.push({
+                                            nome:nome,
+                                            municipio:municipio,
+                                            coordinates:coords
                                         });
-                                    } else {
-                                        console.log('$$$$$$$$$ ERRO COM O googleMpasClient.geocode',err);
-                                        return rej('$$$$$$$$$ ERRO COM O googleMpasClient.geocode');
-                                    }
-                                }.bind({ address: addresses[key] }));
-                            }));
+                                        arrAddresses.push(addresses[key]);
+                                        return res({ok:true});
+                                        
+                                    }.bind({ address: addresses[key] }));
+                                }));
+                            }
 
-                            /*
-                            current_batch.push (addresses[key]);
-                            if ((current_batch.length >= 300)||(l == (Object.keys(addresses).length-1))) {
-                            console.log("Batch #",batch_number," = ",current_batch.length);
-                            batch_number++;
-                            db.bulk({docs: current_batch},function (er, result) {
-                            if (er) {
-                            console.log("Error: ",er);
-                            } else {
-                            //                console.log("Result: ",result);
-                            }
-                            });
-                            current_batch = [];
-                            }
-                            l++;
-                            */
                         } // loop em addresses
-
-                        Promise.all(arrPromises)
-                        .then((ret)=>{
-                            // tratar o resultsCourses e resultsGeral que são arrays de arrays de objs com {error:'conflict'}
-
-                            var fncArray=function(elem) {
-                                var arrayIn=this.arrayIn;
-                                if(Array.isArray(elem)) {
-                                    elem.forEach(fncArray.bind({arrayIn:arrayIn}));
-                                } else {
-                                    if(elem.error=='conflict') {
-                                        arrayIn.repetidos++;
-                                    } else {
-                                        arrayIn.novos++;
-                                    }
-                                }
-                            }
-
-                            var resultsCourses2={repetidos:0, novos:0}
-                            var resultsGeral2={repetidos:0, novos:0}
-                            resultsCourses.forEach(fncArray.bind({arrayIn:resultsCourses2}));
-                            // resultsCourses=null;
-                            resultsGeral.forEach(fncArray.bind({arrayIn:resultsGeral2}));
-                            console.log('###########################################################');
-                            console.log('OPERAÇÃO DE SINC ENCERRADA!!!');
-                            // console.log('resultsGeral2',resultsGeral2);
-                            // console.log('resultsCourses2',resultsCourses2);
-                            // console.log('resultsAddresses',resultsAddresses);
-                            return resMaster([resultsGeral2,resultsAddresses,resultsCourses2]);
-                        },err=>{
-                            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-                            console.log('erro na execução de sinc',err);
-                            return rejMaster(err);
-                            // process.exit(2);
+                    } // loop principal
+                    // vamos começar processando as possíveis coordenadas não encontradas no arquivo;
+                    Promise.all(arrAddrPromises)
+                    .then(ret=>{
+                        // aqui a "data" já foi deletada;
+                        // essas 3 arrays arrClassrooms,arrCourses,arrAddresses contém as informações que deverão ser inseridas no "data"
+                        
+                        // retorno final
+                        return resMaster({
+                            arrays:[arrClassrooms,arrCourses,arrAddresses]
                         });
-
                     },err=>{
-                        // problema ao remover/recriar a db "data2"
-                        // throw err;
+                        // aqui houve um erro na parte dos addresses
                         return rejMaster(err);
-                    });
 
-                    // console.log("Response finished!");
+                    })
                 }); // res.on('end')
             }).on("error", (err) => {
                 const errCode=err.code;
@@ -414,47 +318,98 @@ function syncCourses(app) {
                 return rejMaster(error);
             });
         }) // Promise principal
+    } // getData
+
+
+    const dbLog=new(require('../../db'))();
+    dbLog.init('general_log');
+    var makeLog=(params)=>{
+        if(!params) params={};
+        var toMerge=params.toMerge || {};
+
+        var toSave={
+            type:'log',
+            status:'fail'
+        }
+        toSave=Object.assign(toSave,toMerge);
+        return dbLog.insert2(toSave,0,{makeId:1});
+    }
+
+
+    // generator
+    function run(generator) {
+        var it=generator(done);
+
+        function done(promise) {
+            if(promise instanceof Promise) {
+                return promise.then(ret=>it.next(ret),err=>it.next(err));
+            }
+            it.next();
+        }
+        done(1);
+    }
+
+    return setRunningStatus()
+    .then(ret=>{
+        // vamos pegar os dados do webservice;
+        return getData();
     },err=>{
         // aqui não conseguimos setar o runningStatus, devemos parar...
         throw err;
     })
     .then(ret=>{
-        // aqui a func foi concluída com sucesso!! Agora começa a etapa de log;
-        // console.log('capturando o resolved pra gerar log*****',ret);
+        // aqui conseguimos pegar os dados e fazer os tratamentos, inclusive com coordinates
+        var arrays=ret.arrays; // 3 arrays de dados que devem ser inseridas no "data"
+        var geral=arrays[0];
+        var courses=arrays[1];
+        var addresses=arrays[2];
+        var results={
+            geral:geral.length,
+            courses:courses.length,
+            addresses:addresses.length
+        };
 
-        var total=ret[0].novos;
-        var totalAddress=ret[1].novos;
-        var totalCourses=ret[2].novos;
-        log={
-            ret:ret,
-            type:'log',
-            task:'syncCourses',
-            status:'success',
-            msg:`Registros: (${total})Geral; (${totalAddress})Endereços; (${totalCourses})Cursos;`
-        }
-        var log2=Object.assign({},log);
-        delete log2.ret;
-        dbLog.insert2(log2,0,{makeId:1});
-        return saveExec({
-            now2:new Date(),
-            status:'success'
+        // função completa: apaga a "data", recria, insere cidades e então os dados em bulk;
+        var execArrays=function() {
+            var arrayPromises=[
+                saveBulk(geral),
+                saveBulk(courses),
+                saveBulk(addresses)
+            ];
+            return initDb(['initData'],{remove:['data']})
+                .then(ret=>{
+                    return  Promise.all(arrayPromises);
+                });
+        } // execArrays
+
+        run(function*(done) {
+            var ret,retLog;
+            var id_ref=''; // id p/ vincular logs de uma mesma operação (várias tentativas de uma mesma operação)
+            while(true) {
+                ret=yield done(execArrays());
+                if(Array.isArray(ret) && ret.length === 3) {
+                    // SUCESSO!
+                    retLog=yield saveExec({
+                        now2:new Date(),
+                        status:'success',
+                        error:""
+                    });
+                    break;
+                }
+
+                // registrando log da tentativa fail
+                retLog=yield done(makeLog({toMerge:{
+                    status:'fail',
+                    id_ref:id_ref
+                }}));
+                if(!id_ref) {
+                    id_ref=retLog.id;
+                }
+
+            }
         });
-    })
-    .then(ret=>{
-        // etapa da replicação
-        return replicateDATA();
-    })
-    .then(ret=>{
-        // aqui já temos a func executada com sucesso e o status passado de "running" de volta à "success"
-        // o retorno de "saveExec"(ret) não é relevante, contanto que seja resolved
-        const obj={
-            ok:true,
-            general:log.ret[0].novos,
-            addresses:log.ret[1].novos,
-            courses:log.ret[2].novos,
-            msg:log.msg
-        }
-        return obj;
+
+
     })
     .catch(err=>{
         // console.log('capturando o erro pra gerar log$$$$$$$$$$$',err);
@@ -482,3 +437,15 @@ function syncCourses(app) {
 
 
 module.exports = {syncCourses};
+
+
+
+/*
+log={
+    ret:ret,
+    type:'log',
+    task:'syncCourses',
+    status:'success',
+    msg:`Registros: (${total})Geral; (${totalAddress})Endereços; (${totalCourses})Cursos;`
+}
+*/
