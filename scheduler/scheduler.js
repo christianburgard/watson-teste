@@ -150,20 +150,16 @@ function schedulerRun(cloudant,params) {
                     // função pós-sucesso;
                     consoleLog1(`(SUCESSO)(SUCESSO)(SUCESSO)(SUCESSO)(SUCESSO)TASK(${schedule.task})  SUCESSO!`,resolved);
 
-                    taskReturn=resolved;
+                    /* taskReturn=resolved;
                     return ret.saveExec({
                         now2:new Date(),
                         db:db,
                         status:'success'
-                    });
-                },err=>{
-                    // ERRO NA EXECUÇÃO DA TASK!!
-                    consoleLog1(`########### ERRO NA EXECUÇÃO DA TASK(${schedule.task})`,err);
-
-
-                }).then(resolved=>{
-                    // função pós-task executada com sucesso; agora vamos salvar na collection de logs
-
+                    }); */
+                    /*
+                    resolved={ geral: 1403, courses: 702, addresses: 58 }
+                    acrescentar .msgScheduleLog com uma msg a ser logada no schedule_logs
+                    */
                     return ret.saveLog({
                         dbLog:dbLog,
                         msg:taskReturn.msg || '',
@@ -172,16 +168,16 @@ function schedulerRun(cloudant,params) {
                     });
                 },err=>{
                     // erro na hora de alterar a schedule p/ setar lastExec e status
-                    consoleLog1(`########### ERRO AO SETAR lastExec e status`,err);
+                    consoleLog1(`########### ERRO EXECUTAR A TASK!!!!!!!!`,err);
+                    throw err;
                 }).then(resolved=>{
                     // log salvo com sucesso!
                     consoleLog1(`LOG SALVO COM SUCESSO!!`,err);
-
-
+                    return true;
                 },err=>{
                     // erro salvando o log
                     consoleLog1(`########### ERRO SALVANDO O LOG`,err);
-                    
+                    throw err;
                 });
             }
         });    

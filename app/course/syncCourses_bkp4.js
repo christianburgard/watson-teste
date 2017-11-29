@@ -2,19 +2,7 @@ const http = require('http');
 const fs=require('fs');
 const path=require('path');
 
-var addToCoord=[]; // dados a serem acrescentados no arq coodinates_rs.json
-
-const coordFileName='./coordinates_rs.json';
-var getCoordinates=function() {
-    var coordinates=fs.readFileSync(coordFileName);
-    if(!coordinates) {
-        coordinates=[];
-    } else {
-        coordinates=JSON.parse(coordinates);
-    }
-    return coordinates;
-}
-var coordinates=getCoordinates();
+const coordinates=fs.readFileSync('./coordinates_rs.json');
 
 
 //DATABASE
@@ -84,45 +72,16 @@ function syncCourses(app) {
     // apenas centralização do processo de bulk
     var saveBulk=function(array) {
         db.init('data');
-        const maxBulk=300;
-        var miniBulk=function(array) {
-            return new Promise((res,rej)=>{
-                return db.bulk({docs: array},function (er, result) {
-                    if (er) {
-                        // console.log("Error: ",er);
-                        return rej({error:er});
-                    } else {
-                        return res({ok:true});
-                    }
-                });
-            });
-        }
-        const peaces=Math.ceil(array.length/maxBulk);
-        var begin=0
-        var end=maxBulk;
-        var arrays=[]; // será blocos de informações a serem salvos; blocos de "maxBulk"
-        for(var i=1;i<=peaces;i++) {
-            arrays.push(array.slice(begin,end));
-            begin=maxBulk*i;
-            end=begin+maxBulk;
-        }
-        
         return new Promise((res,rej)=>{
-            run(function*(done) {
-                var i=0;
-                var ret;
-                while(i<arrays.length) {
-                    ret=yield done(miniBulk(arrays[i]));
-                    if(ret && ret.error) {
-                        // deu erro, para tudo
-                        return rej(ret.error)
-                    }
-                    i++;
+            return db.bulk({docs: array},function (er, result) {
+                if (er) {
+                    // console.log("Error: ",er);
+                    return rej(er);
+                } else {
+                    return res({ok:true});
                 }
-                return res({ok:true})
             });
         });
-
     } // saveBulk
 
     var saveExec=(params)=>{
@@ -268,6 +227,7 @@ function syncCourses(app) {
                     // possível array com processamento de todas as coordenadas não encontradas no arquivo;
                     // rodará uma vez, e raramente quando uma nova unidade for adicionada à lista;
                     var arrAddrPromises=[];
+                    var addToCoord=[]; // dados a serem acrescentados no arq coodinates_rs.json
 
                     for(var i = 0; i < classrooms_json.length; i++) {
                         classrooms_json[i]._id = "T"+classrooms_json[i].id.toString();
@@ -301,25 +261,21 @@ function syncCourses(app) {
                     for (var key in addresses) {
                         let nome=addresses[key].nome;
                         let municipio=addresses[key].municipio;
-                        let coordObj=coordinates.find(elem=>elem.nome==nome && elem.municipio==municipio);
+                        let coordObj=coordinates.find(elem=>{elem.nome==nome && elem.municipio==municipio});
                         if(coordObj) {
                             addresses[key].geometry={type: "Point",coordinates: coordObj.coordinates};
                             addresses[key].type="Unidade";
                             arrAddresses.push(addresses[key]);
                         } else {
-                            arrAddrPromises.push(new Promise((res,rej)=>{
-                                var address2=Object.assign({},addresses[key]);
-
-                                return googleMapsClient.geocode({
-                                    address: address2.nome+", "+address2.municipio+", Rio Grande do Sul"
-                                },function(err,response) {
-                                    if(err) {
-                                        console.log('########################### erro no GEOCODE',err);
-                                        return rej(err);
-                                    }
+                            var address2=addresses[key];
+                            arrAddrPromises.push(googleMapsClient.geocode({
+                                    address: addresses[key].nome+", "+addresses[key].municipio+", Rio Grande do Sul"
+                                })
+                                .asPromise()
+                                .then(response=>{
                                     let coords=[response.json.results[0].geometry.location.lng,response.json.results[0].geometry.location.lat];
-                                    address2.geometry = {type: "Point",coordinates: coords};
-                                    address2.type = "Unidade";
+                                    addresses[key].geometry = {type: "Point",coordinates: coords};
+                                    addresses[key].type = "Unidade";
                                     // console.log("Google Geo API Result: geometry=",this.address.geometry);
                                 
                                     addToCoord.push({
@@ -327,10 +283,9 @@ function syncCourses(app) {
                                         municipio:municipio,
                                         coordinates:coords
                                     });
-                                    arrAddresses.push(address2);
-                                    return res({ok:true});
-                                });
-                            }));
+                                    arrAddresses.push(addresses[key]);
+                                    return {ok:true};
+                                }));
                         }
 
                     } // loop em addresses
@@ -414,70 +369,44 @@ function syncCourses(app) {
 
         // função completa: apaga a "data", recria, insere cidades e então os dados em bulk;
         var execArrays=function() {
+            var arrayPromises=[
+                saveBulk(geral),
+                saveBulk(courses),
+                saveBulk(addresses)
+            ];
             return initDb(['initData'],{remove:['data']})
-            .then(ret=>{
-                    var arrayPromises=[
-                        saveBulk(geral),
-                        saveBulk(courses),
-                        saveBulk(addresses)
-                    ];
+                .then(ret=>{
                     return  Promise.all(arrayPromises);
                 });
         } // execArrays
 
-        // inserindo possíveis novos dados de localidade (é raro...)
-        if(addToCoord.length) {
-            // addToCoord
-            addToCoord=addToCoord.concat(coordinates);
-            addToCoord=JSON.stringify(addToCoord);
-            fs.writeFile(coordFileName,addToCoord,function(err) {
-                if(err) {
-                    console.log('#############################################');
-                    console.log('(ERRO DO FSWRITE)(ERRO DO FSWRITE)(ERRO DO FSWRITE)',err);
+        run(function*(done) {
+            var ret,retLog;
+            var id_ref=''; // id p/ vincular logs de uma mesma operação (várias tentativas de uma mesma operação)
+            while(true) {
+                ret=yield done(execArrays());
+                if(Array.isArray(ret) && ret.length === 3) {
+                    // SUCESSO!
+                    retLog=yield saveExec({
+                        now2:new Date(),
+                        status:'success',
+                        error:""
+                    });
+                    break;
                 }
-                addToCoord=[];
-                return coordinates=getCoordinates();
-            });
-        }
 
-        return new Promise((res,rej)=>{
-            run(function*(done) {
-                var ret,
-                    retLog, // general_log
-                    retLogExec; // o schedule em si, só p/ controlar o status da execução (se está running ou não);
-                var id_ref=''; // id p/ vincular logs de uma mesma operação (várias tentativas de uma mesma operação)
-                var tries=1;
-                while(true) {
-                    ret=yield done(execArrays());
-                    if(Array.isArray(ret) && ret.length === 3) {
-                        // SUCESSO!
-                        retLogExec=yield done(saveExec({
-                            now2:new Date(),
-                            status:'success',
-                            error:""
-                        }));
-                        retLog=yield done(makeLog({toMerge:{
-                            status:'success',
-                            id_ref:id_ref,
-                            tries:tries
-                        }}));
-                        break;
-                    }
-
-                    // registrando log da tentativa fail
-                    retLog=yield done(makeLog({toMerge:{
-                        status:'fail',
-                        id_ref:id_ref,
-                        tries:tries
-                    }}));
-                    if(!id_ref) {
-                        id_ref=retLog.id;
-                    }
-                    tries++;
+                // registrando log da tentativa fail
+                retLog=yield done(makeLog({toMerge:{
+                    status:'fail',
+                    id_ref:id_ref
+                }}));
+                if(!id_ref) {
+                    id_ref=retLog.id;
                 }
-                return res(results);
-            });
+
+            }
         });
+
 
     })
     .catch(err=>{

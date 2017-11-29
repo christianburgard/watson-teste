@@ -20,3 +20,26 @@ Promise.all(arr1).then(ret=>{
 }).catch(err=>{
     console.log('err',err);
 });
+
+
+/*
+function(err, response) {
+    if (err) {
+        console.log('$$$$$$$$$ ERRO COM O googleMpasClient.geocode',err);
+        return rej('$$$$$$$$$ ERRO COM O googleMpasClient.geocode');
+    }
+    let coords=[response.json.results[0].geometry.location.lng,response.json.results[0].geometry.location.lat];
+    address2.geometry = {type: "Point",coordinates: coords};
+    address2.type = "Unidade";
+    // console.log("Google Geo API Result: geometry=",this.address.geometry);
+
+    / * addToCoord.push({
+        nome:nome,
+        municipio:municipio,
+        coordinates:coords
+    }); * /
+    arrAddresses.push(addresses2);
+    return res({ok:true});
+    
+}
+*/

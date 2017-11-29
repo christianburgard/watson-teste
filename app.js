@@ -400,11 +400,12 @@ if (USE_HTTPS) {
         console.log('Express server over Plain HTTP listening on port ' + app.get('port'));
     });
 }
-server.timeout=10000;
+
+/* server.timeout=10000;
 server.on('timeout',(socket)=>{
     // console.log(socket);
     socket.destroy();
-});
+}); */
 /*
 // plain HTTP
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
