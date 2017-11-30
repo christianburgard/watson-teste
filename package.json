@@ -6,9 +6,13 @@
     "start": "node app.js",
     "db-local": "DBLOCAL=1 node app.js"
   },
+  "engines": {
+    "node":"6.12.x",
+    "npm":"3.10.x"
+  },
   "dependencies": {
     "@google/maps": "0.4.3",
-    "bcrypt": "1.0.2",
+    "bcrypt": "1.0.x",
     "body-parser": "1.17.x",
     "cloudant": "1.7.x",
     "concat-stream": "^1.6.0",
@@ -28,8 +32,5 @@
     "uuid": "^3.1.0",
     "watson-developer-cloud": "^2.39.0"
   },
-  "repository": {},
-  "engines": {
-    "node": "6.x"
-  }
+  "repository": {}
 }

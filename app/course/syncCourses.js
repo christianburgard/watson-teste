@@ -17,6 +17,7 @@ var getCoordinates=function() {
 var coordinates=getCoordinates();
 
 
+
 //DATABASE
 //**************** DB ********************//
 const {initDb}=require('../../dbInit');
@@ -233,7 +234,8 @@ function syncCourses(app) {
             var username = 'psf.ginfo';
             var password = 'xisto917';
             var options = {
-                host: 'wwwapp.sistemafiergs.org.br',
+                // host: 'wwwapp.sistemafiergs223.org.br',
+                host: 'localhost',
                 port: 7880,
                 path: '/psf/api/senai/programacao-cursos',
                 headers: {
@@ -353,11 +355,11 @@ function syncCourses(app) {
                 }); // res.on('end')
             }).on("error", (err) => {
                 const errCode=err.code;
-                var error={error:'Houve um erro de rede!'}
+                var error={error:'Houve um erro de rede!',errNative:err}
                 if(errCode == 'ENOTFOUND') {
                     error.error='Não foi possível acessar o Webservice, houve um problema de rede.'
                 }
-                console.log("event error on http.get",err);
+                console.log("event error on http.get aqui ERROR será logado: ->",error);
                 return rejMaster(error);
             });
         }) // Promise principal
@@ -491,9 +493,12 @@ function syncCourses(app) {
         // console.log('capturando o erro pra gerar log$$$$$$$$$$$',err);
         var error={
             msg:err.error,
+            error:err,
             type:'log',
             task:'syncCourses',
-            status:'fail'
+            status:'fail',
+            scheduleStatus:'fail',
+            msgScheduleLog:err.error
         }
         saveExec({
             now2:new Date(),
@@ -502,12 +507,12 @@ function syncCourses(app) {
         });
         dbLog.insert2(error,0,{makeId:1}).then(ret=>{
             console.log('dbLog.insert2 RESOLVED');
-            throw ret;
+            return ret;
         },err=>{
             console.log('dbLog.insert2 REJECTED');
             throw err;
         });
-        throw err;
+        throw error;
     });
 } // syncCourses
 

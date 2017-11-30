@@ -8,3 +8,4 @@ applications:
   disk_quota: 1024M
   services:
   - Cloudant_FIERGS
+  - Memcached Cloud-EDS_interno

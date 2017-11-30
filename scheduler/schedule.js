@@ -27,8 +27,8 @@ function consoleLog1(msg,msg2) {
 class Schedule {
     /*  
         docNative: documento do banco; p/ fazer updates
-        beginDate=Date,
-        endDate=Date,
+        beginDate=Date || epoch,
+        endDate=Date || epoch,
         daysOfWeek=[];
         daysOfMonth=[];
         minutes=[];
@@ -81,7 +81,7 @@ class Schedule {
 
         if(!Date.prototype.formatBr) {
             Date.prototype.formatBr=function() {
-                var str=this.getDate()+'/'+(this.getMonth()+1)+'/'+this.getFullYear()+' '+this.getHours()+':'+this.getMinutes()+':'+this.getSeconds();
+                var str=this.getUTCDate()+'/'+(this.getUTCMonth()+1)+'/'+this.getUTCFullYear()+' '+this.getUTCHours()+':'+this.getUTCMinutes()+':'+this.getUTCSeconds();
                 return str;
             }
         }
@@ -112,8 +112,8 @@ class Schedule {
         var arrDateType=['beginDate','endDate'];
         arrDateType.forEach(elem=>{
             const elem2=this[elem];
-            if(elem2 && ! elem2 instanceof Date) {
-                throw new Error(`A propriedade ${elem} deve ser do tipo "Date"`);
+            if(elem2 && (! elem2 instanceof Date || ! parseInt(elem2))) {
+                throw new Error(`A propriedade ${elem} deve ser do tipo "Date" ou integer(epoch)`);
             }
         });
 
@@ -128,11 +128,11 @@ class Schedule {
                 if(typeof this[elem] === 'number') {
                     this[elem]=new Date(this[elem]);
                 }
-                this[elem].setHours(0,0,0,0);
+                this[elem].setUTCHours(0,0,0,0);
             }
         });
         if(this.endDate)
-            this.endDate.setHours(23,59,59,999);
+            this.endDate.setUTCHours(23,59,59,999);
 
         // verificando a prop. interval
         if(this.interval) {
@@ -310,15 +310,15 @@ class Schedule {
             saveLog:(params)=>{
                 // salvar log dessa execução;
                 var task=this.task;
-                var status=params.status;
+                var msgScheduleLog=params.msgScheduleLog;
+                var scheduleStatus=params.scheduleStatus;
                 var msg=params.msg;
                 var beginTime=now.getTime(); // epoch do inicio da tarefa;
                 var endTime=params.endTime.getTime(); // epoch do término da tarefa;
                 var dbLog=params.dbLog; // obj db já apontado para a db de log;
                 var _id=uuidv1();
-                var toSave={status,msg,beginTime,endTime,task,_id};
+                var toSave={msg,beginTime,endTime,task,_id,msgScheduleLog,scheduleStatus};
                 return new Promise((res,rej)=>{
-
                     return dbLog.insert(toSave,function(err,body) {
                         if(err)
                             return rej(err);

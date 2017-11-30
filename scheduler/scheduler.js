@@ -167,12 +167,17 @@ function schedulerRun(cloudant,params) {
                         status:resolved.scheduleStatus || 'N/D'
                     });
                 },err=>{
-                    // erro na hora de alterar a schedule p/ setar lastExec e status
-                    consoleLog1(`########### ERRO EXECUTAR A TASK!!!!!!!!`,err);
-                    throw err;
+                    // ERRO NA TASK! Vamos salvar o erro que task nos passou;
+                    consoleLog1(`########### ERRO AO EXECUTAR A TASK!!!!!!!!`,err);
+                    return ret.saveLog({
+                        dbLog:dbLog,
+                        msg:err.msgScheduleLog || '',
+                        endTime:new Date(),
+                        status:err.scheduleStatus || 'N/D'
+                    });
                 }).then(resolved=>{
                     // log salvo com sucesso!
-                    consoleLog1(`LOG SALVO COM SUCESSO!!`,err);
+                    consoleLog1(`LOG SALVO COM SUCESSO!!`,resolved);
                     return true;
                 },err=>{
                     // erro salvando o log
