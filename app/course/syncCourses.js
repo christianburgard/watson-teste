@@ -409,9 +409,12 @@ function syncCourses(app) {
         var results={
             geral:geral.length,
             courses:courses.length,
-            addresses:addresses.length
+            addresses:addresses.length,
+            scheduleStatus:'success' // se falharmos, mudamos isso aqui antes de retornar a promise (p/ efeitos de log)
         };
-
+        // em caso de sucesso, se não, mudamos a prop msgScheduleLog p/ logar a msg de erro;
+        results.msgScheduleLog=`Registros: (${results.geral})Geral; (${results.addresses})Endereços; (${results.courses})Cursos;`;
+        
         // função completa: apaga a "data", recria, insere cidades e então os dados em bulk;
         var execArrays=function() {
             return initDb(['initData'],{remove:['data']})
@@ -458,15 +461,18 @@ function syncCourses(app) {
                         }));
                         retLog=yield done(makeLog({toMerge:{
                             status:'success',
+                            msg:results.msgScheduleLog, // por acaso a msg é a mesma do scheduler, mas poderia ser outra;
                             id_ref:id_ref,
                             tries:tries
                         }}));
                         break;
                     }
 
-                    // registrando log da tentativa fail
+                    // se der erro, ret terá uma prop "error"
+                    // registrando log da tentativa failed
                     retLog=yield done(makeLog({toMerge:{
                         status:'fail',
+                        msg:ret.error, // aqui salvamos o erro;
                         id_ref:id_ref,
                         tries:tries
                     }}));
@@ -475,6 +481,7 @@ function syncCourses(app) {
                     }
                     tries++;
                 }
+                // se chegamos até aqui, obtivemos sucesso;
                 return res(results);
             });
         });

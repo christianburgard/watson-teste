@@ -57,7 +57,7 @@ function db(){
                 data._id=uuid;
                 id=uuid;
             }
-            return new Promise((ret,res)=>{
+            return new Promise((res,rej)=>{
                 // console.log('@@@@@@@@@ acionou promise insert2!!!!!');
                 return this.insert(data,id,function(err,body,header) {
                     if(err) {

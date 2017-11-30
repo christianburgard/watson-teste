@@ -11,7 +11,7 @@ fi;
 # echo $URL
 
 # exit 2
-for i in `echo "chatlog"; echo "data";echo "data2"; echo "users"; echo "general_log";`
+for i in `echo "chatlog"; echo "data";echo "schedule_logs"; echo "users"; echo "general_log";`
 do 
 echo ${URL}
 curl -w "http_code: %{http_code}\n" -X DELETE ${URL}$i

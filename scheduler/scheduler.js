@@ -133,11 +133,11 @@ function schedulerRun(cloudant,params) {
             if(ret.status) {
                 // a tarefa deve ser executada;
                 // var task=eval(schedule.task); // nome da função da tarefa, que será executada;
-                
+
                 // nome de um arquivo que será "required" no diretório ./tasks
                 var task=require('./tasks/'+schedule.task); // nome da função da tarefa, que será executada;
                 console.log('schedule.task',schedule.task);
-                
+
                 // esse trecho de código não fica mais aqui, cada task que cuide de seu status
                 /* ret.setRunningStatus({db:db}).then(ret=>{
                     return task();
@@ -162,9 +162,9 @@ function schedulerRun(cloudant,params) {
                     */
                     return ret.saveLog({
                         dbLog:dbLog,
-                        msg:taskReturn.msg || '',
+                        msg:resolved.msgScheduleLog || '',
                         endTime:new Date(),
-                        status:taskReturn.status
+                        status:resolved.scheduleStatus || 'N/D'
                     });
                 },err=>{
                     // erro na hora de alterar a schedule p/ setar lastExec e status
