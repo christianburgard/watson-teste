@@ -121,11 +121,7 @@ function schedulerRun(cloudant,params) {
         result.docs.forEach((result)=>{
 
             var schedObj=result;
-            /* var objLog={
-                interval:schedObj.schedule.interval.value,
-                task:schedObj.schedule.task
-            }
-            console.log('OBJLOG',objLog); */
+
             var schedule=new Schedule(schedObj);
             var ret=schedule.run();
 

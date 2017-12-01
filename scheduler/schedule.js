@@ -76,6 +76,7 @@ class Schedule {
             this.interval=schedule.interval || null;
             this.lastExec=schedule.lastExec || null;
             this.task=schedule.task || null;
+            this.on=schedule.on ? true : false;
         }
         this.verifier();
 
@@ -119,7 +120,7 @@ class Schedule {
 
         // task
         if(!this.task) {
-            throw new Exception(`A propriedade "task" não pode ser vazia!`);
+            throw new Error(`A propriedade "task" não pode ser vazia!`);
         }
 
         var onlyDate=['beginDate','endDate'];
@@ -311,13 +312,13 @@ class Schedule {
                 // salvar log dessa execução;
                 var task=this.task;
                 var msgScheduleLog=params.msgScheduleLog;
-                var scheduleStatus=params.scheduleStatus;
+                var status=params.scheduleStatus ? params.scheduleStatus : params.status;
                 var msg=params.msg;
                 var beginTime=now.getTime(); // epoch do inicio da tarefa;
                 var endTime=params.endTime.getTime(); // epoch do término da tarefa;
                 var dbLog=params.dbLog; // obj db já apontado para a db de log;
                 var _id=uuidv1();
-                var toSave={msg,beginTime,endTime,task,_id,msgScheduleLog,scheduleStatus};
+                var toSave={msg,beginTime,endTime,task,_id,msgScheduleLog,status};
                 return new Promise((res,rej)=>{
                     return dbLog.insert(toSave,function(err,body) {
                         if(err)
@@ -340,6 +341,53 @@ class Schedule {
             hour:date.getHours()
         }
         return obj;
+    }
+
+
+    toSave(params) {
+        if(!params) params={};
+        const db=params.db;
+
+        var th=this;
+        var scheduleFinal=th;
+        toSaveObj=this.docNative;
+
+        var id=toSaveObj._id || toSaveObj.id;
+        toSaveObj._id=id;
+        var toSaveObj; // objeto que será salvo; vamos ler o que já tem para fazer "merge";
+        return new Promise((res,rej)=>{
+            return db.find({selector:{
+                _id:id,
+                type:"parameter"
+            }},function(err,result) {
+                if(err) {
+                    return rej(err);
+                }
+                if(result && result.docs && result.docs.length) {
+                    var docs=result.docs;
+                    if(docs.length > 1) {
+                        return rej({error:'Há mais de um registro com mesmo ID!!'});
+                    }
+                    var document=docs[0];
+                    scheduleFinal=Object.assign(document.schedule,th);
+
+                    toSaveObj=Object.assign(document,th.docNative);
+                } else {
+                    // não há registros...
+                    toSaveObj._id=-1; // p/ criarmos id no momento de salvar no banco (db.js->this.insert2)
+                }
+                
+                // limpando
+                for(var i in scheduleFinal) {
+                    if(typeof scheduleFinal[i] == 'function' || scheduleFinal[i] === null) {
+                        delete scheduleFinal[i];
+                    }
+                }
+                delete scheduleFinal.docNative;
+                toSaveObj.schedule=scheduleFinal;
+                return res({toSaveObj});
+            });
+        });
     }
 
 }

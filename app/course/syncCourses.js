@@ -51,10 +51,14 @@ function syncCourses(app) {
 
         return Promise.resolve(doc).then(ret=>{
             if(ret && ret.docs) {
-                if(ret.docs.length)
+                if(ret.docs.length) {
                     doc=ret.docs[0];
-                else
+                    if(doc.schedule.status == 'running') {
+                        throw {error:'Tarefa em execução',status:'running'}
+                    }
+                } else {
                     throw {error:'Não foi encontrado registro da tarefa sincronizadora de cursos!! Contate o suporte.'}
+                }
             }
 
             // antes de iniciarmos a execução da tarefa, setamos p/ 'running'
@@ -234,8 +238,7 @@ function syncCourses(app) {
             var username = 'psf.ginfo';
             var password = 'xisto917';
             var options = {
-                // host: 'wwwapp.sistemafiergs223.org.br',
-                host: 'localhost',
+                host: 'wwwapp.sistemafiergs.org.br',
                 port: 7880,
                 path: '/psf/api/senai/programacao-cursos',
                 headers: {
@@ -491,18 +494,19 @@ function syncCourses(app) {
     })
     .catch(err=>{
         // console.log('capturando o erro pra gerar log$$$$$$$$$$$',err);
+        var status=err.status ? err.status : 'fail';
         var error={
             msg:err.error,
             error:err,
             type:'log',
             task:'syncCourses',
-            status:'fail',
-            scheduleStatus:'fail',
+            status:status,
+            scheduleStatus:status,
             msgScheduleLog:err.error
         }
         saveExec({
             now2:new Date(),
-            status:'fail',
+            status:status,
             error:err.error
         });
         dbLog.insert2(error,0,{makeId:1}).then(ret=>{

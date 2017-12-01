@@ -382,12 +382,16 @@ require('./app/chat').init(app);
 const {scheduler_init}=require('./scheduler/scheduler_init.js');
 scheduler_init({
     dbPath:path.join(__dirname,'./db.js'),
-    dbName:'general_settings' // nome da db onde ficam os agendamentos (que têm um formato próprio; ver class Schedule)
+    dbName:'general_settings', // nome da db onde ficam os agendamentos (que têm um formato próprio; ver class Schedule)
+    app:app
 });
+
+/* apenas teste;
 var httpTest=http.createServer(function(req,res) {
     // vai ficar sem resposta mesmo
 });
-httpTest.listen(7880,()=>console.log('HTTPTEST STARTED!!!'));
+httpTest.listen(7880,()=>console.log('HTTPTEST STARTED!!!')); */
+
 
 var server;
 // Secure HTTPS

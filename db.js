@@ -52,7 +52,7 @@ function db(){
         this.insert2=(data,id,params)=>{
             if(!params) params={};
             const makeId=params.makeId || false;
-            if(makeId===1) {
+            if(makeId===1 || id === -1) {
                 const uuid=uuidv1();
                 data._id=uuid;
                 id=uuid;
