@@ -17,14 +17,15 @@ var scheduler_init=function(params) {
 
 
     // criando endpoint p/ agenda
+    // insert/update de agenda
     app.post('/api/scheduler',function(req,res) {
         const Schedule=require(path.join(__dirname,'schedule'));
         var obj=req.body.objSchedule;
         const db=new require(dbPath)();
         db.init(dbName);
         try {
-
-            var schedule=new Schedule(obj);
+            const params={isInsert:true};
+            var schedule=new Schedule(obj,params);
             schedule.toSave({db}).then(ret=>{
                 const {toSaveObj}=ret;
 
@@ -49,6 +50,42 @@ var scheduler_init=function(params) {
             return res.status(400).send({error:e.message,stack:e});
         }
 
+    });
+
+
+    app.get('/api/scheduler',function(req,res) {
+        const db=new require(dbPath)();
+        db.init(dbName);
+
+        // listando schedules
+        return db.find({selector:{
+            type:"parameter",
+            schedule:{$type:"object"}
+        }},function(err,result) {
+            if(err) {
+                return res.status(500).send(err);
+            }
+            const docs=result.docs;
+            
+            const Schedule=require('./schedule');            
+            let retDocs=[];
+            let arrErrors=[];
+            if(docs && docs.length) {
+                docs.forEach(elem=>{
+                    try {
+                        let schedule=new Schedule(elem);
+                        const schedule2=schedule.toLoad();
+                        retDocs.push(schedule2);
+                    } catch(e) {
+                        // aqui vemos depois, se vamos mandar como "agenda inválida"
+                        arrErrors.push(e);
+                    }
+
+                });
+            }
+            
+            return res.send({schedules:retDocs,errors:arrErrors});
+        });
     });
 
     const now=new Date();

@@ -129,10 +129,24 @@ function schedulerRun(cloudant,params) {
             if(ret.status) {
                 // a tarefa deve ser executada;
                 // var task=eval(schedule.task); // nome da função da tarefa, que será executada;
+                let task;
+                try {
+                    // nome de um arquivo que será "required" no diretório ./tasks
+                    task=require('./tasks/'+schedule.task); // nome da função da tarefa, que será executada;
+                    console.log('schedule.task',schedule.task);
+                    if(typeof task != 'function') {
+                        throw new Error('A task não é uma "function"!');
+                    }
 
-                // nome de um arquivo que será "required" no diretório ./tasks
-                var task=require('./tasks/'+schedule.task); // nome da função da tarefa, que será executada;
-                console.log('schedule.task',schedule.task);
+                } catch(e) {
+
+                    const error={
+                        stack:e,
+                        msgScheduleLog:e.message,
+                        scheduleStatus:'fail'
+                    }
+                    task=()=>Promise.reject(error);
+                }
 
                 // esse trecho de código não fica mais aqui, cada task que cuide de seu status
                 /* ret.setRunningStatus({db:db}).then(ret=>{

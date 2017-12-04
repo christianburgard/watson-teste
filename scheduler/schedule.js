@@ -44,7 +44,11 @@ class Schedule {
         task:"" // nome da func a ser executada; DEVE retornar um Promise
     */
 
-    constructor(result) {
+    constructor(result,params) {
+        if(!params) params={}
+        const isInsert=params.isInsert;
+
+
         var schedule=result.schedule;
         this.docNative=result || null;
         /*
@@ -78,7 +82,7 @@ class Schedule {
             this.task=schedule.task || null;
             this.on=schedule.on ? true : false;
         }
-        this.verifier();
+        this.verifier({isInsert});
 
         if(!Date.prototype.formatBr) {
             Date.prototype.formatBr=function() {
@@ -89,7 +93,9 @@ class Schedule {
 
     }
 
-    verifier() {
+    verifier(params) {
+        if(!params) params={}
+        const isInsert=params.isInsert; // verificação p/ inserção...
         function verArray(arr,prop) {
             if(!arr) {
                 return true;
@@ -123,17 +129,19 @@ class Schedule {
             throw new Error(`A propriedade "task" não pode ser vazia!`);
         }
 
-        var onlyDate=['beginDate','endDate'];
-        onlyDate.forEach(elem=>{
-            if(this[elem]) {
-                if(typeof this[elem] === 'number') {
-                    this[elem]=new Date(this[elem]);
+        if(!isInsert) {
+            var onlyDate=['beginDate','endDate'];
+            onlyDate.forEach(elem=>{
+                if(this[elem]) {
+                    if(typeof this[elem] === 'number') {
+                        this[elem]=new Date(this[elem]);
+                    }
+                    this[elem].setUTCHours(0,0,0,0);
                 }
-                this[elem].setUTCHours(0,0,0,0);
-            }
-        });
-        if(this.endDate)
-            this.endDate.setUTCHours(23,59,59,999);
+            });
+            if(this.endDate)
+                this.endDate.setUTCHours(23,59,59,999);
+        }
 
         // verificando a prop. interval
         if(this.interval) {
@@ -353,6 +361,9 @@ class Schedule {
         toSaveObj=this.docNative;
 
         var id=toSaveObj._id || toSaveObj.id;
+        if(!id) {
+            id='non_existentID-9kY**';
+        }
         toSaveObj._id=id;
         var toSaveObj; // objeto que será salvo; vamos ler o que já tem para fazer "merge";
         return new Promise((res,rej)=>{
@@ -377,10 +388,19 @@ class Schedule {
                     toSaveObj._id=-1; // p/ criarmos id no momento de salvar no banco (db.js->this.insert2)
                 }
                 
+
+                // props que são arrays numéricas e que devem ser ordenadas;
+                var arrToOrder=['daysOfWeek','daysOfMonth','months','minutes','hours'];
+
                 // limpando
                 for(var i in scheduleFinal) {
                     if(typeof scheduleFinal[i] == 'function' || scheduleFinal[i] === null) {
                         delete scheduleFinal[i];
+                    } else {
+                        if(arrToOrder.indexOf(i) > -1) {
+                            scheduleFinal[i].map(elem=>parseInt(elem));
+                            scheduleFinal[i].sort((a,b)=>a-b);
+                        }
                     }
                 }
                 delete scheduleFinal.docNative;
@@ -388,6 +408,37 @@ class Schedule {
                 return res({toSaveObj});
             });
         });
+    }
+
+    /**
+     * retorna um JSON representando o agendamento (p/ display)
+     */
+    toLoad() {
+        const native=this.docNative;
+        const retObj={
+            schedule:{
+
+                daysOfWeek:this.daysOfWeek,
+                daysOfMonth:this.daysOfMonth,
+                months:this.months,
+                minutes:this.minutes,
+                hours:this.hours,
+                status:this.status,
+                beginDate:this.beginDate,
+                endDate:this.endDate,
+                interval:this.interval,
+                lastExec:this.lastExec,
+                task:this.task,
+                on:this.on
+            },
+            type:native.type,
+            name:native.name,
+            description:native.description,
+            _id:native._id,
+            _rev:native._rev
+        }
+
+        return retObj;
     }
 
 }

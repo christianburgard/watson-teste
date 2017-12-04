@@ -1,0 +1,582 @@
+<html lang="pt-br"><head>
+<!-- views/partials/head.ejs -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+ 
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/ico/apple-touch-icon-144-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/assets/ico/apple-touch-icon-114-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="/assets/ico/apple-touch-icon-72-precomposed.png">
+<link rel="apple-touch-icon-precomposed" href="/assets/ico/apple-touch-icon-57-precomposed.png">
+<link rel="shortcut icon" href="/assets/ico/favicon.png">
+<title>EDS FIERGS-Senai Orquestrator - Cursos</title>
+ 
+<link href="/assets/bootstrap/css/bootstrap.css" rel="stylesheet">
+ 
+<link href="/assets/css/style.css" rel="stylesheet">
+ 
+<link href="/assets/css/owl.carousel.css" rel="stylesheet">
+<link href="/assets/css/owl.theme.css" rel="stylesheet">
+
+<style>
+    .item-highlight em {
+        font-weight: bold;
+    }
+     .item-highlight  {
+        display: block;
+    }
+	
+	.topnav {
+position:relative;
+z-index:2;
+font-size:17px;
+background-color:#5f5f5f;
+color:#f1f1f1;
+width:100%;
+padding:0;
+letter-spacing:1px;
+font-family:"Segoe UI",Arial,sans-serif;
+}
+
+.topnav .w3-bar a:hover{
+background-color:#000000 !important;
+color:#ffffff !important;
+}
+
+.topnav .w3-bar a.active {
+background-color:#149078;
+color:#ffffff;
+}
+</style>
+<!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+ 
+<script>
+        paceOptions = {
+            elements: true
+        };
+    </script>
+<script src="/assets/js/pace.min.js"></script>
+
+</head>
+<body class="  pace-done"><div class="pace  pace-inactive"><div class="pace-progress" style="width: 100%;" data-progress-text="100%" data-progress="99">
+  <div class="pace-progress-inner"></div>
+</div>
+<div class="pace-activity"></div></div>
+<div id="wrapper">
+<div class="header">
+    
+        <div class="container-fluid">
+            <div class="col-sm-6 col-md-4 col-xs-12">
+                <a href="/" class="navbar-brand logo logo-title">
+                <span class="logo-icon"><i class="icon icon-search-1 ln-shadow-logo shape-0"></i> </span>
+                EDS<span>FIERGS Senai</span> </a>
+            </div>
+
+		    <div class="col-md-8 hidden-xs customer-logos">
+            <svg class="pull-right" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="243.75px" height="60px" viewBox="0 0 243.75 67.5" style="enable-background:new 0 0 243.75 67.5;" xml:space="preserve">
+						<g> <g> <path style="fill:#808285;" d="M39.972,66.972H11.541l-9.877-9.885l-0.001-0.116c-0.071-9.308-0.071-18.546-0.071-28.327v-0.118 l9.95-9.813h28.496l9.951,9.741v10.291l-8.851,8.719l9.242,9.235L39.972,66.972z M11.775,66.407H39.74l9.837-9.711l-9.242-9.235 l9.088-8.953v-9.817l-9.616-9.413H11.774l-9.617,9.484c0,9.696,0,18.86,0.07,28.089L11.775,66.407z"></path> </g> <g> <path style="fill:#808285;" d="M92.275,66.972H63.912l-0.083-0.085c-1.372-1.404-2.757-2.782-4.138-4.155 c-1.731-1.722-3.521-3.501-5.237-5.29l-0.283-0.285V28.866l9.743-9.814H81.62v-8.415L91.821,0.316l10.201,10.203v46.638 L92.275,66.972z M64.15,66.407H92.04l9.417-9.483v-46.17l-9.634-9.635l-9.638,9.751v8.748H64.149l-9.413,9.482v27.824l0.123,0.124 c1.714,1.787,3.502,3.565,5.23,5.284C61.445,63.679,62.804,65.03,64.15,66.407z"></path> </g> <g> <g> <path style="fill:#808285;" d="M163.953,22.333h6.959v1.694h-5.09v2.579h4.824v1.692h-4.824v2.851h5.357v1.691h-7.227V22.333z"></path> </g> <g> <path style="fill:#808285;" d="M174.992,27.35l-3.502-5.017h2.359l2.477,3.89l2.449-3.89h2.271l-3.443,5.017l3.814,5.491h-2.373 l-2.777-4.436l-2.76,4.436h-2.254L174.992,27.35z"></path> </g> <g> <path style="fill:#808285;" d="M184.146,24.027h-3.223v-1.694h8.312v1.694h-3.221v8.813h-1.869V24.027z"></path> </g> <g> <path style="fill:#808285;" d="M189.918,22.333h3.648c2.021,0,3.92,0.653,3.92,3.014c0,1.514-0.877,2.626-2.434,2.847 l2.789,4.647h-2.254l-2.436-4.454h-1.367v4.454h-1.867V22.333z M193.24,26.785c1.055,0,2.287-0.09,2.287-1.454 c0-1.247-1.158-1.395-2.123-1.395h-1.619v2.849H193.24z"></path> </g> <g> <path style="fill:#808285;" d="M198.668,22.333h6.963v1.694h-5.092v2.579h4.824v1.692h-4.824v2.851h5.357v1.691h-7.229V22.333z"></path> </g> <g> <path style="fill:#808285;" d="M207.186,22.333h2.85l2.807,7.361l2.832-7.361h2.822v10.508h-1.783v-8.729h-0.029l-3.191,8.729 h-1.305l-3.189-8.729h-0.029v8.729h-1.783V22.333z"></path> </g> <g> <path style="fill:#808285;" d="M220.287,22.333h6.959v1.694h-5.088v2.579h4.822v1.692h-4.822v2.851h5.355v1.691h-7.227V22.333z"></path> </g> <g> <path style="fill:#808285;" d="M164.264,35.95h4.051c3.053,0,6.414,2.035,6.414,6.104c0,4.069-3.361,6.104-6.414,6.104h-4.051 V35.95z M165.506,47.017h2.41c3.725,0,5.467-2.446,5.467-4.963c0-2.519-1.742-4.966-5.467-4.966h-2.41V47.017z"></path> </g> <g> <path style="fill:#808285;" d="M177.758,48.157h-1.242V35.95h1.242V48.157z"></path> </g> <g> <path style="fill:#808285;" d="M189.389,38.191c-0.826-0.881-1.982-1.412-3.482-1.412c-3.137,0-5.016,2.464-5.016,5.274 c0,2.81,1.879,5.274,5.016,5.274c1.258,0,2.465-0.347,3.379-0.861v-4.085h-2.914v-1.138h4.156v5.979 c-1.361,0.814-3.137,1.243-4.621,1.243c-3.637,0-6.361-2.708-6.361-6.413c0-3.706,2.725-6.414,6.361-6.414 c1.932,0,3.328,0.553,4.414,1.639L189.389,38.191z"></path> </g> <g> <path style="fill:#808285;" d="M194.33,48.157h-1.242V35.95h1.242V48.157z"></path> </g> <g> <path style="fill:#808285;" d="M200.859,48.157h-1.238V37.088h-4.086V35.95h9.412v1.138h-4.088V48.157z"></path> </g> <g> <path style="fill:#808285;" d="M204.77,48.157h-1.447l5.311-12.207h1.205l5.311,12.207h-1.447l-1.346-3.209h-6.24L204.77,48.157z M206.58,43.813h5.293l-2.639-6.416L206.58,43.813z"></path> </g> <g> <path style="fill:#808285;" d="M217.348,47.017h5.689v1.141h-6.932V35.95h1.242V47.017z"></path> </g> <g> <path style="fill:#808285;" d="M169.104,55.22c-0.4-0.563-1.115-0.829-1.84-0.829c-0.863,0-1.723,0.385-1.723,1.35 c0,2.106,4.988,0.903,4.988,4.642c0,2.257-1.783,3.354-3.846,3.354c-1.307,0-2.582-0.4-3.443-1.423l1.41-1.365 c0.461,0.697,1.248,1.099,2.076,1.099c0.861,0,1.84-0.476,1.84-1.439c0-2.301-4.984-0.98-4.984-4.735 c0-2.165,1.93-3.176,3.875-3.176c1.096,0,2.195,0.313,3.01,1.084L169.104,55.22z"></path> </g> <g> <path style="fill:#808285;" d="M176.863,52.696c3.277-0.058,5.594,2.136,5.594,5.505c0,3.283-2.316,5.479-5.594,5.535 c-3.236,0-5.551-2.195-5.551-5.475C171.312,54.894,173.627,52.696,176.863,52.696z M176.875,62.047 c2.184,0,3.623-1.665,3.623-3.904c0-2.094-1.439-3.752-3.623-3.752c-2.164,0-3.605,1.658-3.605,3.752 C173.27,60.382,174.711,62.047,176.875,62.047z"></path> </g> <g> <path style="fill:#808285;" d="M183.641,52.963h1.871v8.818h4.467v1.69h-6.338V52.963z"></path> </g> <g> <path style="fill:#808285;" d="M199.16,59.612c0,2.539-1.824,4.124-4.227,4.124c-2.406,0-4.23-1.585-4.23-4.124v-6.649h1.871 v6.591c0,1.04,0.562,2.404,2.359,2.404c1.793,0,2.357-1.364,2.357-2.404v-6.591h1.869V59.612z"></path> </g> <g> <path style="fill:#808285;" d="M203.02,54.656h-3.221v-1.693h8.309v1.693h-3.219v8.815h-1.869V54.656z"></path> </g> <g> <path style="fill:#808285;" d="M208.744,52.963h1.871v10.509h-1.871V52.963z"></path> </g> <g> <path style="fill:#808285;" d="M217.307,52.696c3.279-0.058,5.594,2.136,5.594,5.505c0,3.283-2.314,5.479-5.594,5.535 c-3.234,0-5.551-2.195-5.551-5.475C211.756,54.894,214.072,52.696,217.307,52.696z M217.32,62.047 c2.184,0,3.623-1.665,3.623-3.904c0-2.094-1.439-3.752-3.623-3.752c-2.166,0-3.605,1.658-3.605,3.752 C213.715,60.382,215.154,62.047,217.32,62.047z"></path> </g> <g> <path style="fill:#808285;" d="M224.084,52.963h2.48l5.09,7.805h0.029v-7.805h1.871v10.509h-2.377l-5.193-8.058h-0.029v8.058 h-1.871V52.963z"></path> </g> <g> <path style="fill:#808285;" d="M240.451,55.22c-0.4-0.563-1.113-0.829-1.84-0.829c-0.859,0-1.721,0.385-1.721,1.35 c0,2.106,4.984,0.903,4.984,4.642c0,2.257-1.781,3.354-3.842,3.354c-1.307,0-2.582-0.4-3.443-1.423l1.41-1.365 c0.459,0.697,1.246,1.099,2.076,1.099c0.861,0,1.84-0.476,1.84-1.439c0-2.301-4.986-0.98-4.986-4.735 c0-2.165,1.93-3.176,3.873-3.176c1.1,0,2.199,0.313,3.014,1.084L240.451,55.22z"></path> </g> </g> <g> <path style="fill:#808285;" d="M17.941,33.158c0,0.758-0.613,1.371-1.368,1.371c-0.759,0-1.374-0.613-1.374-1.371 c0-0.753,0.615-1.369,1.374-1.369C17.328,31.789,17.941,32.405,17.941,33.158z"></path> </g> <g> <path style="fill:#808285;" d="M21.882,52.865c0,0.754-0.614,1.369-1.371,1.369c-0.758,0-1.369-0.615-1.369-1.369 c0-0.761,0.611-1.372,1.369-1.372C21.268,51.493,21.882,52.104,21.882,52.865z"></path> </g> <g> <path style="fill:#808285;" d="M73.106,46.947c0,0.76-0.616,1.374-1.371,1.374s-1.373-0.614-1.373-1.374 c0-0.758,0.619-1.37,1.373-1.37S73.106,46.189,73.106,46.947z"></path> </g> <g> <path style="fill:#808285;" d="M124.331,39.068c0,0.756-0.613,1.375-1.372,1.375c-0.756,0-1.368-0.619-1.368-1.375 c0-0.757,0.612-1.369,1.368-1.369C123.717,37.699,124.331,38.312,124.331,39.068z"></path> </g> <g> <path style="fill:#808285;" d="M84.928,29.224c0,0.755-0.613,1.37-1.371,1.37c-0.757,0-1.373-0.615-1.373-1.37 c0-0.762,0.615-1.375,1.373-1.375C84.315,27.849,84.928,28.462,84.928,29.224z"></path> </g> <g> <rect x="14.591" y="40.074" transform="matrix(0.8591 0.5118 -0.5118 0.8591 24.6942 -8.9797)" style="fill:#808285;" width="28.127" height="0.565"></rect> </g> <g> <rect x="32.857" y="14.196" transform="matrix(0.1347 0.9909 -0.9909 0.1347 59.3094 -6.0868)" style="fill:#808285;" width="0.566" height="33.436"></rect> </g> <g> <rect x="27.965" y="12.494" transform="matrix(0.5163 0.8564 -0.8564 0.5163 36.0375 -11.5552)" style="fill:#808285;" width="0.566" height="27.26"></rect> </g> <g> <rect x="6.665" y="25.841" transform="matrix(0.3298 0.944 -0.944 0.3298 34.1223 4.182)" style="fill:#808285;" width="14.902" height="0.566"></rect> </g> <g> <rect x="1.55" y="30.664" transform="matrix(0.9576 0.2881 -0.2881 0.9576 9.3066 -1.3453)" style="fill:#808285;" width="15.349" height="0.566"></rect> </g> <g> <rect x="8.977" y="31.098" transform="matrix(0.8532 0.5216 -0.5216 0.8532 24.8887 1.7928)" style="fill:#808285;" width="0.565" height="28.025"></rect> </g> <g> <polygon style="fill:#808285;" points="54.743,57.395 54.454,56.908 71.536,46.737 83.322,29.067 83.792,29.38 71.88,47.19"></polygon> </g> <g> <rect x="15.846" y="52.103" transform="matrix(0.8302 0.5575 -0.5575 0.8302 36.2571 1.2184)" style="fill:#808285;" width="0.566" height="16.041"></rect> </g> <g> <rect x="8.235" y="43.029" transform="matrix(0.1945 0.9809 -0.9809 0.1945 57.4564 16.6574)" style="fill:#808285;" width="20.702" height="0.566"></rect> </g> <g> <rect x="18.474" y="59.841" transform="matrix(0.8151 0.5793 -0.5793 0.8151 40.367 -6.2463)" style="fill:#808285;" width="22.992" height="0.565"></rect> </g> <g> <rect x="30.392" y="39.939" transform="matrix(0.2866 0.9581 -0.9581 0.2866 70.2233 6.6084)" style="fill:#808285;" width="0.566" height="21.031"></rect> </g> <g> <rect x="54.841" y="28.868" transform="matrix(1 0.0051 -0.0051 1 0.1496 -0.3526)" style="fill:#808285;" width="28.717" height="0.565"></rect> </g> <g> <rect x="87.389" y="0.411" transform="matrix(0.9601 0.2797 -0.2797 0.9601 7.7272 -23.9215)" style="fill:#808285;" width="0.566" height="29.4"></rect> </g> <g> <rect x="75.984" y="42.844" transform="matrix(0.5424 0.8401 -0.8401 0.5424 78.5751 -58.0045)" style="fill:#808285;" width="33.098" height="0.565"></rect> </g> <g> <rect x="67.625" y="46.229" transform="matrix(0.932 0.3624 -0.3624 0.932 25.2013 -20.7514)" style="fill:#808285;" width="0.566" height="21.124"></rect> </g> <g> <rect x="50.665" y="37.729" transform="matrix(0.6952 0.7188 -0.7188 0.6952 46.5576 -33.7678)" style="fill:#808285;" width="24.86" height="0.566"></rect> </g> <g> <rect x="67.789" y="56.446" transform="matrix(0.72 0.694 -0.694 0.72 62.2949 -40.9409)" style="fill:#808285;" width="28.189" height="0.566"></rect> </g> <g> <rect x="92.373" y="7.109" transform="matrix(0.7097 0.7045 -0.7045 0.7097 41.0158 -59.46)" style="fill:#808285;" width="0.566" height="25.858"></rect> </g> <g> <rect x="118.925" y="37.606" transform="matrix(0.7359 0.6771 -0.6771 0.7359 60.7053 -69.3215)" style="fill:#808285;" width="0.565" height="11.087"></rect> </g> <g> <g> <path style="fill:#808285;" d="M144.854,66.877h-28.768l-10.339-10.34l9.308-9.306l-8.854-8.851V28.224l10.02-9.945h28.632 l0.082,0.082l10.395,10.25l-9.382,9.38l8.855,8.778v10.225L144.854,66.877z M116.321,66.312h28.301l9.616-9.554v-9.754 l-9.09-9.011l9.38-9.379l-9.906-9.77h-28.167l-9.688,9.615v9.687l9.088,9.085l-9.308,9.306L116.321,66.312z"></path> </g> <g> <path style="fill:#808285;" d="M136.15,31.185c0,0.762-0.609,1.375-1.369,1.375c-0.758,0-1.373-0.613-1.373-1.375 c0-0.756,0.615-1.363,1.373-1.363C135.541,29.821,136.15,30.429,136.15,31.185z"></path> </g> <g> <path style="fill:#808285;" d="M138.121,48.919c0,0.76-0.613,1.371-1.369,1.371c-0.76,0-1.373-0.611-1.373-1.371 c0-0.754,0.613-1.372,1.373-1.372C137.508,47.547,138.121,48.165,138.121,48.919z"></path> </g> <g> <rect x="106.414" y="29.481" transform="matrix(0.995 0.1 -0.1 0.995 3.5794 -11.9095)" style="fill:#808285;" width="28.439" height="0.565"></rect> </g> <g> <rect x="114.386" y="24.59" transform="matrix(0.8252 0.5648 -0.5648 0.8252 35.9964 -66.5727)" style="fill:#808285;" width="22.348" height="0.566"></rect> </g> <g> <rect x="139.477" y="17.122" transform="matrix(0.7775 0.6289 -0.6289 0.7775 46.8428 -82.3243)" style="fill:#808285;" width="0.565" height="15.825"></rect> </g> <g> <rect x="144.573" y="19.742" transform="matrix(0.1279 0.9918 -0.9918 0.1279 155.987 -117.5909)" style="fill:#808285;" width="0.565" height="20.312"></rect> </g> <g> <polygon style="fill:#808285;" points="116.479,66.662 115.93,66.527 122.71,38.894 134.624,30.949 134.938,31.42 123.207,39.243"></polygon> </g> <g> <rect x="145.354" y="38.96" transform="matrix(0.114 0.9935 -0.9935 0.114 176.6196 -102.2464)" style="fill:#808285;" width="0.565" height="17.885"></rect> </g> <g> <rect x="131.047" y="57.474" transform="matrix(0.4117 0.9113 -0.9113 0.4117 135.4276 -94.2851)" style="fill:#808285;" width="19.396" height="0.566"></rect> </g> <g> <rect x="126.195" y="44.205" transform="matrix(0.6525 0.7578 -0.7578 0.6525 87.7194 -75.7733)" style="fill:#808285;" width="0.566" height="27.104"></rect> </g> <g> <rect x="126.845" y="39.769" transform="matrix(0.1104 0.9939 -0.9939 0.1104 160.5788 -99.3077)" style="fill:#808285;" width="17.844" height="0.566"></rect> </g> <g> <rect x="121.38" y="43.711" transform="matrix(0.8138 0.5812 -0.5812 0.8138 49.7466 -67.2738)" style="fill:#808285;" width="16.95" height="0.566"></rect> </g> </g> </g>
+					</svg> <img src="/images/customer_logo.png" class="pull-right hidden-sm customer_logo"> </div>
+                   
+
+ 
+</div>
+
+ 
+<div class="search-row-wrapper hidden-xs" style="background-image: url(images/ibg.jpg); background-size: cover; background-position: center center;">
+
+
+</div>
+<div class="navbar navbar-inverse" role="navigation">
+        <div class="container-fluid">
+<div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"> <span class="sr-only">Toggle navigation</span>
+<span class="icon-bar"></span>
+
+            <span class="icon-bar"></span> <span class="icon-bar"></span>
+
+        </button>
+    </div>
+    <div class="navbar-collapse collapse" aria-expanded="false" style="height: 1px;">
+        <ul class="nav navbar-nav">
+             <li><a id="menu_home" href="/" class="fa fa-home"></a>
+            </li>
+            <li><a id="menu_addresses" href="/addresses" class="">RELATÓRIOS</a>
+            </li>
+            <li><a id="menu_courses" href="/courses" class="">PARÂMETROS</a>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            
+            <li><a href="/logout" class="">SAIR</a>
+            </li>
+            
+        </ul>
+    </div>
+     <!--/.navbar-collapse -->
+    </div>
+</div>
+
+
+<div class="main-container">
+    <div class="container-fluid">
+        <div class="row">
+<div class="col-sm-2 page-sidebar mobile-filter-sidebar">
+                <aside>
+                    <div class="inner-box">
+                        <div id="filter_theme" class=" list-filter">
+                            <h5 class="list-title"><strong><a href="#">Parâmetros</a></strong></h5>
+                            <div class="filter-date filter-content">
+                                 <div class="loader" style="display: none;"></div>
+                                <ul id="theme_list" class="menu-tema">
+
+                                <li class="selected"><a href="#" class="app-selectTheme">Sincronização de Dados</a></li></ul>
+                            </div>
+                        </div>
+                        <div style="clear:both"></div>
+                    </div>
+
+                </aside>
+            </div>
+            <div id="filter_intent" class="col-sm-2 page-sidebar mobile-filter-sidebar">
+                
+            </div>
+            <!-- Answers -->
+            <div id="answers" class="col-sm-9">
+                <h1>Agendar Sincronização de Dados</h1>
+                <div id="alert" class="hide"></div>
+                <form role="form">
+  <fieldset disabled="">
+    <div class="col-sm-3">
+    <div class="form-group">
+      <label for="disabledTextInput">Executar à cada</label>
+       <div class="input-group">
+      <input class="form-control" style=" font-size:1.5em" type="text">
+      <div class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Minutos<span class="caret"></span></button>
+        <ul class="dropdown-menu pull-right">
+          <li><a href="#">Minutos</a></li>
+          <li><a href="#">Horas</a></li>
+          <li><a href="#">Dias</a></li>
+          
+          
+        </ul>
+      </div><!-- /btn-group -->
+    </div><!-- /input-group --><!-- /input-group -->
+      </div></div>
+    <div class="col-sm-3">
+    <div class="form-group">
+      <label for="disabledSelect">Início</label>
+     <div class="form-control"> <select id="disabledSelect" style=" font-size:1.5em">
+        <option>00</option>
+      </select>:<select id="disabledSelect" style=" font-size:1.5em">
+        <option>59</option>
+       </select></div>
+</div></div><div class="col-sm-3">
+  <div class="form-group">
+      <label for="disabledSelect">Fim</label>
+     <div class="form-control"> <select id="disabledSelect" style=" font-size:1.5em">
+        <option>00</option>
+      </select>:<select id="disabledSelect" style=" font-size:1.5em">
+        <option>59</option>
+       </select></div>
+</div></div><div class="col-sm-3">
+   <br>
+    <div class="checkbox">
+      <label>
+        <input type="checkbox">Ativar</label>
+    </div></div>
+  </fieldset>
+<fieldset><p>
+  <button type="button" class="btn btn-primary">Salvar</button>
+  <button type="button" class="btn">Cancelar</button>
+</p></fieldset>
+</form>
+<h5 class="list-title"><strong><a href="#">Log de Execução</a></strong></h5>
+
+                <div class="item_list">
+                    <div style="display: none;"></div>
+                    <table class="table table-condensed">
+<thead>
+          <tr>
+            <th></th>
+            <th>Data/Hora</th>
+            <th>Mensagem</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody style="font-size:0.8em">
+          <tr class="active">
+            <td>1</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="success">
+            <td>3</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="warning">
+            <td>5</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="danger">
+            <td>7</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>          <tr class="active">
+            <td>1</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="success">
+            <td>3</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="warning">
+            <td>5</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="danger">
+            <td>7</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>          <tr class="active">
+            <td>1</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="success">
+            <td>3</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="warning">
+            <td>5</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="danger">
+            <td>7</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>          <tr class="active">
+            <td>1</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="success">
+            <td>3</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="warning">
+            <td>5</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="danger">
+            <td>7</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>          <tr class="active">
+            <td>1</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="success">
+            <td>3</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="warning">
+            <td>5</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="danger">
+            <td>7</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>          <tr class="active">
+            <td>1</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="success">
+            <td>3</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="warning">
+            <td>5</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="danger">
+            <td>7</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>          <tr class="active">
+            <td>1</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="success">
+            <td>3</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="warning">
+            <td>5</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+          <tr class="danger">
+            <td>7</td>
+            <td>Column content</td>
+            <td>Column content</td>
+            <td>Column content</td>
+          </tr>
+        </tbody>
+</table>
+                </div>
+            </div>
+
+            
+
+            <!-- fim da pesquisa -->
+        </div>
+    </div>
+</div>
+<!-- Modal Genérico: modal.ejs -->
+<div class="modal fade" id="genericModal" tabindex="-1" role="dialog" aria-labelledby="genericModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h3 class="modal-title" id="genericModalLabel"><!-- TITULO --></h3>
+                </div>
+                <div class="modal-body">
+                <!-- MODAL BODY -->                      
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                    <!-- <button id="save_intent" type="button" class="btn btn-primary">Salvar Intenção</button> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+<!-- /views/partials/footer.ejs -->
+<div class="footer" id="footer">
+    <div class="container">
+        <ul class=" pull-left navbar-link footer-nav">
+            <li><a href="/"> Home </a> <a href="#"> Sobre </a> <a href="#"> Ajuda </a> <a href="#"> Contato </a>                <a href="#"> FAQ </a>
+        </li></ul>
+        <ul class=" pull-right navbar-link footer-nav">
+            <li> © 2017 Extreme Digital Solutions</li>
+        </ul>
+    </div>
+</div>
+    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title" id="myModalLabel">Confirmar Exclusão</h4>
+                </div>
+            
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir este item? Esta operação não pode ser desfeita.</p>
+                    <p class="debug-id"></p>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger btn-ok">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+ 
+ <!-- views/partials/footer_scripts.ejs -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+ 
+<script src="/assets/js/owl.carousel.min.js"></script>
+ 
+<script src="/assets/js/jquery.matchHeight-min.js"></script>
+ 
+<script src="/assets/js/hideMaxListItem.js"></script>
+ 
+<script src="/assets/plugins/jquery.fs.scroller/jquery.fs.scroller.js"></script>
+<script src="/assets/plugins/jquery.fs.selecter/jquery.fs.selecter.js"></script>
+
+<script src="/assets/js/script.js"></script>
+
+<script src="scripts/answers.js"></script>
+
+
+
+</div></body></html>

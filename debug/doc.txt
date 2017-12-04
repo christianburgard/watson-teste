@@ -1,0 +1,68 @@
+### formulário Insert/Update de agenda
+{
+    "schedule": {
+        "daysOfWeek": [0,1,2,3,6], // 0: domingo; 6: sábado;
+        "daysOfMonth": [1,2,4,23],
+        "months": [0,3,7,11], // Janeiro:0
+        "minutes": [1,2,3,11,23,34,51,52,53,54], // 1-59
+        "hours": [3,11,12,13,14,15], // 0-23
+        "status": "", // somente leitura, stauts da última execução
+        "beginDate": null, // epoch UTC de início (data) calendário 
+        "endDate": null, // epoch UTC data limite (data) calendário 
+        "interval": {
+		    "value": 2 // (int) intervalo em minutos, aí no front-end podemos colocar unidade de medida (horas, dias, etc);
+            "cond":[ // array obrigatório com 2 obj
+                {hour:0-23,min:1-59} // hora:min de início
+                {hour:0-23,min:1-59} // hora:min limite
+            ]
+        },
+        "lastExec": null, // read-only epoch da última execução
+        "task": "syncCRONTAB1", // nome da tarefa que deverá existir em raiz/scheduler/tasks
+        "on": false // switch "on/off"
+    },
+    "type": "parameter", // parâmetro obrigatório p/ ser considerado um scheduler (não deve aparecer no front)
+    "name": "TESTE CRONTAB22", // nome/título da tarefa;
+    "description": "Tarefa de teste baseada em CRONTAB!", // descrição
+    "_id": "3ec24ea0-d8f8-11e7-bf86-5ba2bed2accf", // no display
+    "_rev": "5-96bf081c69daf5b42cc0cfe2b315f46f" // no display
+}
+
+
+### dados p/ display de log
+#### EXEMPLO DE LOG DE ERRO
+"doc": {
+    "_id": "4ad734c0-d68d-11e7-9683-eb788f5313b8",
+    "_rev": "1-194bb38efe3386bccdb58e85f420ebc7",
+    "msg": "Não foi possível acessar o Webservice, houve um problema de rede.",
+    "error": {
+        "error": "Não foi possível acessar o Webservice, houve um problema de rede.",
+        "errNative": {
+        "message": "getaddrinfo ENOTFOUND wwwapp.sistemafiergs223.org.br wwwapp.sistemafiergs223.org.br:7880",
+        "stack": "Error: getaddrinfo ENOTFOUND wwwapp.sistemafiergs223.org.br wwwapp.sistemafiergs223.org.br:7880\n    at errnoException (dns.js:28:10)\n    at GetAddrInfoReqWrap.onlookup [as oncomplete] (dns.js:76:26)",
+        "code": "ENOTFOUND",
+        "errno": "ENOTFOUND",
+        "syscall": "getaddrinfo",
+        "hostname": "wwwapp.sistemafiergs223.org.br",
+        "host": "wwwapp.sistemafiergs223.org.br",
+        "port": 7880
+        }
+    },
+    "type": "log",
+    "task": "syncCourses",
+    "status": "fail",
+    "scheduleStatus": "fail",
+    "msgScheduleLog": "Não foi possível acessar o Webservice, houve um problema de rede."
+}
+
+
+
+#### EXEMPLO DE LOG DE SUCESSO
+"doc": {
+    "_id": "a6b92340-d6c2-11e7-8c33-abb00e1e8867",
+    "_rev": "1-4607e45f89e114327b20e5817235986d",
+    "type": "log",
+    "status": "success",
+    "msg": "Registros: (1408)Geral; (58)Endereços; (706)Cursos;",
+    "id_ref": "", // id de referências a outros registros de log que se referem à mesma tentativa;
+    "tries": 1
+}
