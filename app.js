@@ -408,6 +408,10 @@ if (USE_HTTPS) {
     });
 }
 
+app.get('/html_task',function(req,res) {
+    res.render('html_task.html');
+});
+
 /* server.timeout=10000;
 server.on('timeout',(socket)=>{
     // console.log(socket);
@@ -418,4 +422,8 @@ server.on('timeout',(socket)=>{
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
     console.log('Express server listening on port ' + app.get('port'));
 });
+*/
+
+/*
+
 */

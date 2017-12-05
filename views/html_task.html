@@ -122,16 +122,16 @@ color:#ffffff;
 <div class="main-container">
     <div class="container-fluid">
         <div class="row">
-<div class="col-sm-2 page-sidebar mobile-filter-sidebar">
+            <div class="col-sm-2 page-sidebar mobile-filter-sidebar">
                 <aside>
                     <div class="inner-box">
                         <div id="filter_theme" class=" list-filter">
                             <h5 class="list-title"><strong><a href="#">Parâmetros</a></strong></h5>
                             <div class="filter-date filter-content">
-                                 <div class="loader" style="display: none;"></div>
+                                <div class="loader" style="display: none;"></div>
                                 <ul id="theme_list" class="menu-tema">
-
-                                <li class="selected"><a href="#" class="app-selectTheme">Sincronização de Dados</a></li></ul>
+                                    <li class="selected"><a href="#" class="app-selectTheme">Sincronização de Dados</a></li>
+                                </ul>
                             </div>
                         </div>
                         <div style="clear:both"></div>
@@ -140,368 +140,130 @@ color:#ffffff;
                 </aside>
             </div>
             <div id="filter_intent" class="col-sm-2 page-sidebar mobile-filter-sidebar">
-                
+
             </div>
             <!-- Answers -->
             <div id="answers" class="col-sm-9">
                 <h1>Agendar Sincronização de Dados</h1>
                 <div id="alert" class="hide"></div>
                 <form role="form">
-  <fieldset disabled="">
-    <div class="col-sm-3">
-    <div class="form-group">
-      <label for="disabledTextInput">Executar à cada</label>
-       <div class="input-group">
-      <input class="form-control" style=" font-size:1.5em" type="text">
-      <div class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Minutos<span class="caret"></span></button>
-        <ul class="dropdown-menu pull-right">
-          <li><a href="#">Minutos</a></li>
-          <li><a href="#">Horas</a></li>
-          <li><a href="#">Dias</a></li>
-          
-          
-        </ul>
-      </div><!-- /btn-group -->
-    </div><!-- /input-group --><!-- /input-group -->
-      </div></div>
-    <div class="col-sm-3">
-    <div class="form-group">
-      <label for="disabledSelect">Início</label>
-     <div class="form-control"> <select id="disabledSelect" style=" font-size:1.5em">
-        <option>00</option>
-      </select>:<select id="disabledSelect" style=" font-size:1.5em">
-        <option>59</option>
-       </select></div>
-</div></div><div class="col-sm-3">
-  <div class="form-group">
-      <label for="disabledSelect">Fim</label>
-     <div class="form-control"> <select id="disabledSelect" style=" font-size:1.5em">
-        <option>00</option>
-      </select>:<select id="disabledSelect" style=" font-size:1.5em">
-        <option>59</option>
-       </select></div>
-</div></div><div class="col-sm-3">
-   <br>
-    <div class="checkbox">
-      <label>
-        <input type="checkbox">Ativar</label>
-    </div></div>
-  </fieldset>
-<fieldset><p>
-  <button type="button" class="btn btn-primary">Salvar</button>
-  <button type="button" class="btn">Cancelar</button>
-</p></fieldset>
-</form>
-<h5 class="list-title"><strong><a href="#">Log de Execução</a></strong></h5>
+                    <fieldset disabled="">
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label for="disabledTextInput">Executar à cada</label>
+                                <div class="input-group">
+                                    <input class="form-control" style=" font-size:1.5em" type="text">
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Minutos<span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right">
+                                            <li><a href="#">Minutos</a></li>
+                                            <li><a href="#">Horas</a></li>
+                                            <li><a href="#">Dias</a></li>
+                                        </ul>
+                                    </div><!-- /btn-group -->
+                                </div><!-- /input-group --><!-- /input-group -->
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label for="disabledSelect">Início</label>
+                                <div class="form-control">
+                                    <select id="disabledSelect" style=" font-size:1.5em">
+                                        <option>00</option>
+                                    </select>:
+                                    <select id="disabledSelect" style=" font-size:1.5em">
+                                        <option>59</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label for="disabledSelect">Fim</label>
+                                <div class="form-control">
+                                <select id="disabledSelect" style=" font-size:1.5em">
+                                    <option>00</option>
+                                </select>:
+                                <select id="disabledSelect" style=" font-size:1.5em">
+                                    <option>59</option>
+                                </select></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <br>
+                            <div class="checkbox">
+                                <label><input type="checkbox">Ativar</label>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <p>
+                            <button type="button" class="btn btn-primary">Salvar</button>
+                            <button type="button" class="btn">Cancelar</button>
+                        </p>
+                    </fieldset>
+                </form>
+                <h5 class="list-title"><strong><a href="#">Log de Execução</a></strong></h5>
 
                 <div class="item_list">
                     <div style="display: none;"></div>
                     <table class="table table-condensed">
-<thead>
-          <tr>
-            <th></th>
-            <th>Data/Hora</th>
-            <th>Mensagem</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody style="font-size:0.8em">
-          <tr class="active">
-            <td>1</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="success">
-            <td>3</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="warning">
-            <td>5</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>6</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="danger">
-            <td>7</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>          <tr class="active">
-            <td>1</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="success">
-            <td>3</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="warning">
-            <td>5</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>6</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="danger">
-            <td>7</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>          <tr class="active">
-            <td>1</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="success">
-            <td>3</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="warning">
-            <td>5</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>6</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="danger">
-            <td>7</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>          <tr class="active">
-            <td>1</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="success">
-            <td>3</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="warning">
-            <td>5</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>6</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="danger">
-            <td>7</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>          <tr class="active">
-            <td>1</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="success">
-            <td>3</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="warning">
-            <td>5</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>6</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="danger">
-            <td>7</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>          <tr class="active">
-            <td>1</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="success">
-            <td>3</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="warning">
-            <td>5</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>6</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="danger">
-            <td>7</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>          <tr class="active">
-            <td>1</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="success">
-            <td>3</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="warning">
-            <td>5</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr>
-            <td>6</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-          <tr class="danger">
-            <td>7</td>
-            <td>Column content</td>
-            <td>Column content</td>
-            <td>Column content</td>
-          </tr>
-        </tbody>
-</table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Data/Hora</th>
+                                <th>Mensagem</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody style="font-size:0.8em">
+                            <tr class="active">
+                                <td>1</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                            </tr>
+                            <tr class="success">
+                                <td>3</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                            </tr>
+                            <tr class="warning">
+                                <td>5</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                            </tr>
+                            <tr class="danger">
+                                <td>7</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                                <td>Column content</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-            
-
             <!-- fim da pesquisa -->
         </div>
     </div>

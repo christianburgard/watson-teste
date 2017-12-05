@@ -1,73 +1,227 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<% include ../partials/head %>
+    <% include ../partials/head %>
+
+    <style>
+        #salvar-btns {display:none;}
+        #editar-btn {display:block;}
+
+        .select-hour, .select-minute {width:47%;}
+
+    </style>
+
 </head>
 <body>
-<div id="wrapper">
-<% include ../partials/top %>
+    <div id="wrapper">
+        <% include ../partials/top %>
 
-<div class="main-container">
-    <div class="container-fluid">
-        <div class="row">
 
-            <div id="filter_intent" class="col-sm-2 page-sidebar mobile-filter-sidebar">
-                <aside>
-                    <div class="inner-box">
-                        <div class=" list-filter">
-                            <h5 class="list-title"><strong><a href="#">Cursos</a></strong></h5>
-                            <div class="filter-date filter-content">
-                                <input type="text" class="form-control input" placeholder="buscar..." style="margin-bottom:5px;" id="intent_search" />
-                                 <div class="loader"></div>
-                                <ul id="courses_list" class="menu-tema">
-
-                                </ul>
+        <div class="main-container">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-2 page-sidebar mobile-filter-sidebar">
+                        <aside>
+                            <div class="inner-box">
+                                <div id="filter_theme" class=" list-filter">
+                                    <h5 class="list-title"><strong><a href="#">Parâmetros</a></strong></h5>
+                                    <div class="filter-date filter-content">
+                                        <div class="loader" style="display: none;"></div>
+                                        <ul id="theme_list" class="menu-tema">
+                                            <li class="selected"><a href="#" class="app-selectTheme">Sincronização de Dados</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div style="clear:both"></div>
                             </div>
-                        </div>
-                        <div style="clear:both"></div>
+                        </aside>
                     </div>
+                    <div id="filter_intent" class="col-sm-2 page-sidebar mobile-filter-sidebar">
 
-                </aside>
-            </div>
-            <!-- Answers -->
-            <div class="col-sm-6" id="answers">
-                <h1><!--titulo da intent--></h1>
-                <div id="alert" class="hide"></div>
-                <textarea id="answer_input" rows="5" type="text" class="form-control input-lg keyword" placeholder="Aqui será a lista de cursos que vieram da integração do WebService"></textarea>
+                    </div>
+                    <!-- Answers -->
+                    <div id="answers" class="col-sm-9">
+                        <h1>Agendar Sincronização de Dados</h1>
+                        <div id="alert" class="hide"></div>
+                        <form role="form">
+                            <fieldset disabled="" class="editing">
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="disabledTextInput">Executar à cada</label>
+                                        <div class="input-group">
+                                            <input class="form-control" style=" font-size:1.5em" type="text">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Minutos<span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu pull-right">
+                                                    <li><a href="#">Minutos</a></li>
+                                                    <li><a href="#">Horas</a></li>
+                                                    <li><a href="#">Dias</a></li>
+                                                </ul>
+                                            </div><!-- /btn-group -->
+                                        </div><!-- /input-group --><!-- /input-group -->
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="disabledSelect">Início</label>
+                                        <div class="form-control">
+                                            <select class="select-hour" style=" font-size:1.5em">
+                                                <option>00</option>
+                                            </select> :
+                                            <select class="select-minute" style=" font-size:1.5em">
+                                                <option>59</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="disabledSelect">Fim</label>
+                                        <div class="form-control">
+                                            <select class="select-hour" style=" font-size:1.5em">
+                                                <option>00</option>
+                                            </select> :
+                                            <select class="select-minute" style=" font-size:1.5em">
+                                                <option>59</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <br>
+                                    <div class="checkbox">
+                                        <label><input type="checkbox">Ativar</label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset>
+                                <p id="salvar-btns" class="editing">
+                                    <button type="button" class="btn btn-primary">Salvar</button>
+                                    <button type="button" onclick="toggleEditSave()" class="btn">Cancelar</button>
+                                </p>
+                                <p id="editar-btn">
+                                    <button type="button" onclick="toggleEditSave()" class="btn">Editar</button>
+                                </p>
+                            </fieldset>
+                        </form>
+                        <h5 class="list-title"><strong><a href="#">Log de Execução</a></strong></h5>
 
-
-                <div class="item_list">
-                    <div class="loader" style="display: none;"></div>
-                    <ul id="courses_list" class="">
-
-                    </ul>
+                        <div class="item_list">
+                            <div style="display: none;"></div>
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Data/Hora</th>
+                                        <th>Mensagem</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size:0.8em">
+                                    <tr class="active">
+                                        <td>1</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                    </tr>
+                                    <tr class="success">
+                                        <td>3</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                    </tr>
+                                    <tr class="warning">
+                                        <td>5</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                    </tr>
+                                    <tr>
+                                        <td>6</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                    </tr>
+                                    <tr class="danger">
+                                        <td>7</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                        <td>Column content</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- fim da pesquisa -->
                 </div>
             </div>
-
-            <div class="col-sm-3" style="white-space:nowrap">
-                <h5 class="list-title"><strong><a href="#">Última Sincronização</a></strong></h5>
-                2017-09-14 23:44:07
-                <div>
-                  <button id="sync_now" class="btn  btn-default">Sincronizar agora!</button>
-                </div>
-            </div>
-
-            <!-- fim da pesquisa -->
         </div>
+
+
+        <% include ../partials/modal %>
+        <% include ../partials/footer %>
     </div>
-</div>
-<% include ../partials/modal %>
-<% include ../partials/footer %>
+    
+    <% include ../partials/footer_scripts %>
 
-</div>
- 
-<% include ../partials/footer_scripts %>
+    <script>
+        function cover($obj,params) {
+            $obj.css({'position':'relative'});
+            var $cover='<div class="cover1"><div class="cover1-inner"><span class="cover1-inner2 fa fa-spin"><span class="icon-cw"></span></span></div></div>';
+            $obj.prepend($cover);
 
-<!-- em tese, não precisa
-perguntar sobre acesso ssh de fora nos dockers bluemix; root;
-sobre o arquivo script.js, parte minified, parte não!
-    <script src="scripts/answers.js"></script> 
--->
+            return function() {
+                $cover.remove();
+            }
+        }
 
-</body>
+        var padNum=function(num) {
+            if(parseInt(num)<10) {
+                num='0'+num;
+            }
+            return num;
+        }
+        var minutes_options='<option value="-1"> --Minuto-- </option>';
+        var hours_options='<option value="-1"> --Hora-- </option>';
+        for(var i=1;i<60;i++) {
+            minutes_options+='<option value="'+padNum(i)+'">'+padNum(i)+'</option>';
+        }
+        for(i=0;i<=23;i++) {
+            hours_options+='<option value="'+padNum(i)+'">'+padNum(i)+'</option>';
+
+        }
+
+        $('.select-hour').html(hours_options);
+        $('.select-minute').html(minutes_options);
+        function toggleEditSave() {
+            var disabled=false;
+            if($('#salvar-btns').css('display')=='block') {
+                $('#salvar-btns').hide();
+                $('#editar-btn').show();
+                disabled=true;
+            } else {
+                $('#salvar-btns').show();
+                $('#editar-btn').hide();
+            }
+            $('.editing').prop('disabled',disabled);
+        }
+
+        var cover1=cover($('fieldset.editing').eq(0));
+        var cover2=cover($('div.item_list').eq(0));
+    </script>
+
+    </body>
 </html>

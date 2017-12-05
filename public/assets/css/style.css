@@ -786,9 +786,9 @@ fieldset[disabled] .btn-inverse.active {
     }
 }
 
-body {
+/* body {
     background: #EEEEEE;
-}
+} */
 
 .logo,
 .logo-title {
@@ -4868,6 +4868,7 @@ img.customer_logo{
     border: 1px solid rgb(221, 221, 221);
     border-radius: 6px;
     height: 400px;
+    overflow-x: hidden;
     overflow-y: scroll;
     font-family: "Roboto",sans-serif;
     font-size: 18px;
