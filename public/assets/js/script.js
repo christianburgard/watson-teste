@@ -26,9 +26,12 @@ function alertError(msg){
     alertPopover(msg,'danger');
 }
 
-function alertPopover(msg, style){
+function alertPopover(msg, style, params) {
     if(!msg) return;
     var id = "alert_"+Math.floor((Math.random()*100)+1).toString();
+
+    if(!params) params={}
+    var closeDelay=parseInt(params.closeDelay) || 10000;
 
     var div = $("<div></div>").addClass("alert alert-"+style+" alert-dismissable fade in show");
     var a = $('<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>');
@@ -37,7 +40,38 @@ function alertPopover(msg, style){
     $(div).append($("<span>"+msg+"</span>"));
     $("#alert").after(div);
     $("#"+id).alert();
-    setTimeout(function(){
-        $("#"+id).alert('close');
-    },5000);
+    if(closeDelay && closeDelay > -1) {
+        setTimeout(function(){
+            $("#"+id).alert('close');
+        },closeDelay);
+    }
 }
+
+var baseURL='http://localhost:3000/';
+
+// implementação de btn-dropdown que seleciona valor
+$('.btn-dropdown-change > ul.dropdown-menu').on('click',function(e) {
+    e.preventDefault();
+    var $target=$(e.target);
+    var value=$target.data('value');
+    // console.log('target',$target,'value',value);
+    var $root=$target.parentsUntil('.btn-dropdown-change').parent();
+    var id=$root.attr('id');
+    $(this).trigger('change-dropdown',{id:id,value:value});
+});
+
+$('body').on('change-dropdown',function(evt,data) {
+    var id=data.id;
+    var value=data.value;
+    if(!data || !data.id) {
+        return false;
+    }
+    var $root=$('#'+id);
+    var $btnUnitText=$('#'+id+' > button > span:first-child');
+    var $item=$root.find('[data-value="'+value+'"]');
+    var text=$item.text();
+    $btnUnitText.text(text);
+    $root.data('value',value);
+    console.log('$root.data.value',$root.data('value'));
+    // $btnUnitText.text(unitText);
+});

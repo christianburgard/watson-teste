@@ -24,6 +24,11 @@ function consoleLog1(msg,msg2) {
     }
 }
 
+
+
+
+
+
 class Schedule {
     /*  
         docNative: documento do banco; p/ fazer updates
@@ -36,7 +41,7 @@ class Schedule {
         hours=[];
         status:(string) ('running'|'success'|'fail'|'')
         interval={
-            unit:'', //(string) {min}
+            unit:'', //(string) {min|hour|day}
             value:0,
             cond:[{hour:null,min:null},{hour:null,min:null}]
         } 
@@ -156,7 +161,8 @@ class Schedule {
                 throw new Error(`O parâmetro "unit" deve ser uma string`);
             }
             if(this.interval.value && typeof this.interval.value != 'number') {
-                throw new Error(`O parâmetro "value" deve ser numérico`);
+                if(isNaN(parseInt(this.interval.value)))
+                    throw new Error(`O parâmetro "value" deve ser numérico`);
             }
 
             if(this.interval.cond) {
@@ -352,63 +358,7 @@ class Schedule {
     }
 
 
-    toSave(params) {
-        if(!params) params={};
-        const db=params.db;
 
-        var th=this;
-        var scheduleFinal=th;
-        toSaveObj=this.docNative;
-
-        var id=toSaveObj._id || toSaveObj.id;
-        if(!id) {
-            id='non_existentID-9kY**';
-        }
-        toSaveObj._id=id;
-        var toSaveObj; // objeto que será salvo; vamos ler o que já tem para fazer "merge";
-        return new Promise((res,rej)=>{
-            return db.find({selector:{
-                _id:id,
-                type:"parameter"
-            }},function(err,result) {
-                if(err) {
-                    return rej(err);
-                }
-                if(result && result.docs && result.docs.length) {
-                    var docs=result.docs;
-                    if(docs.length > 1) {
-                        return rej({error:'Há mais de um registro com mesmo ID!!'});
-                    }
-                    var document=docs[0];
-                    scheduleFinal=Object.assign(document.schedule,th);
-
-                    toSaveObj=Object.assign(document,th.docNative);
-                } else {
-                    // não há registros...
-                    toSaveObj._id=-1; // p/ criarmos id no momento de salvar no banco (db.js->this.insert2)
-                }
-                
-
-                // props que são arrays numéricas e que devem ser ordenadas;
-                var arrToOrder=['daysOfWeek','daysOfMonth','months','minutes','hours'];
-
-                // limpando
-                for(var i in scheduleFinal) {
-                    if(typeof scheduleFinal[i] == 'function' || scheduleFinal[i] === null) {
-                        delete scheduleFinal[i];
-                    } else {
-                        if(arrToOrder.indexOf(i) > -1) {
-                            scheduleFinal[i].map(elem=>parseInt(elem));
-                            scheduleFinal[i].sort((a,b)=>a-b);
-                        }
-                    }
-                }
-                delete scheduleFinal.docNative;
-                toSaveObj.schedule=scheduleFinal;
-                return res({toSaveObj});
-            });
-        });
-    }
 
     /**
      * retorna um JSON representando o agendamento (p/ display)

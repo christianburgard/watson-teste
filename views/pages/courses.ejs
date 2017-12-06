@@ -43,20 +43,20 @@
                     <div id="answers" class="col-sm-9">
                         <h1>Agendar Sincronização de Dados</h1>
                         <div id="alert" class="hide"></div>
-                        <form role="form">
+                        <form role="form" onsubmit="return false">
                             <fieldset disabled="" class="editing">
                                 <div class="col-sm-3">
                                     <div class="form-group">
-                                        <label for="disabledTextInput">Executar à cada</label>
+                                        <label>Executar à cada</label>
                                         <div class="input-group">
-                                            <input class="form-control" style=" font-size:1.5em" type="text">
-                                            <div class="input-group-btn">
-                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Minutos<span class="caret"></span>
+                                            <input class="form-control" style="font-size:1.5em" id="interval" type="text">
+                                            <div class="input-group-btn btn-dropdown-change" id="interval_unit">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span>Minutos </span><span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right">
-                                                    <li><a href="#">Minutos</a></li>
-                                                    <li><a href="#">Horas</a></li>
-                                                    <li><a href="#">Dias</a></li>
+                                                    <li><a href="#" data-value="min">Minutos</a></li>
+                                                    <li><a href="#" data-value="hour">Horas</a></li>
+                                                    <li><a href="#" data-value="day">Dias</a></li>
                                                 </ul>
                                             </div><!-- /btn-group -->
                                         </div><!-- /input-group --><!-- /input-group -->
@@ -66,10 +66,10 @@
                                     <div class="form-group">
                                         <label for="disabledSelect">Início</label>
                                         <div class="form-control">
-                                            <select class="select-hour" style=" font-size:1.5em">
+                                            <select class="select-hour" id="beginHour" style="font-size:1.5em">
                                                 <option>00</option>
                                             </select> :
-                                            <select class="select-minute" style=" font-size:1.5em">
+                                            <select class="select-minute" id="beginMinute" style="font-size:1.5em">
                                                 <option>59</option>
                                             </select>
                                         </div>
@@ -79,10 +79,10 @@
                                     <div class="form-group">
                                         <label for="disabledSelect">Fim</label>
                                         <div class="form-control">
-                                            <select class="select-hour" style=" font-size:1.5em">
+                                            <select class="select-hour" id="endHour" style="font-size:1.5em">
                                                 <option>00</option>
                                             </select> :
-                                            <select class="select-minute" style=" font-size:1.5em">
+                                            <select class="select-minute" id="endMinute" style="font-size:1.5em">
                                                 <option>59</option>
                                             </select>
                                         </div>
@@ -90,14 +90,14 @@
                                 </div>
                                 <div class="col-sm-3">
                                     <br>
-                                    <div class="checkbox">
-                                        <label><input type="checkbox">Ativar</label>
+                                    <div class="checkbox checkbox-primary">
+                                        <input type="checkbox" id="schedule_ativo"><label for="schedule_ativo">Ativo</label>
                                     </div>
                                 </div>
                             </fieldset>
                             <fieldset>
                                 <p id="salvar-btns" class="editing">
-                                    <button type="button" class="btn btn-primary">Salvar</button>
+                                    <button type="button" onclick="saveSchedule()" class="btn btn-primary">Salvar</button>
                                     <button type="button" onclick="toggleEditSave()" class="btn">Cancelar</button>
                                 </p>
                                 <p id="editar-btn">
@@ -178,9 +178,10 @@
     <% include ../partials/footer_scripts %>
 
     <script>
+        // global [inicio]
         function cover($obj,params) {
             $obj.css({'position':'relative'});
-            var $cover='<div class="cover1"><div class="cover1-inner"><span class="cover1-inner2 fa fa-spin"><span class="icon-cw"></span></span></div></div>';
+            var $cover=$('<div class="cover1"><div class="cover1-inner"><span class="cover1-inner2 fa fa-spin"><span class="icon-cw"></span></span></div></div>');
             $obj.prepend($cover);
 
             return function() {
@@ -194,6 +195,137 @@
             }
             return num;
         }
+        // global [fim]
+
+
+        // salva agendamento
+        function saveSchedule() {
+            var interval=$('#interval').val();
+            var beginHour=$('#beginHour').val();
+            var beginMinute=$('#beginMinute').val();
+            var endHour=$('#endHour').val();
+            var endMinute=$('#endMinute').val();
+            var schedule_ativo=$('#schedule_ativo').prop('checked') ? 1 : 0;
+            
+            var arrCond=[beginHour,beginMinute,endHour,endMinute];
+            var verCond=0;
+            arrCond.forEach(function(elem) {
+                if(parseInt(elem)>-1) {
+                    verCond++;
+                }
+            });
+            if(verCond > 0 && verCond < 4) {
+                // a condição não foi corretamente preenchida;
+                return alertPopover('Informe corretamente a condição de execução selecionando os 4 combos de hora/minuto em "Início" e "fim!', 'warning');
+            }
+            var cond=[{hour:beginHour,min:beginMinute},{hour:endHour,min:endMinute}];
+            if(!verCond) {
+                cond=null;
+            }
+            
+            // unit
+            var unit=$('#interval_unit').data('value');
+            var toSave={
+                _id:scheduleData._id,
+                _rev:scheduleData._rev,
+                schedule:{
+                    interval:{
+                        value:interval,
+                        unit:unit,
+                        cond:cond
+                    },
+                    on:schedule_ativo,
+                }
+            }
+            toSave={objSchedule:toSave}
+            toSave=JSON.stringify(toSave);
+
+            var url=baseURL+'api/scheduler';
+            var coverForm=cover($('fieldset.editing').eq(0));
+            $.ajax(url,{method:'POST',dataType:'json',contentType:'application/json',data:toSave})
+                .done(function(data) {
+                    console.log('saving ret:',data);
+                    coverForm();
+                })
+                .fail(function(err) {
+                    if(err) {
+                        var error=err.responseJSON;
+                        alertPopover(error.error, 'danger',{closeDelay:-1});
+                    }
+                    coverForm();
+                });
+        } // saveSchedule
+
+
+        /*
+            lista o agendamento e seu log
+        */
+        var scheduleData={_id:0,_rev:0}
+        function getSchedule(params) {
+            if(!params) params={}
+            var selector=JSON.stringify({"schedule.task":"syncCourses"});
+            var url=baseURL+'api/scheduler?selector='+selector;
+
+            var coverForm=cover($('fieldset.editing').eq(0));
+            // var coverLog=cover($('div.item_list').eq(0));
+            
+            $.ajax(url,{method:'GET',dateType:'json'})
+                .done(function(data) {
+                    // console.log('data',data);
+                    var schedule=data.schedules;
+                    coverForm();
+                    if(!schedule.length) {
+                        // nada encontrado
+                        return alertPopover('Não há tarefas!', 'success');
+                    }
+                    schedule=schedule[0];
+                    var interval=parseInt(schedule.schedule.interval.value);
+                    var unit=schedule.schedule.interval.unit || 'min';
+                    var cond=schedule.schedule.interval.cond;
+                    var lastExec=schedule.schedule.lastExec;
+                    var on=!!schedule.schedule.on;
+                    var status=schedule.schedule.status;
+                    var lastExec=schedule.schedule.lastExec;
+                    
+                    // intervalo p/ execução
+                    var beginHour='-1';
+                    var beginMinute='-1';
+                    var endHour='-1';
+                    var endMinute='-1';
+                    if(cond && cond.length) {
+                        beginHour=cond[0].hour;
+                        beginMinute=cond[0].min;
+                        endHour=cond[1].hour;
+                        endMinute=cond[1].min;
+                    }
+
+
+                    // filling fields
+                    $('#interval').val(interval);
+                    $('#beginHour').val(beginHour);
+                    $('#beginMinute').val(beginMinute);
+                    $('#endHour').val(endHour);
+                    $('#endMinute').val(endMinute);
+                    $('#schedule_ativo').prop('checked',on);
+                    // unit
+                    $('body').trigger('change-dropdown',{id:'interval_unit',value:unit});
+
+
+                    var _id=schedule._id;
+                    var _rev=schedule._rev;
+                    scheduleData._id=_id;
+                    scheduleData._rev=_rev;
+
+                })
+                .fail(function(err) {
+                    console.log(err);
+                    
+                    coverForm();
+                });
+        } // getSchedule
+
+        getSchedule();
+
         var minutes_options='<option value="-1"> --Minuto-- </option>';
         var hours_options='<option value="-1"> --Hora-- </option>';
         for(var i=1;i<60;i++) {
@@ -219,8 +351,7 @@
             $('.editing').prop('disabled',disabled);
         }
 
-        var cover1=cover($('fieldset.editing').eq(0));
-        var cover2=cover($('div.item_list').eq(0));
+
     </script>
 
     </body>

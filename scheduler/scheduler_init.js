@@ -1,6 +1,71 @@
 const {spawn} = require('child_process');
 const path=require('path');
 
+// prepara um schedule p/ ser salvo
+function toSave(params) {
+    if(!params) params={};
+    const db=params.db;
+
+    let doc=params.doc;
+
+    var th=this;
+    const docNative=doc || th.docNative;
+    var scheduleFinal={};
+    var toSaveObj; // objeto que será salvo; vamos ler o que já tem para fazer "merge";
+    toSaveObj=docNative;
+
+    var id=toSaveObj._id || toSaveObj.id;
+    if(!id) {
+        id='non_existentID-9kY**';
+    }
+    toSaveObj._id=id;
+    return new Promise((res,rej)=>{
+        return db.find({selector:{
+            _id:id,
+            type:"parameter"
+        }},function(err,result) {
+            if(err) {
+                return rej(err);
+            }
+            if(result && result.docs && result.docs.length) {
+                var docs=result.docs;
+                if(docs.length > 1) {
+                    return rej({error:'Há mais de um registro com mesmo ID!!'});
+                }
+                var document=docs[0];
+                scheduleFinal=Object.assign(document.schedule,docNative.schedule);
+                // scheduleFinal=scheduleFinal.schedule;
+
+                toSaveObj=Object.assign(document,docNative);
+            } else {
+                // não há registros...
+                toSaveObj._id=-1; // p/ criarmos id no momento de salvar no banco (db.js->this.insert2)
+            }
+            
+
+            // props que são arrays numéricas e que devem ser ordenadas;
+            var arrToOrder=['daysOfWeek','daysOfMonth','months','minutes','hours'];
+
+            // limpando
+            /* for(var i in scheduleFinal) {
+                if(typeof scheduleFinal[i] == 'function' || scheduleFinal[i] === null) {
+                    delete scheduleFinal[i];
+                } else {
+                    if(arrToOrder.indexOf(i) > -1) {
+                        scheduleFinal[i].map(elem=>parseInt(elem));
+                        scheduleFinal[i].sort((a,b)=>a-b);
+                    }
+                }
+            } */
+
+            // delete scheduleFinal.docNative;
+            toSaveObj.schedule=scheduleFinal;
+            return res({toSaveObj});
+        });
+    });
+} // toSave
+
+
 
 /*
     VERIFICAR!
@@ -21,13 +86,16 @@ var scheduler_init=function(params) {
     app.post('/api/scheduler',function(req,res) {
         const Schedule=require(path.join(__dirname,'schedule'));
         var obj=req.body.objSchedule;
+        if(!obj) {
+            return res.status(400).send({error:'Requisição inválida! (Propriedade "objSchedule" não fornecida!)'});
+        }
         const db=new require(dbPath)();
         db.init(dbName);
         try {
             const params={isInsert:true};
-            var schedule=new Schedule(obj,params);
-            schedule.toSave({db}).then(ret=>{
+            toSave({db,doc:obj}).then(ret=>{
                 const {toSaveObj}=ret;
+                var schedule=new Schedule(toSaveObj,params);
 
                 return db.insert2(toSaveObj,toSaveObj._id);
             }).then(ret=>{
@@ -53,15 +121,25 @@ var scheduler_init=function(params) {
     });
 
 
+    // listando agendamentos
     app.get('/api/scheduler',function(req,res) {
         const db=new require(dbPath)();
         db.init(dbName);
 
-        // listando schedules
-        return db.find({selector:{
+        let selector={
             type:"parameter",
             schedule:{$type:"object"}
-        }},function(err,result) {
+        }
+        if(req.query && req.query.selector) {
+            try {
+                const selector2=JSON.parse(req.query.selector);
+                selector=Object.assign(selector,selector2);
+            } catch(e) {
+                return res.status(400).send({error:'Parâmetro de busca inválido!'});
+            }
+        }
+        // listando schedules
+        return db.find({selector},function(err,result) {
             if(err) {
                 return res.status(500).send(err);
             }
