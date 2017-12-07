@@ -238,7 +238,7 @@ function syncCourses(app) {
             var username = 'psf.ginfo';
             var password = 'xisto917';
             var options = {
-                host: 'wwwapp.sistemafiergs.org.br',
+                host: 'wwwapp.sistemafiergs334.org.br',
                 port: 7880,
                 path: '/psf/api/senai/programacao-cursos',
                 headers: {
@@ -371,13 +371,16 @@ function syncCourses(app) {
 
     const dbLog=new(require('../../db'))();
     dbLog.init('general_log');
-    var makeLog=(params)=>{
+    const makeLog=(params)=>{
         if(!params) params={};
-        var toMerge=params.toMerge || {};
+        let toMerge=params.toMerge || {};
 
-        var toSave={
+        const now=Date.now();
+        let toSave={
             type:'log',
-            status:'fail'
+            task:'syncCourses',
+            status:'fail',
+            time:now
         }
         toSave=Object.assign(toSave,toMerge);
         return dbLog.insert2(toSave,0,{makeId:1});
@@ -448,6 +451,7 @@ function syncCourses(app) {
             });
         }
 
+        const now=Date.now();
         return new Promise((res,rej)=>{
             run(function*(done) {
                 var ret,
@@ -509,13 +513,16 @@ function syncCourses(app) {
             status:status,
             error:err.error
         });
-        dbLog.insert2(error,0,{makeId:1}).then(ret=>{
+
+        makeLog({toMerge:error})
+
+        /* dbLog.insert2(error,0,{makeId:1}).then(ret=>{
             console.log('dbLog.insert2 RESOLVED');
             return ret;
         },err=>{
             console.log('dbLog.insert2 REJECTED');
             throw err;
-        });
+        }); */
         throw error;
     });
 } // syncCourses

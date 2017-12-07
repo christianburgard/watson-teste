@@ -90,8 +90,13 @@ class Schedule {
         this.verifier({isInsert});
 
         if(!Date.prototype.formatBr) {
-            Date.prototype.formatBr=function() {
-                var str=this.getUTCDate()+'/'+(this.getUTCMonth()+1)+'/'+this.getUTCFullYear()+' '+this.getUTCHours()+':'+this.getUTCMinutes()+':'+this.getUTCSeconds();
+            Date.prototype.formatBr=function(UTC) {
+                var str;
+                if(UTC===-1) {
+                    str=this.getDate()+'/'+(this.getMonth()+1)+'/'+this.getFullYear()+' '+this.getHours()+':'+this.getMinutes()+':'+this.getSeconds();
+                } else {
+                    str=this.getUTCDate()+'/'+(this.getUTCMonth()+1)+'/'+this.getUTCFullYear()+' '+this.getUTCHours()+':'+this.getUTCMinutes()+':'+this.getUTCSeconds();
+                }
                 return str;
             }
         }
@@ -208,7 +213,7 @@ class Schedule {
         // OU usamos this.interval... ou agendador tipo "crontab"
         if(this.interval) {
             const unit=this.interval.unit || 'min';
-            const multiply = unit == 'min' ? 60 : (60*60);
+            const multiply = unit == 'min' ? 60 : unit == 'day' ? (60*60*24) : (60*60);
             const value=this.interval.value;
             const lastExec=this.lastExec; // epoch milliseconds
             const compensacao=20000;
@@ -228,14 +233,15 @@ class Schedule {
             if(this.interval.cond) {
                 const startHour=this.interval.cond[0].hour;
                 const startMinute=this.interval.cond[0].min;
-                const startObj=new Date(now.getTime());
+                const startObj=new Date();
                 startObj.setHours(startHour,startMinute);
                 const endHour=this.interval.cond[1].hour;
                 const endMinute=this.interval.cond[1].min;
+                const endObj=new Date();
                 endObj.setHours(endHour,endMinute);
 
                 if(!(now > startObj && now < endObj)) {
-                    consoleLog1(`ERROR: intervalo fora da condição estabelecida: intervalo:${value} -- condicao de-ate: ${startObj.formatBr()} - ${endObj.formatBr()}`);
+                    consoleLog1(`ERROR: intervalo fora da condição estabelecida: intervalo:${value} -- condicao de-ate: ${startObj.formatBr(-1)} - ${endObj.formatBr(-1)}`);
                     return false;
                 }
             }

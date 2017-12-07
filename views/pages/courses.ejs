@@ -8,7 +8,7 @@
         #editar-btn {display:block;}
 
         .select-hour, .select-minute {width:47%;}
-
+        .form-schedule select.form-control {display:inline-block;}
     </style>
 
 </head>
@@ -43,7 +43,7 @@
                     <div id="answers" class="col-sm-9">
                         <h1>Agendar Sincronização de Dados</h1>
                         <div id="alert" class="hide"></div>
-                        <form role="form" onsubmit="return false">
+                        <form role="form" onsubmit="return false" class="form-schedule">
                             <fieldset disabled="" class="editing">
                                 <div class="col-sm-3">
                                     <div class="form-group">
@@ -65,11 +65,11 @@
                                 <div class="col-sm-3">
                                     <div class="form-group">
                                         <label for="disabledSelect">Início</label>
-                                        <div class="form-control">
-                                            <select class="select-hour" id="beginHour" style="font-size:1.5em">
+                                        <div>
+                                            <select class="select-hour form-control" id="beginHour" style="font-size:1.5em">
                                                 <option>00</option>
                                             </select> :
-                                            <select class="select-minute" id="beginMinute" style="font-size:1.5em">
+                                            <select class="select-minute form-control" id="beginMinute" style="font-size:1.5em">
                                                 <option>59</option>
                                             </select>
                                         </div>
@@ -78,11 +78,11 @@
                                 <div class="col-sm-3">
                                     <div class="form-group">
                                         <label for="disabledSelect">Fim</label>
-                                        <div class="form-control">
-                                            <select class="select-hour" id="endHour" style="font-size:1.5em">
+                                        <div>
+                                            <select class="select-hour form-control" id="endHour" style="font-size:1.5em">
                                                 <option>00</option>
                                             </select> :
-                                            <select class="select-minute" id="endMinute" style="font-size:1.5em">
+                                            <select class="select-minute form-control" id="endMinute" style="font-size:1.5em">
                                                 <option>59</option>
                                             </select>
                                         </div>
@@ -107,60 +107,18 @@
                         </form>
                         <h5 class="list-title"><strong><a href="#">Log de Execução</a></strong></h5>
 
-                        <div class="item_list">
+                        <div class="item_list" id="log_list">
                             <div style="display: none;"></div>
                             <table class="table table-condensed">
                                 <thead>
                                     <tr>
-                                        <th></th>
                                         <th>Data/Hora</th>
                                         <th>Mensagem</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody style="font-size:0.8em">
-                                    <tr class="active">
-                                        <td>1</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                    </tr>
-                                    <tr class="success">
-                                        <td>3</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                    </tr>
-                                    <tr>
-                                        <td>4</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                    </tr>
-                                    <tr class="warning">
-                                        <td>5</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                    </tr>
-                                    <tr>
-                                        <td>6</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                    </tr>
-                                    <tr class="danger">
-                                        <td>7</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                        <td>Column content</td>
-                                    </tr>
+                                  
                                 </tbody>
                             </table>
                         </div>
@@ -244,21 +202,22 @@
             var coverForm=cover($('fieldset.editing').eq(0));
             $.ajax(url,{method:'POST',dataType:'json',contentType:'application/json',data:toSave})
                 .done(function(data) {
-                    console.log('saving ret:',data);
+                    // console.log('saving ret:',data);
                     coverForm();
+                    scheduleData._rev=data._rev;
+                    return alertPopover('Agendamento salvo com sucesso!', 'success',{closeDelay:5000});
                 })
                 .fail(function(err) {
                     if(err) {
                         var error=err.responseJSON;
                         alertPopover(error.error, 'danger',{closeDelay:-1});
                     }
-                    coverForm();
                 });
         } // saveSchedule
 
 
         /*
-            lista o agendamento e seu log
+            lista o agendamento
         */
         var scheduleData={_id:0,_rev:0}
         function getSchedule(params) {
@@ -269,6 +228,7 @@
             var coverForm=cover($('fieldset.editing').eq(0));
             // var coverLog=cover($('div.item_list').eq(0));
             
+
             $.ajax(url,{method:'GET',dateType:'json'})
                 .done(function(data) {
                     // console.log('data',data);
@@ -324,7 +284,48 @@
                 });
         } // getSchedule
 
+        // lista os logs dessa tarefa (syncCourses)
+        function getLogs() {
+            var url=baseURL+'api/scheduler-logs?selector={"task":"syncCourses"}&sort=[{"time:number":"desc"}]';
+
+            var $divLog=$('#log_list');
+            var coverLogList=cover($divLog);
+            return $.ajax(url,{method:'GET',dataType:'json',contentType:'application/json'})
+                .done(function(data) {
+                    var docs=data.docs;
+                    var $trs=[];
+                    docs.forEach(function(elem) {
+                        var status=elem.status;
+                        var class1='success';
+                        if(status != class1) {
+                            class1='danger';
+                        }
+                        var time=elem.time;
+                        var dt=new Date(time);
+                        var data_hora_str=padNum(dt.getDate())+'/'+padNum((dt.getMonth()+1))+'/'+dt.getFullYear()+' '+padNum(dt.getHours())+':'+padNum(dt.getMinutes())+':'+padNum(dt.getSeconds());
+                        var msg=elem.msg;
+
+                        var $tr=$('<tr />').attr('class',class1);
+
+                        var $tdData=$('<td />').text(data_hora_str);
+                        var $tdMsg=$('<td />').text(status);
+                        var $tdStatus=$('<td />').text(msg);
+                        
+                        $tr.append($tdData,$tdMsg,$tdStatus);
+                        $trs.push($tr);
+                    });
+                    $divLog.children('table').children('tbody').html($trs);
+                    return coverLogList();
+                })
+                .fail(function(err) {
+                    coverLogList();
+                    
+                });
+        }
+
+
         getSchedule();
+        getLogs();
 
         var minutes_options='<option value="-1"> --Minuto-- </option>';
         var hours_options='<option value="-1"> --Hora-- </option>';

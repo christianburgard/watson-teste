@@ -383,6 +383,7 @@ const {scheduler_init}=require('./scheduler/scheduler_init.js');
 scheduler_init({
     dbPath:path.join(__dirname,'./db.js'),
     dbName:'general_settings', // nome da db onde ficam os agendamentos (que têm um formato próprio; ver class Schedule)
+    dbLogName:'general_log', // nome da db onde são gravados os logs das tarefas; (não é o schedule_logs que é específico do agendador e não muda...)
     app:app
 });
 

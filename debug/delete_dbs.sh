@@ -17,23 +17,3 @@ echo ${URL}
 curl -w "http_code: %{http_code}\n" -X DELETE ${URL}$i
 done
 
-exit;
-/*
-{
-  "_id": "09453b50-d6bb-11e7-9971-2da874d2d43b",
-  "_rev": "24-627a999fd686e02c86848fa5589c1c87",
-  "schedule": {
-    "on": false,
-    "task": "syncCourses9",
-    "beginDate": 1512432000000,
-    "status": "success",
-    "interval": {
-      "value": 5
-    },
-    "error": "",
-    "lastExec": 1512151680000
-  },
-  "name": "TESTE Teste334",
-  "type": "parameter"
-}
-*/

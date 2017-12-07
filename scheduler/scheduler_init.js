@@ -67,6 +67,12 @@ function toSave(params) {
 
 
 
+
+
+
+
+
+
 /*
     VERIFICAR!
     quando o agendador iniciar, não pode haver nenhuma tarefa 'running';
@@ -74,9 +80,10 @@ function toSave(params) {
 var scheduler_init=function(params) {
     const dbPath=params.dbPath;
     const dbName=params.dbName;
+    const dbLogName=params.dbLogName;
     const app=params.app;
     const path1=path.join(__dirname,'scheduler.js');
-    const scheduleProc=spawn('node',[ path1],{
+    const scheduleProc=spawn('node',['--inspect', path1],{
         env:Object.assign({},process.env,{dbPath,dbName})
     });
 
@@ -164,7 +171,64 @@ var scheduler_init=function(params) {
             
             return res.send({schedules:retDocs,errors:arrErrors});
         });
-    });
+    }); // listando agendamentos
+
+    app.get('/api/scheduler-logs',function(req,res) {
+        const db=new require(dbPath)();
+        db.init(dbLogName);
+
+        const createIndex=(function() {
+            var created=0;
+            return function() {
+                if(created) {
+                    return Promise.resolve({ok:true});
+                }
+                return new Promise((res,rej)=>{
+
+                    const time_index = {name:"by-time", type:"json", index:{fields:["time"]}}
+                    return db.db.index(time_index,function(err,result) {
+                        if(err) {
+                            return rej(err);
+                        }
+
+                        created=1;
+                        return res({ok:true});
+                    });
+                });
+            }
+        })();
+        
+        let selector={
+            type:"log"
+        }
+        let sort=null;
+        if(req.query && req.query.selector) {
+            try {
+                const selector2=JSON.parse(req.query.selector);
+                selector=Object.assign(selector,selector2);
+                if(req.query.sort) {
+                    sort=JSON.parse(req.query.sort);
+                }
+            } catch(e) {
+                return res.status(400).send({error:'Parâmetro de busca inválido!'});
+            }
+        }
+        let queryObj={selector}
+        if(sort)
+            queryObj.sort=sort;
+
+
+        createIndex()
+            .then(ret=>{
+                db.find(queryObj,function(err,result) {
+                    if(err) {
+                        return res.status(500).send(err);
+                    }
+                    return res.send(result);
+                });
+            });
+
+    }); // /api/scheduler-logs
 
     const now=new Date();
     const nowTime=now.getTime();

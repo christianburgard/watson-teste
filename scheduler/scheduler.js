@@ -105,7 +105,7 @@ function schedulerRun(cloudant,params) {
     db.find({selector:{
         type:"parameter",
         schedule:{$type:"object"},
-        "schedule.on":true
+        "schedule.on":{"$in":[1,true]}
     }},function(err,result) {
         /* { docs: 
             [ { _id: 'e163d21160d0ed307942f4611237a3a5',
@@ -204,7 +204,7 @@ function schedulerRun(cloudant,params) {
 
 
 // return;
-console.log('Inicio do setInterval');
+console.log('Inicio do setInterval (ACIONANDO AGENDADOR!)');
 setInterval(()=>{
     
     /* ret=sch1.run();
