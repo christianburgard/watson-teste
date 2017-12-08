@@ -83,7 +83,7 @@ var scheduler_init=function(params) {
     const dbLogName=params.dbLogName;
     const app=params.app;
     const path1=path.join(__dirname,'scheduler.js');
-    const scheduleProc=spawn('node',['--inspect', path1],{
+    const scheduleProc=spawn('node',[ path1],{
         env:Object.assign({},process.env,{dbPath,dbName})
     });
 
@@ -173,6 +173,7 @@ var scheduler_init=function(params) {
         });
     }); // listando agendamentos
 
+    // listando logs
     app.get('/api/scheduler-logs',function(req,res) {
         const db=new require(dbPath)();
         db.init(dbLogName);
@@ -196,18 +197,45 @@ var scheduler_init=function(params) {
                     });
                 });
             }
-        })();
-        
+        })(); // createIndex
+
+        // aqui vamos consultar uma view feita só p/ guardar o total de docs;
+        const getTotal=()=>{
+            const viewname='total-docs';
+            return new Promise((res,rej)=>{
+                return db.db.view(viewname, viewname, {key:'syncCourses'}, function(err,body) {
+                    if(err) {
+                        return rej(err);
+                    }
+                    const total=body.rows[0].value;
+                    return res({ok:true,total});
+                });
+            });
+        }
+
         let selector={
             type:"log"
         }
-        let sort=null;
+        let sort=null,limit=null,skip=null,pag=null,perPage=null;
         if(req.query && req.query.selector) {
             try {
                 const selector2=JSON.parse(req.query.selector);
                 selector=Object.assign(selector,selector2);
                 if(req.query.sort) {
                     sort=JSON.parse(req.query.sort);
+                }
+                if(req.query.limit) {
+                    limit=parseInt(req.query.limit);
+                }
+                if(req.query.skip) {
+                    skip=parseInt(req.query.skip);
+                } else {
+                    if(req.query.pag) {
+                        pag=parseInt(req.query.pag) || 1;
+                        perPage=parseInt(req.query.perPage) || 10;
+                        skip=(pag-1)*perPage;
+                        limit=perPage;
+                    }
                 }
             } catch(e) {
                 return res.status(400).send({error:'Parâmetro de busca inválido!'});
@@ -216,13 +244,21 @@ var scheduler_init=function(params) {
         let queryObj={selector}
         if(sort)
             queryObj.sort=sort;
-
+        if(limit)
+            queryObj.limit=limit;
+        if(skip)
+            queryObj.skip=skip;
 
         createIndex()
+            .then(getTotal)
             .then(ret=>{
+                const total=ret.total;
                 db.find(queryObj,function(err,result) {
                     if(err) {
                         return res.status(500).send(err);
+                    }
+                    result.info={
+                        total
                     }
                     return res.send(result);
                 });

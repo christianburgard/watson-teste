@@ -25,7 +25,12 @@ function consoleLog1(msg,msg2) {
 }
 
 
-
+const padNum=(num)=>{
+    if(parseInt(num < 10)) {
+        num='0'+num;
+    }
+    return num;
+}
 
 
 
@@ -93,15 +98,15 @@ class Schedule {
             Date.prototype.formatBr=function(UTC) {
                 var str;
                 if(UTC===-1) {
-                    str=this.getDate()+'/'+(this.getMonth()+1)+'/'+this.getFullYear()+' '+this.getHours()+':'+this.getMinutes()+':'+this.getSeconds();
+                    str=padNum(this.getDate())+'/'+padNum(this.getMonth()+1)+'/'+this.getFullYear()+' '+padNum(this.getHours())+':'+padNum(this.getMinutes())+':'+padNum(this.getSeconds());
                 } else {
-                    str=this.getUTCDate()+'/'+(this.getUTCMonth()+1)+'/'+this.getUTCFullYear()+' '+this.getUTCHours()+':'+this.getUTCMinutes()+':'+this.getUTCSeconds();
+                    str=padNum(this.getUTCDate())+'/'+padNum(this.getUTCMonth()+1)+'/'+this.getUTCFullYear()+' '+padNum(this.getUTCHours())+':'+padNum(this.getUTCMinutes())+':'+padNum(this.getUTCSeconds());
                 }
                 return str;
             }
         }
 
-    }
+    } // constructor
 
     verifier(params) {
         if(!params) params={}

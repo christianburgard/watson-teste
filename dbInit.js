@@ -142,21 +142,46 @@ function initDb(funcs,params) {
      * apenas cria a db "general_log", se não existir...
      */
     const initGeneralLog=function() {
+
+        const createView=(db)=>{
+            const obj={
+                "_id": "_design/total-docs",
+                "views": {
+                    "total-docs": {
+                        "map": "function(doc) {return emit(doc.task,1)}",
+                        "reduce": "_count"
+                    }
+                }
+            }
+            return new Promise((res,rej)=>{
+                return db.insert(obj,function(err,body) {
+                    if(err) {
+                        if(err.statusCode == 409 && err.error=='conflict') 
+                            return res('View "general_log/total-docs" já criada!');
+                        
+                        return rej(err);
+                    }
+                    return res({ok:true,msg:'View "general_log/total-docs" criada com sucesso!!'});
+                });
+            });
+        } // createView
+
         return new Promise((res,rej)=>{
             return cloudant.db.create('general_log', function (err, resultCreated) {
                 if(err) {
-                    if(err.error=='file_exists')
+                    if(err.error=='file_exists') {
                         return res('Db "general_log" já criada!');
+                    }
                         
                     return rej(err);
                 }
-                    
                 // const mydb=cloudant.use('chatlog');            
                 createIndex('general_log');
                 return res('Db "general_log" criada com sucesso!');
-                
             });
-        }); // initChatLog
+        }).then(ret=>{
+            return createView(cloudant.use('general_log'));
+        });
     } // initGeneralLog
 
     /**

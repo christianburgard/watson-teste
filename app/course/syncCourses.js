@@ -238,7 +238,7 @@ function syncCourses(app) {
             var username = 'psf.ginfo';
             var password = 'xisto917';
             var options = {
-                host: 'wwwapp.sistemafiergs334.org.br',
+                host: 'wwwapp.sistemafiergs.org.br',
                 port: 7880,
                 path: '/psf/api/senai/programacao-cursos',
                 headers: {
