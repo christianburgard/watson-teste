@@ -4,6 +4,8 @@ const path=require('path');
 
 var addToCoord=[]; // dados a serem acrescentados no arq coodinates_rs.json
 
+const {updateEntity}=require('./update_entity');
+
 const coordFileName='./coordinates_rs.json';
 var getCoordinates=function() {
     var coordinates=fs.readFileSync(coordFileName);
@@ -25,6 +27,9 @@ const {initDb}=require('../../dbInit');
 function syncCourses(app) {
     var doc; // documento que contém o registro da task, o schedule da task;
     var log; // log final a ser "resolved" pela Promise e retornado a quem evocou a func.
+
+    let arrayEntities=[];
+
     var dbSchedule=new(require('../../db'))();
     dbSchedule.init('general_settings');
     var setRunningStatus=(params)=>{
@@ -278,6 +283,8 @@ function syncCourses(app) {
                         classrooms_json[i]._id = "T"+classrooms_json[i].id.toString();
                         classrooms_json[i].type = "Turma";
 
+
+
                         addresses["U"+classrooms_json[i].unidade.id] = classrooms_json[i].unidade;
                         addresses["U"+classrooms_json[i].unidade.id].type = "Unidade";
                         addresses["U"+classrooms_json[i].unidade.id]._id = "U"+classrooms_json[i].unidade.id;
@@ -299,7 +306,17 @@ function syncCourses(app) {
                         arrClassrooms.push(classroom);
                     } // loop principal
 
+                    let objUpdEntity={}                    
                     for(var key in courses) {
+                        // update entity [Inicio]
+                        objUpdEntity={
+                            value:courses[key]._id.replace(/[\D]/g,''),
+                            titulo:courses[key].titulo,
+                            synonyms:-1
+                        }
+                        arrayEntities.push(updateEntity(objUpdEntity));
+                        // update entity [Fim]
+
                         arrCourses.push(courses[key]);
                     }
 
@@ -490,6 +507,12 @@ function syncCourses(app) {
                     }
                     tries++;
                 }
+                ret=yield done(Promise.all(arrayEntities));
+
+                console.log('#########################################################');
+                console.log('RETORNO DAS ENTITIES arrayEntities: '+arrayEntities.length+' --> ret.length'+ret.length,ret);
+                console.log('#########################################################');
+
                 // se chegamos até aqui, obtivemos sucesso;
                 return res(results);
             });

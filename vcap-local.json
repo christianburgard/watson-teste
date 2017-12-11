@@ -1,4 +1,25 @@
 {
+    "conversation": [
+        {
+            "credentials": {
+                "url": "https://gateway.watsonplatform.net/conversation/api",
+                "username": "10a6e314-ed0a-4604-8538-8012ec3ddf0f",
+                "password": "dRE1PK7g0Ut1"
+            },
+            "syslog_drain_url": null,
+            "volume_mounts": [],
+            "label": "conversation",
+            "provider": null,
+            "plan": "standard",
+            "name": "Chat-Senai-conversation",
+            "tags": [
+                "watson",
+                "ibm_created",
+                "ibm_dedicated_public",
+                "lite"
+            ]
+        }
+    ],
     "memcachedcloud": [
         {
             "credentials": {

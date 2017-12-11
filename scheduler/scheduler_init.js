@@ -37,6 +37,7 @@ function toSave(params) {
                 // scheduleFinal=scheduleFinal.schedule;
 
                 toSaveObj=Object.assign(document,docNative);
+                toSaveObj._rev=document._rev;
             } else {
                 // não há registros...
                 toSaveObj._id=-1; // p/ criarmos id no momento de salvar no banco (db.js->this.insert2)
