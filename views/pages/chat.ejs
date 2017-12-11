@@ -9,6 +9,10 @@
   <meta property="og:description" content="Sample application that shows how to use the Conversation API to identify user intents" />
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/style/chat.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+  </script>
 </head>
 <body>
   <div id="view-change-button" class="button" onclick="PayloadPanel.togglePanel(event, this)">

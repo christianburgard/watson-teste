@@ -2,7 +2,7 @@ const passport = require('passport');
 const routes = require('../../routes');
 const request = require('request');
 const geolib = require('geolib');
-const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : '2de227ee-be8e-4db0-93e6-faac10f15f60';
+const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'ce8dcd33-d63d-45d9-b61b-d05cb7c2b148';
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
 
 //const WORKSPACE_ID = '1a520d31-a3c8-436f-9fa7-8ed3d99149c0';   //Dev
@@ -18,6 +18,9 @@ var db_chatlog = new(require('../../db'))();
 db_chatlog.init('chatlog');
 
 /******************************************/
+var ongoingFBChats = {}; // Hash: key=facebook_user_id, value=attributes Hash
+var keepaliveTimers = {}; // Hash: key=conversation_id, value=setTimeout pointer reference
+
 function getConversationCredentials(jsonData) {
   var vcapServices = JSON.parse(jsonData);
   var conversationCredentials = {};
@@ -118,6 +121,20 @@ function callSendAPI(messageData) {
     }
   });
 }
+function splitWithFullWords(str, l){
+    var strs = [];
+    while(str.length > l){
+        var pos = str.substring(0, l).lastIndexOf('\n');
+        pos = pos <= 0 ? l : pos;
+        strs.push(str.substring(0, pos));
+        var i = str.indexOf('\n', pos)+1;
+        if(i < pos || i > pos+l)
+            i = pos;
+        str = str.substring(i);
+    }
+    strs.push(str);
+    return strs;
+}
 function initApi (app) {
   app.post('/api/facebook_webhook', function(req, res) {
     var data = req.body;
@@ -200,24 +217,101 @@ function initApi (app) {
         this.send(body);
       } else if (this.protocol == "facebook") {
     //    this.sendStatus(200);
-        var text;
+        var texts;
         if (Array.isArray(body.output.text)) {
-          text = body.output.text.join();
+          texts = body.output.text.join();
         } else {
-          text = body.output.text;
+          texts = body.output.text;
         }
-        var messageData = {
-          recipient: {
-            id: body.context.facebook_user_id
-          },
-          message: {
-            text: text
-          }
-        };
+        //facebookreplace
 
-        console.log("Responding as a facebook message reply sender =",body.context.facebook_user_id," and message=",body.output.text);
-        console.log("Dumping facebook_reply:",messageData);
-        callSendAPI(messageData);
+        //substitui <br> com \r\n
+        texts = texts.replace(/\<br\/\>/g,"\r\n");
+        texts = texts.replace(/\<br \/\>/g,"\r\n");
+        texts = texts.replace(/\<br\>/g,"\r\n");
+
+        //substitui negritos
+        texts = texts.replace(/\<b\>/g,"*");
+        texts = texts.replace(/\<\/b\>/g,"*");
+        texts = texts.replace(/\<strong\>/g,"*");
+        texts = texts.replace(/\<\/strong\>/g,"*");
+
+
+        if (texts.length >= 640) {
+          texts = splitWithFullWords(texts,640);
+        }
+        texts = [].concat(texts);
+
+        var delay = 1000;
+
+        for (var f=0;f<texts.length;f++) {
+          var text = texts[f];
+
+          var anchorRegex = /<a[\s]+([^>]+)>((?:.(?!\<\/a\>))*.)<\/a>/g;
+
+          var buttons = [];
+
+          while ((matches = anchorRegex.exec(text)) !== null) {
+            console.log("Matched text:",matches[0]);
+            console.log("HTML Options:",matches[1]);
+            var optionsRegex = /(\w+)=([^\s]+)/g;
+            while ((optionMatches = optionsRegex.exec(matches[1])) !== null) {
+              console.log("Key",optionMatches[1]," has value",optionMatches[2]);
+              if (optionMatches[1] == 'href') {
+                var url = optionMatches[2];
+                url = url.replace(/\\"/g, '"');
+                url = url.replace(/\\'/g, "'");
+                url = url.replace(/"/g, '');
+                url = url.replace(/'/g, '');
+
+                buttons.push({
+                  "type": "web_url",
+                  "url": url,
+                  "title": matches[2],
+                });
+              }
+            }
+            console.log("Link Text   :",matches[2]);
+          }
+          console.log(buttons);
+          
+          var messageData;
+          if (buttons.length > 0) {
+              messageData = {
+              recipient: {
+                id: body.context.facebook_user_id
+              },
+              message:{
+               attachment:{
+                 type:"template",
+                 payload:{
+                   template_type:"generic",
+                   elements:[
+                     {
+                       title: text
+                     ,
+                       buttons:buttons
+                     }
+                   ]
+                 }
+               }
+              }
+            };
+          } else {
+            messageData = {
+              recipient: {
+                id: body.context.facebook_user_id
+              },
+              message: {
+                text: text
+              }
+            };
+          }
+  //        console.log("Responding as a facebook message reply sender =",body.context.facebook_user_id," and message=",body.output.text);
+  //        console.log("Dumping facebook_reply:",messageData);
+  //      TODO: notificacao "Lis está digitando"
+          //setTimeout(callSendAPI,delay*f,messageData);
+        }
       }
     };
     var data = req.body;
@@ -272,11 +366,32 @@ function callWatsonApi (req, res) {
 
   merged_parameters = req.body;
   merged_parameters.workspace_id = WORKSPACE_ID;
+  if (!merged_parameters.context)
+    merged_parameters.context = {};
   if (req.session.conversation_id) {
-    if (!merged_parameters.context)
-      merged_parameters.context = {};
     merged_parameters.context.conversation_id = req.session.conversation_id;
+  } else if (req.body.context.facebook_user_id) {
+    if (ongoingFBChats[req.body.context.facebook_user_id]) {
+      merged_parameters.context = ongoingFBChats[req.body.context.facebook_user_id].context;
+      merged_parameters.context.conversation_id = ongoingFBChats[req.body.context.facebook_user_id].conversation_id;
+      console.log("FCL conversa",ongoingFBChats[req.body.context.facebook_user_id].conversation_id,"do usuario",req.body.context.facebook_user_id,"RECUPERADA como On-Going");
+    }
   }
+  if (keepaliveTimers[merged_parameters.context.conversation_id]) {
+    var oldTimer = keepaliveTimers[merged_parameters.context.conversation_id];
+    oldTimer.clearTimeout();
+  }
+  keepaliveTimers[merged_parameters.context.conversation_id] = setTimeout(function() {
+      var response = {};
+      response.output = {};
+      response.context = {};
+      if (req.body.context.facebook_user_id) {
+        response.context.facebook_user_id = req.body.context.facebook_user_id;
+      }
+      response.output.text = "Ainda estou aqui! Posso ajudar em algo mais?";
+      res.sendByProtocol(response);
+  },3000);
+  console.log ("[KeepAlive] Timer criado para conversation_id = ",merged_parameters.context.conversation_id);
   conversation.message(merged_parameters, function(err, response) {
        if (err) {
          console.error(err);
@@ -286,8 +401,16 @@ function callWatsonApi (req, res) {
            //Conversa existente _@_
            conversation_id = response.context.conversation_id;
            console.log("_@_ BEFORE req.session.conversation_id =",conversation_id);
-           req.session.conversation_id = conversation_id;
-           req.session.save();
+           if (req.body.context.facebook_user_id) {
+             ongoingFBChats[req.body.context.facebook_user_id] = {};
+             ongoingFBChats[req.body.context.facebook_user_id].context = response.context;
+             ongoingFBChats[req.body.context.facebook_user_id].timestamp = Date.now();
+             ongoingFBChats[req.body.context.facebook_user_id].conversation_id = conversation_id;
+             console.log("FCL conversa",conversation_id,"do usuario",req.body.context.facebook_user_id,"gravada como On-Going");
+           } else {
+             req.session.conversation_id = conversation_id;
+             req.session.save();
+           }
            console.log("_@_ response.context.conversation_id =",conversation_id);
            console.log("_@_ AFTER req.session.conversation_id =",conversation_id);
            db_chatlog.find({selector:{_id: conversation_id} },function (err,result) {
@@ -323,6 +446,9 @@ function callWatsonApi (req, res) {
 //           conversation_id = req.session.conversation_id;
 //         }
          if ((response.context)&&(response.context.request)) {
+           // Query usada até 2017-12-07 e mantida por motivo de retrocompatibilidade
+           // Poderá ser excluída assim que os fluxos antigos que a usam forem desativados
+
            if (response.context.request.api_action == "near_addresses_by_city") {
              var city_name = response.context.request.args.city_name;
              console.log ("city_name = ",city_name);
@@ -435,7 +561,7 @@ function callWatsonApi (req, res) {
                           if (near_addresses_with_courses[address]) {
                             
                             if (res.protocol == "facebook") {
-                              response_text = response_text + "** address **\r\n";
+                              response_text = response_text + "*"+address+"*\r\n";
                             } else {
                               response_text = response_text + "<hr/><strong><a onclick=\"ConversationPanel.tapClick('Tenho interesse nos cursos da unidade "+address+".')\">" + address + "</strong>:<br/>";
                             }
@@ -519,79 +645,79 @@ function callWatsonApi (req, res) {
                  var course_id = [].concat(this.course_id);
                  console.log("___2 course_id = ",this.course_id);
                  console.log("___ Result: ",res2);
-                 var unidade_id = res2.docs[0]._id;
-                 var selector3;
-                 if (course_id.length >0) {
-                   //#####
-                   selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id},"idCurso": {"$in": course_id} }};
-                 } else if (course_title) {
-                   selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id},"titulo": {"$eq": course_title} }};
-                 } else {
-                   selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id}}};
-                 }
-                 console.log("___ selector3 = ",selector3);
-                 db.find(selector3,function(err3,res3) {
-                   if (err3) {
-                     console.log("Error: ",err3);
+                 if (res2.docs.length > 0) {
+                   var unidade_id = res2.docs[0]._id;
+                   var selector3;
+                   if (course_id.length >0) {
+                     //#####
+                     selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id},"idCurso": {"$in": course_id} }};
+                   } else if (course_title) {
+                     selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id},"titulo": {"$eq": course_title} }};
                    } else {
-                     console.log("Result2: ",res3);
-                     var courses = {};
-                     for (var i = 0; i < res3.docs.length; i++) {
-                       if (courses[res3.docs[i].titulo]) {
-			   //Já existe uma turma deste curso
-                         courses[res3.docs[i].titulo].push(res3.docs[i]);
-                       } else {
-                         courses[res3.docs[i].titulo] = [res3.docs[i]];
+                     selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id}}};
+                   }
+                   console.log("___ selector3 = ",selector3);
+                   db.find(selector3,function(err3,res3) {
+                     if (err3) {
+                       console.log("Error: ",err3);
+                     } else {
+                       console.log("Result2: ",res3);
+                       var courses = {};
+                       for (var i = 0; i < res3.docs.length; i++) {
+                         if (courses[res3.docs[i].titulo]) {
+                             //Já existe uma turma deste curso
+                           courses[res3.docs[i].titulo].push(res3.docs[i]);
+                         } else {
+                           courses[res3.docs[i].titulo] = [res3.docs[i]];
+                         }
                        }
-                     }
-                     var response_text = "";
-                     for (course in courses) {
-                       response_text = response_text + "<hr/><strong>"+course+"</strong>:<br/>";
-                       for (var m = 0; m < courses[course].length; m++) {
-                         var additional_info = []
-                         if ((courses[course][m].turno)||(courses[course][m].dataInicioPrevista)) {
-                           if (courses[course][m].turno) {
-                             additional_info.push(courses[course][m].turno);
+                       var response_text = "";
+                       for (course in courses) {
+                         response_text = response_text + "<hr/><strong>"+course+"</strong>:<br/>";
+                         for (var m = 0; m < courses[course].length; m++) {
+                           var additional_info = []
+                           if ((courses[course][m].turno)||(courses[course][m].dataInicioPrevista)) {
+                             if (courses[course][m].turno) {
+                               additional_info.push(courses[course][m].turno);
+                             }
+                             if (courses[course][m].dataInicioPrevista) {
+                               var dataInicioPrevista = new Date(courses[course][m].dataInicioPrevista);
+                               dataInicioPrevista = "início "+dataInicioPrevista.getDate()+'/'+(dataInicioPrevista.getMonth()+1)+'/'+dataInicioPrevista.getFullYear();
+                               additional_info.push(dataInicioPrevista);
+                             }
                            }
-                           if (courses[course][m].dataInicioPrevista) {
-                             var dataInicioPrevista = new Date(courses[course][m].dataInicioPrevista);
-                             dataInicioPrevista = "início "+dataInicioPrevista.getDate()+'/'+(dataInicioPrevista.getMonth()+1)+'/'+dataInicioPrevista.getFullYear();
-                             additional_info.push(dataInicioPrevista);
+                           additional_info = additional_info.join(", ");
+                           if (additional_info.length > 0)
+                             additional_info = " ("+additional_info+")";
+
+                           if (res.protocol == "facebook") {
+                             response_text = response_text + "• "+courses[course][m]._id+additional_info+"<br/>";
+                           } else {
+                             response_text = response_text + "• <a onclick=\"ConversationPanel.tapClick('Tenho interesse na turma "+courses[course][m]._id+" do curso "+course+".')\">"+courses[course][m]._id+additional_info+"</a><br/>";
                            }
                          }
-                         additional_info = additional_info.join(", ");
-                         if (additional_info.length > 0)
-                           additional_info = " ("+additional_info+")";
-                         response_text = response_text + "• <a onclick=\"ConversationPanel.tapClick('Tenho interesse na turma "+courses[course][m]._id+" do curso "+course+".')\">"+courses[course][m]._id+additional_info+"</a><br/>";
                        }
+                       var callback_parameters = {};
+                       callback_parameters.context = response.context;
+                       callback_parameters.context.unidade = address_name;
+                       callback_parameters.context.cursos = course_title;
+
+                       callback_parameters.input = {};
+  //                       callback_parameters.input.courses = courses;
+                       callback_parameters.input.response_text = response_text;
+                       callback_parameters.workspace_id = WORKSPACE_ID;
+                       callback_parameters.input.api_callback = {"action": "courses_schedule"};
+
+                       console.log("recursively calling callWatsonApi...");
+                       req2 = req;
+                       req2.body = callback_parameters;
+                       callWatsonApi(req2,res);
                      }
-                     var callback_parameters = {};
-                     callback_parameters.context = response.context;
-                     callback_parameters.context.unidade = address_name;
-                     callback_parameters.context.cursos = course_title;
-
-                     callback_parameters.input = {};
-//                       callback_parameters.input.courses = courses;
-                     callback_parameters.input.response_text = response_text;
-                     callback_parameters.workspace_id = WORKSPACE_ID;
-                     callback_parameters.input.api_callback = {"action": "courses_schedule"};
-
-                     console.log("recursively calling callWatsonApi...");
-                     req2 = req;
-                     req2.body = callback_parameters;
-                     callWatsonApi(req2,res);
-/*
-                     conversation.message(callback_parameters, function(err4, res4) {
-                       if (err4) {
-                         console.error(err4);
-                       } else {
-                         console.log(JSON.stringify(res4, null, 3));
-                         res.sendByProtocol(res4);
-                       } //else
-                     }); //conversation.message
-*/
-                   }
-                 });
+                   });
+                 } else {
+                   //Unidade nao encontrada no banco
+                   console.log("Unidade não encontrada no Cloudant:",address_name);
+                 }
                }
              }.bind({course_id: course_id}));
            } else if (response.context.request.api_action == "courseclass_info") {

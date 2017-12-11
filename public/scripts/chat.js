@@ -3,6 +3,9 @@
 // The Common module is designed as an auxiliary module
 // to hold functions that are used in multiple other modules
 /* eslint no-unused-vars: "off" */
+socket.on('watson-message', function(responseText){
+  Api.setResponsePayload(responseText);
+});
 
 var Common = (function() {
   // Publicly accessible methods defined
@@ -129,6 +132,16 @@ var Api = (function() {
     }
 
     // Built http request
+    var params = JSON.stringify(payloadToWatson);
+    // Stored in variable (publicly visible through Api.getRequestPayload)
+    // to be used throughout the application
+    if (Object.getOwnPropertyNames(payloadToWatson).length !== 0) {
+      Api.setRequestPayload(params);
+    }
+    socket.emit('chat-message',params);
+/*
+substituido pelo Socket.io
+
     var http = new XMLHttpRequest();
     http.open('POST', messageEndpoint, true);
     http.setRequestHeader('Content-type', 'application/json');
@@ -147,6 +160,8 @@ var Api = (function() {
 
     // Send request
     http.send(params);
+
+*/
   }
 }());
 
