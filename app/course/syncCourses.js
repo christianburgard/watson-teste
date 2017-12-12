@@ -4,7 +4,7 @@ const path=require('path');
 
 var addToCoord=[]; // dados a serem acrescentados no arq coodinates_rs.json
 
-const {updateEntity}=require('./update_entity');
+const {recreateEntity}=require('./update_entity');
 
 const coordFileName='./coordinates_rs.json';
 var getCoordinates=function() {
@@ -29,7 +29,8 @@ function syncCourses(app) {
     var log; // log final a ser "resolved" pela Promise e retornado a quem evocou a func.
 
     let arrayEntities=[];
-
+    var arrCourses=[];
+ 
     var dbSchedule=new(require('../../db'))();
     dbSchedule.init('general_settings');
     var setRunningStatus=(params)=>{
@@ -141,7 +142,7 @@ function syncCourses(app) {
         var now2=params.now2;
         var db=params.db;
         if(!db) {
-            db = dbSchedule;
+            db = dbSchedule; // db general_settings
         }
         var status=params.status;
         var error=params.error || "";
@@ -271,7 +272,7 @@ function syncCourses(app) {
 
                     var arrClassrooms=[]; // array de informações principais/gerais;
                     var courses = {};
-                    var arrCourses=[]; // array de cursos;
+                    // var arrCourses=[]; // array de cursos; ESTÁ NUM ESCOPO ACIMA! Será usado fora desse escopo de vars
                     var addresses = {};
                     var arrAddresses=[]; // array de endereços;
 
@@ -306,17 +307,8 @@ function syncCourses(app) {
                         arrClassrooms.push(classroom);
                     } // loop principal
 
-                    let objUpdEntity={}                    
-                    for(var key in courses) {
-                        // update entity [Inicio]
-                        objUpdEntity={
-                            value:courses[key]._id.replace(/[\D]/g,''),
-                            titulo:courses[key].titulo,
-                            synonyms:-1
-                        }
-                        arrayEntities.push(updateEntity(objUpdEntity));
-                        // update entity [Fim]
 
+                    for(var key in courses) {
                         arrCourses.push(courses[key]);
                     }
 
@@ -480,7 +472,7 @@ function syncCourses(app) {
                     ret=yield done(execArrays());
                     if(Array.isArray(ret) && ret.length === 3) {
                         // SUCESSO!
-                        retLogExec=yield done(saveExec({
+                        /* retLogExec=yield done(saveExec({
                             now2:new Date(),
                             status:'success',
                             error:""
@@ -490,7 +482,7 @@ function syncCourses(app) {
                             msg:results.msgScheduleLog, // por acaso a msg é a mesma do scheduler, mas poderia ser outra;
                             id_ref:id_ref,
                             tries:tries
-                        }}));
+                        }})); */
                         break;
                     }
 
@@ -507,10 +499,35 @@ function syncCourses(app) {
                     }
                     tries++;
                 }
-                ret=yield done(Promise.all(arrayEntities));
+                let ret2=yield done(recreateEntity({cursos:arrCourses}));
+
+                if(ret2.error) {
+                    // houve erro ao atualizar as entities!
+                    ret2.error.error2={msg:'Erro ao atualizar entities'};
+                    return rej(ret2);
+                }
+
+                // SUCESSO!
+                retLogExec=yield done(saveExec({
+                    now2:new Date(),
+                    status:'success',
+                    error:""
+                }));
+
+                // vamos acrescentar o # de entities atualizadas com sucesso
+                // ret2 será o retorno com sucesso;
+                results.msgScheduleLog+=' ('+ret2.response.totalSynonyms+')Sinonimos;';
+                retLog=yield done(makeLog({toMerge:{
+                    status:'success',
+                    msg:results.msgScheduleLog, // por acaso a msg é a mesma do scheduler, mas poderia ser outra;
+                    id_ref:id_ref,
+                    tries:tries
+                }}));
+
+
 
                 console.log('#########################################################');
-                console.log('RETORNO DAS ENTITIES arrayEntities: '+arrayEntities.length+' --> ret.length'+ret.length,ret);
+                console.log('RETORNO DAS ENTITIES: ',ret2);
                 console.log('#########################################################');
 
                 // se chegamos até aqui, obtivemos sucesso;

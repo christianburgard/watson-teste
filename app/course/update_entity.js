@@ -3,11 +3,82 @@ const {ConversationV1,conversationCredentials,WORKSPACE_ID,objConversationDefaul
 const conversation=new ConversationV1(objConversationDefault);
 
 
-function updateEntity(params) {
-
+function deleteEntity(params) {
     if(!params) params={}
     const entity=params.entity || 'cursos';
-    const value=params.value+'' || '';
+    const params2 = {
+        workspace_id: WORKSPACE_ID,
+        entity: entity
+    };
+    
+    return new Promise((res,rej)=>{
+        return conversation.deleteEntity(params2, function(err, response) {
+            if (err && err.code!=404) {
+                console.error('DELETE ENTITY!!',err);
+                return rej(err);
+            }
+                console.log('########### ENTITY DELETED!! #########');
+                return res(response);
+        });
+    });
+} // deleteEntity
+
+function recreateEntity(params) {
+
+    const cursos=params.cursos; // array de obj's de cursos, oriundo de syncCourses.js
+    let values=[];
+    let objUpdEntity;
+    values=cursos.map(elem=>{
+        objUpdEntity={
+            value:elem._id,
+            titulo:elem.titulo,
+            synonyms:-1
+        }
+        return createEntityObj(objUpdEntity);
+    });
+
+
+    let totalSynonyms=0;
+    values.forEach(elem=>{
+        return totalSynonyms+=elem.synonyms.length;
+    });
+
+    const entityName='cursos';
+    const entity={
+        workspace_id:WORKSPACE_ID,
+        entity:entityName,
+        values:values
+    }
+
+    return deleteEntity()
+        .then(ret=>{
+            return new Promise((res,rej)=>{
+                return conversation.createEntity(entity, function(err, response) {
+                    if (err) {
+                        if(err.error!='Rate limit exceeded')
+                            console.error(err);
+
+                        return rej({error:err});
+                    }
+
+                    response.totalSynonyms=totalSynonyms;
+                    return res({ok:true,response});
+                });
+            });
+        },err=>{
+            console.error('############## ERRO AO DELETAR ENTITY!! ################');
+            console.error(err);
+            throw {error:err};
+        });
+} // recreateEntity
+
+
+// cria UM objeto Entity p/ ser salvo (com mock de synonyms!)
+function createEntityObj(params) {
+
+    if(!params) params={}
+    let value=params.value+'' || '';
+    value=value.replace(/[\D]/g,'');
     let titulo=params.titulo || '';
     titulo=titulo.replace(/[\t]/g,' ');
     const synonyms=params.synonyms || [];
@@ -41,24 +112,13 @@ function updateEntity(params) {
         });
     }
 
-    const params2 = {
-        workspace_id: WORKSPACE_ID,
-        entity: entity,
-        old_value: value,
-        value: value,
-        synonyms: synonyms2
+    const entityObj = {
+        value:value,
+        synonyms: synonyms2,
+        type:'synonyms'
     };
+    return entityObj;
+} // createEntityObj
 
-    return new Promise((res,rej)=>{
-        return conversation.updateValue(params2, function(err, response) {
-            if (err) {
-                console.error(err);
-                return rej({error:err});
-            }
 
-            return res(response);
-        });
-    });
-} // updateEntity
-
-module.exports={updateEntity}
+module.exports={recreateEntity}

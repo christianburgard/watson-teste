@@ -1,45 +1,35 @@
-function conn(tm) {
+function conn() {
     return new Promise((res,rej)=>{
+        var tm=Math.floor(Math.random()*800);
         return setTimeout(()=>{
-            if(tm < 200) {
-                return rej(tm);
+            console.log('time: '+tm);
+            if(tm > 549 && tm < 601) {
+                return res(tm);
             }
-            return res(tm);
+            return rej(tm);
         },tm);
     });
 }
 
-var arr1=[
-    conn(300),
-    conn(150),
-    conn(150)
-];
+function run(generator) {
+    var it=generator(done);
 
-Promise.all(arr1).then(ret=>{
-    console.log('RET',ret);    
-}).catch(err=>{
-    console.log('err',err);
-});
-
-
-/*
-function(err, response) {
-    if (err) {
-        console.log('$$$$$$$$$ ERRO COM O googleMpasClient.geocode',err);
-        return rej('$$$$$$$$$ ERRO COM O googleMpasClient.geocode');
+    function done(promise) {
+        if(promise instanceof Promise) {
+            return promise.then(ret=>it.next(ret),err=>it.next({error:err}));
+        }
+        it.next();
     }
-    let coords=[response.json.results[0].geometry.location.lng,response.json.results[0].geometry.location.lat];
-    address2.geometry = {type: "Point",coordinates: coords};
-    address2.type = "Unidade";
-    // console.log("Google Geo API Result: geometry=",this.address.geometry);
-
-    / * addToCoord.push({
-        nome:nome,
-        municipio:municipio,
-        coordinates:coords
-    }); * /
-    arrAddresses.push(addresses2);
-    return res({ok:true});
-    
+    done();
 }
-*/
+
+run(function* (done){
+    var ret;
+    while(true) {
+        ret=yield done(conn());
+        if(typeof ret == 'number') {
+            console.log('RESOLVED',ret);
+            break;
+        }
+    }
+});
