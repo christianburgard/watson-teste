@@ -1,0 +1,1 @@
+As task deverão ficar nesse diretório, serão "required('task.js')()", ou seja, o arquivo deverá exportar uma função;

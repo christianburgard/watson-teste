@@ -1,73 +1,510 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<% include ../partials/head %>
+    <% include ../partials/head %>
+
+    <style>
+        #salvar-btns {display:none;}
+        #editar-btn {display:block;}
+
+        button.btn[disabled] {cursor:not-allowed;opacity:.5;}
+
+        .select-hour, .select-minute {width:47%;}
+        .form-schedule {margin-bottom:30px;}
+        .form-schedule select.form-control {display:inline-block;}
+        .log-title .paginator {float:right;font-size:0.90em;}
+        .paginator p {float:left;margin-right:8px;}
+        .paginator p[disabled] span.prev, .paginator p[disabled] span.next {color:#b9b9b9;cursor:default;}
+        .paginator p:last-child {margin-right:0;}
+        .paginator p span.prev, .paginator p span.next {font-family: 'fontello';cursor:pointer;}
+        .paginator p span.prev + span {margin-left:-17px;}
+        .paginator p span.next + span {margin-left:-17px;}
+        .paginator .perPage-p select {display:inline-block;width:auto;}
+        select.select-mini1 {padding:4px 7px;height:auto;}
+    </style>
+
 </head>
 <body>
-<div id="wrapper">
-<% include ../partials/top %>
+    <div id="wrapper">
+        <% include ../partials/top %>
 
-<div class="main-container">
-    <div class="container-fluid">
-        <div class="row">
 
-            <div id="filter_intent" class="col-sm-2 page-sidebar mobile-filter-sidebar">
-                <aside>
-                    <div class="inner-box">
-                        <div class=" list-filter">
-                            <h5 class="list-title"><strong><a href="#">Cursos</a></strong></h5>
-                            <div class="filter-date filter-content">
-                                <input type="text" class="form-control input" placeholder="buscar..." style="margin-bottom:5px;" id="intent_search" />
-                                 <div class="loader"></div>
-                                <ul id="courses_list" class="menu-tema">
-
-                                </ul>
+        <div class="main-container">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-2 page-sidebar mobile-filter-sidebar">
+                        <aside>
+                            <div class="inner-box">
+                                <div id="filter_theme" class=" list-filter">
+                                    <h5 class="list-title"><strong><a href="#">Parâmetros</a></strong></h5>
+                                    <div class="filter-date filter-content">
+                                        <div class="loader" style="display: none;"></div>
+                                        <ul id="theme_list" class="menu-tema">
+                                            <li class="selected"><a href="#" class="app-selectTheme">Sincronização de Dados</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div style="clear:both"></div>
                             </div>
-                        </div>
-                        <div style="clear:both"></div>
+                        </aside>
                     </div>
+                    <div id="filter_intent" class="col-sm-2 page-sidebar mobile-filter-sidebar">
 
-                </aside>
-            </div>
-            <!-- Answers -->
-            <div class="col-sm-6" id="answers">
-                <h1><!--titulo da intent--></h1>
-                <div id="alert" class="hide"></div>
-                <textarea id="answer_input" rows="5" type="text" class="form-control input-lg keyword" placeholder="Aqui será a lista de cursos que vieram da integração do WebService"></textarea>
+                    </div>
+                    <!-- Answers -->
+                    <div id="answers" class="col-sm-9">
+                        <h1>Agendar Sincronização de Dados</h1>
+                        <div id="alert" class="hide"></div>
+                        <form role="form" onsubmit="return false" class="form-schedule">
+                            <fieldset disabled="" class="editing">
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Executar à cada</label>
+                                        <div class="input-group">
+                                            <input class="form-control" style="font-size:1.5em" id="interval" type="text">
+                                            <div class="input-group-btn btn-dropdown-change" id="interval_unit">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span>Minutos </span><span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu pull-right">
+                                                    <li><a href="#" data-value="min">Minutos</a></li>
+                                                    <li><a href="#" data-value="hour">Horas</a></li>
+                                                    <li><a href="#" data-value="day">Dias</a></li>
+                                                </ul>
+                                            </div><!-- /btn-group -->
+                                        </div><!-- /input-group --><!-- /input-group -->
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="disabledSelect">Início</label>
+                                        <div>
+                                            <select class="select-hour form-control" id="beginHour" style="font-size:1.5em">
+                                                <option>00</option>
+                                            </select> :
+                                            <select class="select-minute form-control" id="beginMinute" style="font-size:1.5em">
+                                                <option>59</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="disabledSelect">Fim</label>
+                                        <div>
+                                            <select class="select-hour form-control" id="endHour" style="font-size:1.5em">
+                                                <option>00</option>
+                                            </select> :
+                                            <select class="select-minute form-control" id="endMinute" style="font-size:1.5em">
+                                                <option>59</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <br>
+                                    <div class="checkbox checkbox-primary">
+                                        <input type="checkbox" id="schedule_ativo"><label for="schedule_ativo">Ativo</label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset>
+                                <p id="salvar-btns" class="editing">
+                                    <button type="button" onclick="saveSchedule(this)" class="btn btn-primary">Salvar</button>
+                                    <button type="button" onclick="toggleEditSave()" class="btn">Cancelar</button>
+                                </p>
+                                <p id="editar-btn">
+                                    <button type="button" onclick="toggleEditSave()" class="btn">Editar</button>
+                                </p>
+                                <button class="btn btn-warning" onclick="execSync(this)" id="execNow">Executar agora!</button>
+                            </fieldset>
+                        </form>
+                        <h5 class="list-title log-title">
+                            <strong>Log de Execução</strong>
+                            <div class="paginator">
+                                <p>Mostrando <span class="paginator-de"></span>/<span class="paginator-ate"></span> de <span class="paginator-total"></span></p>
+                                <p title="primeira"><span class="prev icon-left-open-big" aria-hidden="true"></span><span class="prev icon-left-open-big" aria-hidden="true"></span></p>
+                                <p title="anterior"><span class="prev icon-left-open-big" aria-hidden="true"></span></p>
+                                <p>
+                                    <select name="set-page" class="form-control select-mini1 set-page">
+                                        <option value="1">1</option>
+                                    </select>
+                                </p>
+                                <p title="próxima"><span class="next icon-right-open-big" aria-hidden="true"></span></p>
+                                <p title="última"><span class="next icon-right-open-big" aria-hidden="true"></span><span class="next icon-right-open-big" aria-hidden="true"></span></p>
+                                <p class="perPage-p">Por pág:
+                                    <select name="perPage" class="form-control select-mini1 perPage">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </p>
+                            </div>
+                        </h5>
 
-
-                <div class="item_list">
-                    <div class="loader" style="display: none;"></div>
-                    <ul id="courses_list" class="">
-
-                    </ul>
+                        <div class="item_list" id="log_list">
+                            <div style="display: none;"></div>
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Status</th>
+                                        <th>Mensagem</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size:0.8em">
+                                  
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- fim da pesquisa -->
                 </div>
             </div>
-
-            <div class="col-sm-3" style="white-space:nowrap">
-                <h5 class="list-title"><strong><a href="#">Última Sincronização</a></strong></h5>
-                2017-09-14 23:44:07
-                <div>
-                  <button id="sync_now" class="btn  btn-default">Sincronizar agora!</button>
-                </div>
-            </div>
-
-            <!-- fim da pesquisa -->
         </div>
+
+
+        <% include ../partials/modal %>
+        <% include ../partials/footer %>
     </div>
-</div>
-<% include ../partials/modal %>
-<% include ../partials/footer %>
+    
+    <% include ../partials/footer_scripts %>
 
-</div>
- 
-<% include ../partials/footer_scripts %>
+    <script>
+        // global [inicio]
+        function cover($obj,params) {
+            $obj.css({'position':'relative'});
+            var $cover=$('<div class="cover1"><div class="cover1-inner"><span class="cover1-inner2 fa fa-spin"><span class="icon-cw"></span></span></div></div>');
+            $obj.prepend($cover);
 
-<!-- em tese, não precisa
-perguntar sobre acesso ssh de fora nos dockers bluemix; root;
-sobre o arquivo script.js, parte minified, parte não!
-    <script src="scripts/answers.js"></script> 
--->
+            return function() {
+                $cover.remove();
+            }
+        } // cover
 
-</body>
+        // configura o paginator, seta pag atual, total de pags, etc;
+        function setPaginator(params) {
+            if(!params) params={}
+            var total=params.totalRegs || 0;
+            var rootClass=params.rootClass || '.paginator';
+            // paginator
+            var pagAtual=parseInt($(rootClass+' select.set-page').val());
+            var perPage=$(rootClass+' .perPage').val();
+            var totalPages=Math.ceil(total/perPage);
+            var arrPagesOptions=[];
+            for(var i=1; i<=totalPages; i++) {
+                arrPagesOptions.push('<option value="'+i+'">'+i+'</option>');
+            }
+            $(rootClass+' select.set-page').html(arrPagesOptions);
+            $(rootClass+' select.set-page').val(pagAtual);
+            var de=((pagAtual-1)*perPage)+1;
+            var ate=pagAtual*perPage;
+            if(ate > total) ate=total;
+            $(rootClass+' '+rootClass+'-de').text(de);
+            $(rootClass+' '+rootClass+'-ate').text(ate);
+            $(rootClass+' '+rootClass+'-total').text(total);
+
+            var lastPage=$(rootClass+' select.set-page').children(':last').val();
+            $(rootClass).find('span.prev').parent().removeAttr('disabled');
+            $(rootClass).find('span.next').parent().removeAttr('disabled');
+            if(pagAtual == 1) {
+                $(rootClass).find('span.prev').parent().attr('disabled','disabled');
+            }
+            if(pagAtual == lastPage) {
+                $(rootClass).find('span.next').parent().attr('disabled','disabled');
+            }
+        } // setPaginator
+
+
+        var loading=0;
+        $('.paginator').on('change',function(evt) {
+            if(loading) {
+                return false;
+            }
+            // console.log('.paginator onchange!',evt);
+            var pagAtual=$('.paginator select.set-page').val();
+            var perPage=$('.paginator .perPage').val();
+            loading=1;
+            return getLogs({pag:pagAtual,perPage:perPage}).then(ret=>{
+                loading=0;
+            },err=>{
+                loading=0;
+            });
+        }); // .paginator.on('change')
+
+        $('.paginator').on('click',function(evt) {
+            // console.log('.paginator onchange!',evt);
+            var $th=$(evt.target).parent();
+            if($th.attr('disabled') || ! $th.attr('title') || loading) {
+                return false;
+            }
+            loading=1;
+            var pag;
+            var func=$th.attr('title');
+            var pagAtual=parseInt($('.paginator select.set-page').val());
+            if(func == 'primeira') {
+                pag=1;
+            } else if(func == 'anterior') {
+                pag=pagAtual-1;
+            } else if(func == 'próxima') {
+                pag=pagAtual+1;    
+            } else if(func == 'última') {
+                pag=$('.paginator select.set-page').children(':last').val();
+            }
+
+            $('.paginator select.set-page').val(pag+'');
+            var perPage=$('.paginator .perPage').val();
+            return getLogs({pag:pag,perPage:perPage}).then(ret=>{
+                loading=0;
+            },err=>{
+                loading=0;
+            });
+        }); // .paginator.on('change')
+
+        function disableBtn($btn) {
+            $btn.prop('disabled',true);
+            return function() {
+                $btn.prop('disabled',false);
+
+            }
+        }
+
+        var padNum=function(num) {
+            if(parseInt(num)<10) {
+                num='0'+num;
+            }
+            return num;
+        } // padNum
+        // global [fim]
+
+
+        // salva agendamento
+        function saveSchedule(th) {
+            var interval=$('#interval').val();
+            var beginHour=$('#beginHour').val();
+            var beginMinute=$('#beginMinute').val();
+            var endHour=$('#endHour').val();
+            var endMinute=$('#endMinute').val();
+            var schedule_ativo=$('#schedule_ativo').prop('checked') ? 1 : 0;
+            
+            var arrCond=[beginHour,beginMinute,endHour,endMinute];
+            var verCond=0;
+            arrCond.forEach(function(elem) {
+                if(parseInt(elem)>-1) {
+                    verCond++;
+                }
+            });
+            if(verCond > 0 && verCond < 4) {
+                // a condição não foi corretamente preenchida;
+                return alertPopover('Informe corretamente a condição de execução selecionando os 4 combos de hora/minuto em "Início" e "fim!', 'warning');
+            }
+            var cond=[{hour:beginHour,min:beginMinute},{hour:endHour,min:endMinute}];
+            if(!verCond) {
+                cond=null;
+            }
+            
+            // unit
+            var unit=$('#interval_unit').data('value');
+            var toSave={
+                _id:scheduleData._id,
+                schedule:{
+                    interval:{
+                        value:interval,
+                        unit:unit,
+                        cond:cond
+                    },
+                    on:schedule_ativo,
+                }
+            }
+            toSave={objSchedule:toSave}
+            toSave=JSON.stringify(toSave);
+
+            var url=baseURL+'api/scheduler';
+            var coverForm=cover($('fieldset.editing').eq(0));
+            var enableBtn=disableBtn($(th));
+            $.ajax(url,{method:'POST',dataType:'json',contentType:'application/json',data:toSave})
+                .done(function(data) {
+                    // console.log('saving ret:',data);
+                    scheduleData._rev=data._rev;
+                    return alertPopover('Agendamento salvo com sucesso!', 'success',{closeDelay:5000});
+                })
+                .fail(function(err) {
+                    if(err) {
+                        var error=err.responseJSON;
+                        alertPopover(error.error, 'danger',{closeDelay:-1});
+                    }
+                })
+                .always(function() {
+                    coverForm();
+                    enableBtn();
+                });
+        } // saveSchedule
+
+
+        /*
+            lista o agendamento
+        */
+        var scheduleData={_id:0}
+        function getSchedule(params) {
+            if(!params) params={}
+            var selector=JSON.stringify({"schedule.task":"syncCourses"});
+            var url=baseURL+'api/scheduler?selector='+selector;
+
+            var coverForm=cover($('fieldset.editing').eq(0));
+            // var coverLog=cover($('div.item_list').eq(0));
+            
+
+            $.ajax(url,{method:'GET',dateType:'json'})
+                .done(function(data) {
+                    // console.log('data',data);
+                    var schedule=data.schedules;
+                    coverForm();
+                    if(!schedule.length) {
+                        // nada encontrado
+                        return alertPopover('Não há tarefas!', 'success');
+                    }
+                    schedule=schedule[0];
+                    var interval=parseInt(schedule.schedule.interval.value);
+                    var unit=schedule.schedule.interval.unit || 'min';
+                    var cond=schedule.schedule.interval.cond;
+                    var lastExec=schedule.schedule.lastExec;
+                    var on=!!schedule.schedule.on;
+                    var status=schedule.schedule.status;
+                    var lastExec=schedule.schedule.lastExec;
+                    
+                    // intervalo p/ execução
+                    var beginHour='-1';
+                    var beginMinute='-1';
+                    var endHour='-1';
+                    var endMinute='-1';
+                    if(cond && cond.length) {
+                        beginHour=cond[0].hour;
+                        beginMinute=cond[0].min;
+                        endHour=cond[1].hour;
+                        endMinute=cond[1].min;
+                    }
+
+
+                    // filling fields
+                    $('#interval').val(interval);
+                    $('#beginHour').val(beginHour);
+                    $('#beginMinute').val(beginMinute);
+                    $('#endHour').val(endHour);
+                    $('#endMinute').val(endMinute);
+                    $('#schedule_ativo').prop('checked',on);
+                    // unit
+                    $('body').trigger('change-dropdown',{id:'interval_unit',value:unit});
+
+
+                    var _id=schedule._id;
+                    var _rev=schedule._rev;
+                    scheduleData._id=_id;
+                    scheduleData._rev=_rev;
+
+                })
+                .fail(function(err) {
+                    console.log(err);
+                    
+                    coverForm();
+                });
+        } // getSchedule
+
+        // lista os logs dessa tarefa (syncCourses)
+        function getLogs(params) {
+            if(!params) params={}
+            var perPage=params.perPage || 10;
+            var pag=params.pag || 1;
+
+            var selector={task:"syncCourses"};
+            selector=JSON.stringify(selector);
+            var url=baseURL+'api/scheduler-logs?selector='+selector+'&sort=[{"time:number":"desc"}]&pag='+pag+'&perPage='+perPage;
+
+            var $divLog=$('#log_list');
+            var coverLogList=cover($divLog);
+            return new Promise((res,rej)=>{
+                return $.ajax(url,{method:'GET',dataType:'json',contentType:'application/json'})
+                    .done(function(data) {
+                        var docs=data.docs;
+                        var $trs=[];
+                        docs.forEach(function(elem) {
+                            var status=elem.status;
+                            var class1='success';
+                            if(status != class1) {
+                                class1='danger';
+                            }
+                            var time=elem.time;
+                            var dt=new Date(time);
+                            var data_hora_str=padNum(dt.getDate())+'/'+padNum((dt.getMonth()+1))+'/'+dt.getFullYear()+' '+padNum(dt.getHours())+':'+padNum(dt.getMinutes())+':'+padNum(dt.getSeconds());
+                            var msg=elem.msg;
+
+                            var $tr=$('<tr />').attr('class',class1);
+
+                            var $tdData=$('<td />').text(data_hora_str);
+                            var $tdMsg=$('<td />').text(status);
+                            var $tdStatus=$('<td />').text(msg);
+                            
+                            $tr.append($tdData,$tdMsg,$tdStatus);
+                            $trs.push($tr);
+                        });
+                        $divLog.children('table').children('tbody').html($trs);
+
+                        var total=data.info.total;
+
+                        setPaginator({totalRegs:total});
+                        res({ok:true});
+                        return coverLogList();
+                    })
+                    .fail(function(err) {
+                        coverLogList();
+                        return rej({error:err});
+                    });
+            });
+        } // getLogs
+
+        // execução imediata de sincronização de cursos
+        function execSync() {
+            var enableBtn=disableBtn($('#execNow'));
+            var url=baseURL+'courses/sync';
+            var perPage=$('.paginator select.perPage').val();
+            $.getJSON(url)
+            .always(function(data) {
+                enableBtn();
+                getLogs({pag:1,perPage:perPage});
+            });
+        } // execSync
+
+
+        getSchedule();
+        $('.paginator').eq(0).trigger('change');
+        // getLogs();
+
+        var minutes_options='<option value="-1"> --Minuto-- </option>';
+        var hours_options='<option value="-1"> --Hora-- </option>';
+        for(var i=1;i<60;i++) {
+            minutes_options+='<option value="'+padNum(i)+'">'+padNum(i)+'</option>';
+        }
+        for(i=0;i<=23;i++) {
+            hours_options+='<option value="'+padNum(i)+'">'+padNum(i)+'</option>';
+
+        }
+
+        $('.select-hour').html(hours_options);
+        $('.select-minute').html(minutes_options);
+        function toggleEditSave() {
+            var disabled=false;
+            if($('#salvar-btns').css('display')=='block') {
+                $('#salvar-btns').hide();
+                $('#editar-btn').show();
+                disabled=true;
+            } else {
+                $('#salvar-btns').show();
+                $('#editar-btn').hide();
+            }
+            $('.editing').prop('disabled',disabled);
+        }
+
+
+    </script>
+
+    </body>
 </html>

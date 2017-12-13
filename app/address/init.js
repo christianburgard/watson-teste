@@ -30,7 +30,7 @@ function initAddresses (app) {
       path: '/psf/api/senai/unidades',
       headers: {
        'Authorization': 'Basic ' + new Buffer(username + ':' + password).toString('base64')
-      }         
+      }
     };
     // auth is: 'Basic VGVzdDoxMjM='
 
