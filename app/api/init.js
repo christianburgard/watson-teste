@@ -2,16 +2,11 @@ const passport = require('passport');
 const routes = require('../../routes');
 const request = require('request');
 const geolib = require('geolib');
-const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'ce8dcd33-d63d-45d9-b61b-d05cb7c2b148';
-const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
 
-//const WORKSPACE_ID = '1a520d31-a3c8-436f-9fa7-8ed3d99149c0';   //Dev
-//const WORKSPACE_ID = '37434092-a3b2-4531-bbb9-b46f29a9a605';   //Teste
 
-//const WORKSPACE_ID = '0275fa87-dafa-41ea-8350-ad037e2aca09';    //Teste
+
 //DATABASE
 //**************** DB ********************//
-
 var db = new(require('../../db'))();
 db.init('data');
 var db_chatlog = new(require('../../db'))();
@@ -21,27 +16,9 @@ db_chatlog.init('chatlog');
 var ongoingFBChats = {}; // Hash: key=facebook_user_id, value=attributes Hash
 var keepaliveTimers = {}; // Hash: key=conversation_id, value=setTimeout pointer reference
 
-function getConversationCredentials(jsonData) {
-  var vcapServices = JSON.parse(jsonData);
-  var conversationCredentials = {};
 
-  var vcapServices = JSON.parse(jsonData);
-  for (var vcapService in vcapServices) {
-    if (vcapService.match(/conversation/i)) {
-      conversationCredentials = vcapServices[vcapService][0].credentials;
-    }
-  }
-  return conversationCredentials;
-}
 
-var fs = require('fs');
-var conversationCredentials = {};
-if (process.env.VCAP_SERVICES) {
-  conversationCredentials = getConversationCredentials(process.env.VCAP_SERVICES);
-} else { //When running locally, the VCAP_SERVICES will not be set
-  conversationCredentials = getConversationCredentials(fs.readFileSync("vcap-local.json", "utf-8"));
-}
-var ConversationV1 = require('watson-developer-cloud/conversation/v1');
+const {ConversationV1,conversationCredentials,WORKSPACE_ID}=require('./confs');
 
 function processTags(text_input) {
   var text_output = "";
@@ -357,6 +334,8 @@ function initApi (app) {
     }
   });
 }
+
+
 function callWatsonApi (req, res) {
   var conversation = new ConversationV1({
     username: conversationCredentials.username,

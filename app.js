@@ -11,7 +11,24 @@ const express = require('express'),
     path = require('path');
 const util = require('./app/util');
 
+const {initDb}=require('./dbInit')
+
 const USE_HTTPS = false;
+
+
+console.log('%%%%%%%%% Iniciando pré-configurações %%%%%%%%%');
+initDb()
+    .then((ret)=>{
+        console.log('################### initDb EXECUTADO COM SUCESSO!! ##################',ret);
+    }).catch(err=>{
+        console.log('!!!!!!!!!!!!!!!!!!!!! ERRO AO INICIAR O initDb !!!!!!!!!!!!!!!!!!!!!',err);
+        process.exit(2);
+    });
+
+
+// const session = require('express-session');
+
+var cookieParser = require('cookie-parser');
 
 const passport = require('passport');
 
@@ -20,10 +37,13 @@ const app = express();
 var cookieParser = require('cookie-parser')();
 
 var session = require("express-session")({
-    secret: "EDS089528345902348520934",
-    resave: true,
-    saveUninitialized: true
+  secret: "EDS089528345902348520934",
+  resave: true,
+  saveUninitialized: true
 });
+
+// NAO SE USA MAIS ISSO!
+// var MemcachedStore = require('connect-memjs')(session);
 
 var sharedsession = require("express-socket.io-session");
 
@@ -156,9 +176,10 @@ io.on('connection', function(client){
   });
 });
 
-server.listen(app.get('port'), '0.0.0.0', function() {
-    console.log('Express server listening on port ' + app.get('port'));
-});
+
+// server.listen(app.get('port'), '0.0.0.0', function() {
+//     console.log('Express server listening on port ' + app.get('port'));
+// });
 
 /*
 // plain HTTP
@@ -655,6 +676,7 @@ function callWatsonApi (req, res) {
                             console.log("@@@ UNIDADE:"+unidades2[unidade2]);
                           }
                         }
+
 /*
                         for (address in near_addresses_with_courses) {
                           if (res.protocol == "facebook") {
@@ -1042,3 +1064,45 @@ function callWatsonApi (req, res) {
        }
     });
 }
+
+
+// INICIANDO O AGENDADOR
+const {scheduler_init}=require('./scheduler/scheduler_init.js');
+scheduler_init({
+    dbPath:path.join(__dirname,'./db.js'),
+    dbName:'general_settings', // nome da db onde ficam os agendamentos (que têm um formato próprio; ver class Schedule)
+    dbLogName:'general_log', // nome da db onde são gravados os logs das tarefas; (não é o schedule_logs que é específico do agendador e não muda...)
+    app:app
+});
+
+/* apenas teste;
+var httpTest=http.createServer(function(req,res) {
+    // vai ficar sem resposta mesmo
+});
+httpTest.listen(7880,()=>console.log('HTTPTEST STARTED!!!')); */
+
+
+var server;
+// Secure HTTPS
+if (USE_HTTPS) {
+    var privateKey  = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.key', 'utf8');
+    var certificate = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.cer', 'utf8');
+    var credentials = {key: privateKey, cert: certificate};
+    server=http.createServer(credentials,app).listen(app.get('port'), '0.0.0.0', function() {
+        console.log('Express server over HTTPS listening on port ' + app.get('port'));
+    });
+} else {
+    server=http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
+        console.log('Express server over Plain HTTP listening on port ' + app.get('port'));
+    });
+}
+
+app.get('/html_task',function(req,res) {
+    res.render('html_task.html');
+});
+
+/* server.timeout=10000;
+server.on('timeout',(socket)=>{
+    // console.log(socket);
+    socket.destroy();
+}); */
