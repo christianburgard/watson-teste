@@ -11,7 +11,7 @@ const express = require('express'),
     path = require('path');
 const util = require('./app/util');
 
-const USE_HTTPS = true;
+const USE_HTTPS = false;
 
 const passport = require('passport');
 
@@ -388,6 +388,21 @@ function callWatsonApi (req, res) {
 
            if (response.context.request.api_action == "addresses_by_city") {
              var city_name = response.context.request.args.city_name;
+             var limit = 9;
+             var near = false;
+
+             if (response.context.request.args.near) {
+               near = true;
+             }
+
+             var taplist = false;
+             if (response.context.request.args.taplist) {
+               taplist = true;
+             }
+             
+             if (response.context.request.args.limit) {
+               limit = parseInt(response.context.request.args.limit);
+             }
              console.log ("city_name = ",city_name);
 
              db.find({selector:{name: { "$in": city_name }}},function (err,result) {
@@ -399,13 +414,14 @@ function callWatsonApi (req, res) {
                    console.log('  Doc id: %s | Name: %s', result.docs[i]._id,result.docs[i].name);
                    var city_latitude = result.docs[i].geometry.coordinates[1];
                    var city_longitude = result.docs[i].geometry.coordinates[0];
-                   if ((response.context.request)&&(response.context.request.args)&&(response.context.request.args.near)) {
-                     db.db.geo("address","address_points",{q: "type:'Unidade'",g:"POINT("+result.docs[i].geometry.coordinates[0]+" "+result.docs[i].geometry.coordinates[1]+")",nearest: true,sort: ["distance"],include_docs: true,limit:20}, function (err2, result2) {
+                   if ((response.context.request)&&(response.context.request.args)&&(near)) {
+                     db.db.geo("address","address_points",{q: "type:'Unidade'",g:"POINT("+result.docs[i].geometry.coordinates[0]+" "+result.docs[i].geometry.coordinates[1]+")",nearest: true,sort: ["distance"],include_docs: true,limit: limit}, function (err2, result2) {
           	       if (err2) {
           	         console.log("Error: ",err2);
           	       } else {
           	         console.log("Nearest were: ",result2);
                          var addresses = [];
+                         var response_text = "";
 
                          if ((response.context.request)&&(response.context.request.args)&&(response.context.request.args.name_only)) {
                            for (i=0; i < result2.rows.length; i++) {
@@ -414,6 +430,8 @@ function callWatsonApi (req, res) {
                              address.longitude = address.geometry.coordinates[0];
      
                              addresses.push(address.nome);
+                             response_text = response_text+"• <a onclick=\"ConversationPanel.tapClick('"+address.nome+"')\">"+address.nome+"</a>";
+                             response_text = response_text+" (<a href=\"https://www.google.com.br/maps/search/"+address.latitude+","+address.longitude+"\" target=\"_blank\">mapa</a>)<br/>";
                            }
                          } else {
                            for (i=0; i < result2.rows.length; i++) {
@@ -422,6 +440,8 @@ function callWatsonApi (req, res) {
                              address.longitude = address.geometry.coordinates[0];
      
                              addresses.push(address);
+                             response_text = response_text+"• <a onclick=\"ConversationPanel.tapClick('"+address.nome+"')\">"+address.nome+"</a>";
+                             response_text = response_text+" (<a href=\"https://www.google.com.br/maps/search/"+address.latitude+","+address.longitude+"\" target=\"_blank\">mapa</a>)<br/>";
                            }
                          }
                          var callback_parameters = {};
@@ -430,6 +450,17 @@ function callWatsonApi (req, res) {
                          callback_parameters.workspace_id = WORKSPACE_ID;
                          callback_parameters.input.api_callback = {"action": "addresses_by_city"};
                          callback_parameters.input.addresses = addresses;
+
+                         if (result2.rows.length > 1) {
+                           callback_parameters.input.addresses_found = true;
+                           if (taplist) {
+                             response.output.text = response_text;
+                             res.sendByProtocol(response);
+                           }
+                         } else {
+                           callback_parameters.input.addresses_found = false;
+                         }
+
                          console.log("recursively calling callWatsonApi...");
                          req2 = req;
                          req2.body = callback_parameters;
@@ -448,6 +479,7 @@ function callWatsonApi (req, res) {
           	       } else {
                          console.log("Found addresses within the cities were: ",result2);
                          var addresses = [];
+                         var response_text = "";
                          if ((response.context.request)&&(response.context.request.args)&&(response.context.request.args.name_only)) {
                            for (i=0; i < result2.docs.length; i++) {
                              var address = result2.docs[i];
@@ -455,6 +487,8 @@ function callWatsonApi (req, res) {
                              address.longitude = address.geometry.coordinates[0];
     
                              addresses.push(address.nome);
+                             response_text = response_text+"• <a onclick=\"ConversationPanel.tapClick('"+address.nome+"')\">"+address.nome+"</a>";
+                             response_text = response_text+" (<a href=\"https://www.google.com.br/maps/search/"+address.latitude+","+address.longitude+"\" target=\"_blank\">mapa</a>)<br/>";
                            }
                          } else {
                            for (i=0; i < result2.docs.length; i++) {
@@ -463,6 +497,8 @@ function callWatsonApi (req, res) {
                              address.longitude = address.geometry.coordinates[0];
     
                              addresses.push(address);
+                             response_text = response_text+"• <a onclick=\"ConversationPanel.tapClick('"+address.nome+"')\">"+address.nome+"</a>";
+                             response_text = response_text+" (<a href=\"https://www.google.com.br/maps/search/"+address.latitude+","+address.longitude+"\" target=\"_blank\">mapa</a>)<br/>";
                            }
                          }
                          var callback_parameters = {};
@@ -473,6 +509,10 @@ function callWatsonApi (req, res) {
                          callback_parameters.input.addresses = addresses;
                          if (addresses.length > 1) {
                            callback_parameters.input.addresses_found = true;
+                           if (taplist) {
+                             response.output.text = response_text;
+                             res.sendByProtocol(response);
+                           }
                          } else {
                            callback_parameters.input.addresses_found = false;
                          }
@@ -663,7 +703,10 @@ function callWatsonApi (req, res) {
             }); //db.find
            } else if (response.context.request.api_action == "courses_by_address") {
              var address = [].concat(response.context.request.args.address);
-             var course_category = [].concat(response.context.request.args.course_category);
+             var course_category = [];
+             if ((response.context.request.args.course_category)&&(response.context.request.args.course_category.length >0)) {
+               course_category = [].concat(response.context.request.args.course_category);
+             }
              var modality = [];
              if (response.context.request.args.modality) {
                modality = modality.concat(response.context.request.args.modality);
@@ -693,10 +736,18 @@ function callWatsonApi (req, res) {
                  console.log("___2 course_id = ",this.course_id);
                  //console.log("___ Result: ",res2);
                  if (res2.docs.length > 0) {
-                   var unidade_id = res2.docs[0]._id;
+                   var unidade_id = [];
+                   for (var j=0; j < res2.docs.length; j++) {
+//                     var unidade_id = res2.docs[j]._id;
+                     unidade_id.push(res2.docs[j]._id);
+                   }
                    var selector3;
-                   selector3 = {"selector": { "type": { "$eq": "Turma" },"unidade":{"$eq": unidade_id}}};
+                   selector3 = {"selector": { "type": { "$eq": "Turma" }}};
 
+                   if (unidade_id.length >0) {
+                     selector3.selector.unidade = {"$in": unidade_id};
+                     console.log("__F Filtro Unidade =", unidade_id);
+                   }
                    if (course_id.length >0) {
                      selector3.selector.idCurso = {"$in": course_id};
                      console.log("__F Filtro Curso =", course_id);
@@ -759,15 +810,15 @@ function callWatsonApi (req, res) {
                        callback_parameters.context = response.context;
                        callback_parameters.context.unidade = address_name;
                        callback_parameters.context.cursos = course_title;
-
+  
                        callback_parameters.input = {};
-  //                       callback_parameters.input.courses = courses;
+    //                    callback_parameters.input.courses = courses;
                        callback_parameters.input.response_text = response_text;
                        callback_parameters.workspace_id = WORKSPACE_ID;
                        callback_parameters.input.api_callback = {"action": "courses_by_address"};
 
                        console.log("recursively calling callWatsonApi...");
-                       if (res3.docs.length > 1) {
+                       if (res3.docs.length > 0) {
                          callback_parameters.input.courseclasses_found = true;
                          response.output.text = response_text;
                          res.sendByProtocol(response);
