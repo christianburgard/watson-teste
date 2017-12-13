@@ -28,8 +28,6 @@ initDb()
 
 // const session = require('express-session');
 
-var cookieParser = require('cookie-parser');
-
 const passport = require('passport');
 
 const app = express();
@@ -48,7 +46,7 @@ var session = require("express-session")({
 var sharedsession = require("express-socket.io-session");
 
 app.use(cookieParser);
-app.use(session);
+//app.use(session);
 
 // Use shared session middleware for socket.io
 // setting autoSave:true
@@ -124,6 +122,7 @@ require('./app/address').init(app);
 require('./app/api').init(app);
 require('./app/chat').init(app);
 
+/*
 var server;
 // Secure HTTPS
 if (USE_HTTPS) {
@@ -135,6 +134,22 @@ if (USE_HTTPS) {
 } else {
   server = http.createServer(app);
 }
+*/
+var server;
+// Secure HTTPS
+if (USE_HTTPS) {
+    var privateKey  = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.key', 'utf8');
+    var certificate = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.cer', 'utf8');
+    var credentials = {key: privateKey, cert: certificate};
+    server=http.createServer(credentials,app).listen(app.get('port'), '0.0.0.0', function() {
+        console.log('Express server over HTTPS listening on port ' + app.get('port'));
+    });
+} else {
+    server=http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
+        console.log('Express server over Plain HTTP listening on port ' + app.get('port'));
+    });
+}
+
 
 var io = require('socket.io')(server);
 io.use(sharedsession(session, {
@@ -472,7 +487,7 @@ function callWatsonApi (req, res) {
                          callback_parameters.input.api_callback = {"action": "addresses_by_city"};
                          callback_parameters.input.addresses = addresses;
 
-                         if (result2.rows.length > 1) {
+                         if (result2.rows.length > 0) {
                            callback_parameters.input.addresses_found = true;
                            if (taplist) {
                              response.output.text = response_text;
@@ -528,7 +543,7 @@ function callWatsonApi (req, res) {
                          callback_parameters.workspace_id = WORKSPACE_ID;
                          callback_parameters.input.api_callback = {"action": "addresses_by_city"};
                          callback_parameters.input.addresses = addresses;
-                         if (addresses.length > 1) {
+                         if (addresses.length > 0) {
                            callback_parameters.input.addresses_found = true;
                            if (taplist) {
                              response.output.text = response_text;
@@ -1081,21 +1096,6 @@ var httpTest=http.createServer(function(req,res) {
 });
 httpTest.listen(7880,()=>console.log('HTTPTEST STARTED!!!')); */
 
-
-var server;
-// Secure HTTPS
-if (USE_HTTPS) {
-    var privateKey  = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.key', 'utf8');
-    var certificate = fs.readFileSync('/etc/ssl/nginx/wisepanel.wisegears.com.cer', 'utf8');
-    var credentials = {key: privateKey, cert: certificate};
-    server=http.createServer(credentials,app).listen(app.get('port'), '0.0.0.0', function() {
-        console.log('Express server over HTTPS listening on port ' + app.get('port'));
-    });
-} else {
-    server=http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
-        console.log('Express server over Plain HTTP listening on port ' + app.get('port'));
-    });
-}
 
 app.get('/html_task',function(req,res) {
     res.render('html_task.html');
