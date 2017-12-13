@@ -151,8 +151,9 @@ function initApi (app) {
       res.status(200).send(req.query['hub.challenge']);
     } else if (req.query['chatlog']) {
       console.log("Pedido de histórico via /api/message?chatlog");
-      console.log("session.conversation_id = ",req.session.conversation_id);
-      if (req.session.conversation_id) {
+      if ((req.session)&&(req.session.conversation_id)) {
+        console.log("session.conversation_id = ",req.session.conversation_id);
+
         var conversation_id = req.session.conversation_id;
         db_chatlog.find({selector:{_id: conversation_id} },function (err,result) {
           if (err) {
