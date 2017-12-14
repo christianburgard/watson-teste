@@ -118,9 +118,23 @@ function initDb(funcs,params) {
 
     /**
      * apenas cria a db "general_settings", se não existir...
+     * essa db armazenará confs gerais, por enquanto, apenas registros de agendamentos;
      */
     const initGeneralSettings=function() {
-        return new Promise((res,rej)=>{
+
+        function run(generator) {
+            var it=generator(done);
+            function done(promise) {
+                if(promise instanceof Promise) {
+                    return promise.then(ret=>it.next(ret),err=>it.throw(err));
+                }
+                return it.next();
+            }
+
+            return done();
+        }
+
+        var create=new Promise((res,rej)=>{
             return cloudant.db.create('general_settings', function (err, resultCreated) {
                 if(err) {
                     if(err.error=='file_exists')
@@ -134,7 +148,55 @@ function initDb(funcs,params) {
                 return res('Db "general_settings" criada com sucesso!');
                 
             });
-        }); // initChatLog
+        });
+
+        var getGeneralSettings=function(db) {
+            return new Promise((res,rej)=>{
+                return db.find({
+                    "selector": {
+                       "type": "parameter",
+                       "schedule": {
+                          "$type": "object"
+                       },
+                       "schedule.task": "syncCourses",
+                       "schedule.status": "running",
+                    }
+                 },function(err,results) {
+                    if(err) {
+                        return rej(err);
+                    }
+                    const docs=results.docs;
+                    if(docs.length > 1) {
+                        return rej({error:'Há mais de um registro de agendamento para sincronização de cursos'});
+                    }
+                    return res(docs[0]);
+                 });
+            });
+        } // getGeneralSettings
+
+        return new Promise((res,rej)=>{
+
+            return run(function*(done) {
+                try {
+                    let criacao=yield done(create);
+                    const db=cloudant.use('general_settings');
+                    let syncCourseSchedule=yield done(getGeneralSettings(db));
+                    if(syncCourseSchedule) {
+                        syncCourseSchedule.schedule.status='renew';
+                        db.insert(syncCourseSchedule,syncCourseSchedule._id,function(err, body, header) {
+                            if(err) {
+                                return rej(err);
+                            }
+                            console.log('zerando status de syncCourses em general_settings',body);
+                            return res('Status de syncCourses zerada!!');
+                        });
+                    }
+                    return res('general_setting criada e syncCourses verificado.');
+                } catch(e) {
+                    return rej(e);
+                }
+            });
+        });
     } // initGeneralSettings
     
 
@@ -204,7 +266,6 @@ function initDb(funcs,params) {
             });
         }); // initChatLog
     }
-        
 
 
     /**
@@ -372,6 +433,7 @@ function initDb(funcs,params) {
         }
     } else {
         arr=[
+            initGeneralSettings(),
             initChatlog(),
             initData(),
             initUser(),

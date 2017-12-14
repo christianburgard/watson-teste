@@ -294,6 +294,7 @@ function syncCourses(app) {
                         courses["C"+classrooms_json[i].idCurso] = {
                             _id: "C"+classrooms_json[i].idCurso,
                             titulo: classrooms_json[i].titulo,
+                            sinonimos: classrooms_json[i].sinonimos,
                             nivel: classrooms_json[i].nivel,
                             type: "Curso",
                             escolaridadeMinima: classrooms_json[i].escolaridadeMinima,

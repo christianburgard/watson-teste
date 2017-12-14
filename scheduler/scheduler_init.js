@@ -35,12 +35,13 @@ function toSave(params) {
                 var document=docs[0];
                 scheduleFinal=Object.assign(document.schedule,docNative.schedule);
                 // scheduleFinal=scheduleFinal.schedule;
-
+                
                 toSaveObj=Object.assign(document,docNative);
                 toSaveObj._rev=document._rev;
             } else {
                 // não há registros...
                 toSaveObj._id=-1; // p/ criarmos id no momento de salvar no banco (db.js->this.insert2)
+                scheduleFinal=docNative.schedule; // passamos o obj original da req p/ criarmos um novo registro;
             }
             
 
@@ -61,6 +62,12 @@ function toSave(params) {
 
             // delete scheduleFinal.docNative;
             toSaveObj.schedule=scheduleFinal;
+            if(!toSaveObj.schedule.task) {
+                // aqui estamos tratando especificamente da tarefa syncCourses
+                toSaveObj.schedule.task='syncCourses';
+                toSaveObj.type='parameter';
+                toSaveObj.name='Sincronização de cursos';
+            }
             return res({toSaveObj});
         });
     });

@@ -4,7 +4,14 @@
 const fs = require('fs');
 const path=require('path');
 
-const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'e00aa688-16dc-4f34-ab7e-7d0ad571c448';
+const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'e00aa688-16dc-4f34-ab7e-7d0ad571c448'; // dev
+// const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : '2de227ee-be8e-4db0-93e6-faac10f15f60'; Le le
+// const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'f33f946d-0ffc-445c-9792-25cff45e21ac'; // remyx samba
+// const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : '69971282-72a4-45d0-ac1e-898c4eae96c6'; // MERGED
+// const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
+
+// const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'ce8dcd33-d63d-45d9-b61b-d05cb7c2b148';
+>>>>>>> b49ed354163e2f58cd020e7d6bf5d8e9c4d1ead3
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
 
 function getConversationCredentials(jsonData) {
@@ -34,4 +41,8 @@ const objConversationDefault={
     version_date: ConversationV1.VERSION_DATE_2017_05_26
 }
 
+<<<<<<< HEAD
 module.exports={ConversationV1,conversationCredentials,WORKSPACE_ID,objConversationDefault}
+=======
+module.exports={ConversationV1,conversationCredentials,WORKSPACE_ID,PAGE_ACCESS_TOKEN,objConversationDefault}
+>>>>>>> b49ed354163e2f58cd020e7d6bf5d8e9c4d1ead3

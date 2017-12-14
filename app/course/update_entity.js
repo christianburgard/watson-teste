@@ -32,7 +32,7 @@ function recreateEntity(params) {
         objUpdEntity={
             value:elem._id,
             titulo:elem.titulo,
-            synonyms:-1
+            synonyms:elem.sinonimos
         }
         return createEntityObj(objUpdEntity);
     });
@@ -80,7 +80,7 @@ function createEntityObj(params) {
     let value=params.value+'' || '';
     value=value.replace(/[\D]/g,'');
     let titulo=params.titulo || '';
-    titulo=titulo.replace(/[\t]/g,' ');
+    titulo=titulo.replace(/[\t]/g,' ').toLowerCase();
     const synonyms=params.synonyms || [];
 
     let synonyms2=[];
@@ -108,8 +108,13 @@ function createEntityObj(params) {
         });
     } else {
         synonyms2=synonyms.map(elem=>{
-            return elem.substr(-64);
+            if(elem.indexOf('mestre de obra')>-1) {
+                var oi=1;
+            }
+            return elem.substr(-64).toLowerCase();
         });
+        synonyms2.unshift(titulo.substr(-64));
+        synonyms2 = Array.from(new Set(synonyms2));
     }
 
     const entityObj = {

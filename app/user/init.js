@@ -17,8 +17,8 @@ const salt = bcrypt.genSaltSync(saltRounds);
 function initUser(app) {
     app.get('/login',  routes.login);
     app.post('/login', passport.authenticate('local', {
-        successRedirect: '/',
-        failureRedirect: '/login?e=1'
+        successRedirect: '/courses',
+        failureRedirect: '/login222?e=1'
     }));
      app.get('/logout', function(req, res){
         req.logout();
