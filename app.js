@@ -46,7 +46,7 @@ var session = require("express-session")({
 var sharedsession = require("express-socket.io-session");
 
 app.use(cookieParser);
-//app.use(session);
+app.use(session);
 
 // Use shared session middleware for socket.io
 // setting autoSave:true
@@ -208,8 +208,10 @@ db_chatlog.init('chatlog');
 
 const request = require('request');
 const geolib = require('geolib');
-const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'ce8dcd33-d63d-45d9-b61b-d05cb7c2b148';
-const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
+// const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'ce8dcd33-d63d-45d9-b61b-d05cb7c2b148';
+// const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
+
+const {WORKSPACE_ID,PAGE_ACCESS_TOKEN}=require('./app/api/confs');
 
 var ongoingFBChats = {}; // Hash: key=facebook_user_id, value=attributes Hash
 var keepaliveTimers = {}; // Hash: key=conversation_id, value=setTimeout pointer reference

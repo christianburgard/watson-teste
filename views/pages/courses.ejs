@@ -325,7 +325,8 @@
             $.ajax(url,{method:'POST',dataType:'json',contentType:'application/json',data:toSave})
                 .done(function(data) {
                     // console.log('saving ret:',data);
-                    scheduleData._rev=data._rev;
+
+                    scheduleData._id=data.id;
                     return alertPopover('Agendamento salvo com sucesso!', 'success',{closeDelay:5000});
                 })
                 .fail(function(err) {
@@ -361,7 +362,7 @@
                     coverForm();
                     if(!schedule.length) {
                         // nada encontrado
-                        return alertPopover('Não há tarefas!', 'success');
+                        return alertPopover('Não há agendamentos!', 'success');
                     }
                     schedule=schedule[0];
                     var interval=parseInt(schedule.schedule.interval.value);

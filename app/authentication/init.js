@@ -115,6 +115,7 @@ function initPassport() {
           if (user.password != "") {
             // Always use hashed passwords and fixed time comparison
             bcrypt.compare(password, user.password, (err, isValid) => {
+              // console.log();
               if (err) {
                 return done(err)
               }
