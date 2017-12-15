@@ -222,6 +222,7 @@ function initDb(funcs,params) {
                     } else if(!syncCourseSchedule) {
                         // não há registro de tarefa do "syncCourses", vamos criar!
                         yield done(createSyncCourses(db));
+                        return res('general_settings db e tarefa "syncCourses" criados com sucesso!');
                     } else {
                         return res('general_setting criada e syncCourses verificado.');
                     }
