@@ -11,6 +11,9 @@ const express = require('express'),
     path = require('path');
 const util = require('./app/util');
 
+const flash = require('connect-flash');
+
+
 const {initDb}=require('./dbInit')
 
 const USE_HTTPS = false;
@@ -47,6 +50,7 @@ var sharedsession = require("express-socket.io-session");
 
 app.use(cookieParser);
 app.use(session);
+app.use(flash());
 
 // Use shared session middleware for socket.io
 // setting autoSave:true

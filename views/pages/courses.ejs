@@ -197,8 +197,8 @@
             }
             $(rootClass+' select.set-page').html(arrPagesOptions);
             $(rootClass+' select.set-page').val(pagAtual);
-            var de=((pagAtual-1)*perPage)+1;
-            var ate=pagAtual*perPage;
+            var de=(((pagAtual-1)*perPage)+1) || 0;
+            var ate=(pagAtual*perPage) || 0;
             if(ate > total) ate=total;
             $(rootClass+' '+rootClass+'-de').text(de);
             $(rootClass+' '+rootClass+'-ate').text(ate);

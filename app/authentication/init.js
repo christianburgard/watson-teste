@@ -110,7 +110,7 @@ function initPassport() {
         // User not found
         if (!user) {
           console.log('User not found');
-          return done(null, false)
+          return done(null, false); // ,{ message: 'Incorrect username.' }
         } else {
           if (user.password != "") {
             // Always use hashed passwords and fixed time comparison

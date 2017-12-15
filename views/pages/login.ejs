@@ -14,9 +14,9 @@
             <form action="/login" method="post" name="Login_Form" id="login_form" class="form-signin">       
                 <h3 class="form-signin-heading">Bem-vindo! Por favor, efetue o login!</h3>
                 <hr class="colorgraph"><br>
-                <p class="text-danger"></p>
+                <p class="text-danger" style="font-size:1.8em;"></p>
                 <input type="text" class="form-control" name="username" id="username" placeholder="Usuário" required="" autofocus="" />
-                <input type="password" class="form-control" name="password" "password" placeholder="Senha" required=""/>     		  
+                <input type="password" class="form-control" name="password" placeholder="Senha" required=""/>     		  
                 <button class="btn btn-lg btn-primary btn-block"  name="Submit" value="Login" type="Submit">Entrar</button>  			
             </form>			
         </div>
@@ -31,8 +31,8 @@
 
 <script>
     var error = "<%= (error)%>";
-    if(error === "1"){
-        $("#login_form p.text-danger").text("Usuário ou senha inválidos.");
+    if(error) {
+        $("#login_form p.text-danger").text(error);
     }   
 </script>
 
