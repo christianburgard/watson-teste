@@ -6,6 +6,7 @@ const path=require('path');
 
 // const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : '2de227ee-be8e-4db0-93e6-faac10f15f60'; Le le
 const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'f33f946d-0ffc-445c-9792-25cff45e21ac'; // remyx samba
+// const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'b44b6d56-6096-478f-868b-964686a87999'; // teste
 // const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : '69971282-72a4-45d0-ac1e-898c4eae96c6'; // MERGED
 // const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
 

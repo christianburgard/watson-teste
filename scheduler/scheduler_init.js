@@ -215,7 +215,11 @@ var scheduler_init=function(params) {
                     if(err) {
                         return rej(err);
                     }
-                    const total=body.rows[0].value;
+                    let total=0;
+                    if(body && body.rows && body.rows[0] && body.rows[0].value) {
+
+                        const total=body.rows[0].value;
+                    }
                     return res({ok:true,total});
                 });
             });
@@ -279,6 +283,7 @@ var scheduler_init=function(params) {
     const maxWait=20000;
 
     const handleError=(errOrCode,signal)=>{
+        return true;
         var msg,typeEvent;
         if(errOrCode instanceof Error) {
             msg=errOrCode.message;
