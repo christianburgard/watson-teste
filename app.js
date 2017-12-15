@@ -208,8 +208,6 @@ db_chatlog.init('chatlog');
 
 const request = require('request');
 const geolib = require('geolib');
-// const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'ce8dcd33-d63d-45d9-b61b-d05cb7c2b148';
-// const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
 
 const {WORKSPACE_ID,PAGE_ACCESS_TOKEN}=require('./app/api/confs');
 
@@ -492,7 +490,9 @@ function callWatsonApi (req, res) {
                          if (result2.rows.length > 0) {
                            callback_parameters.input.addresses_found = true;
                            if (taplist) {
-                             response.output.text = response_text;
+                             response.output.text = [].concat(response.output.text).concat(response_text);
+                             response.output.text = response.output.text.join(" ");
+//                             response.output.text = response_text;
                              res.sendByProtocol(response);
                            }
                          } else {
@@ -548,7 +548,8 @@ function callWatsonApi (req, res) {
                          if (addresses.length > 0) {
                            callback_parameters.input.addresses_found = true;
                            if (taplist) {
-                             response.output.text = response_text;
+                             response.output.text = [].concat(response.output.text).concat(response_text);
+                             response.output.text = response.output.text.join(" ");
                              res.sendByProtocol(response);
                            }
                          } else {
@@ -859,6 +860,8 @@ function callWatsonApi (req, res) {
                        console.log("recursively calling callWatsonApi...");
                        if (res3.docs.length > 0) {
                          callback_parameters.input.courseclasses_found = true;
+                         response.output.text = [].concat(response.output.text).concat(response_text);
+                         response.output.text = response.output.text.join(" ");
                          response.output.text = response_text;
                          res.sendByProtocol(response);
                        } else {
@@ -1064,7 +1067,8 @@ function callWatsonApi (req, res) {
               }
             });
            }
-         } else {
+         }
+ else {
            console.log(JSON.stringify(response, null, 2));
            var text;
            if (Array.isArray(response.output.text)) {
@@ -1073,9 +1077,8 @@ function callWatsonApi (req, res) {
              text = response.output.text;
            }
            response.output.text = processTags(text);
-           console.log("====================== DEPOIS ================");
-           console.log(JSON.stringify(response, null, 2));
-//             res.send(processTags(response));
+//           console.log("====================== DEPOIS ================");
+//           console.log(JSON.stringify(response, null, 2));
            res.sendByProtocol(response);
          }
        }
