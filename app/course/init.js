@@ -19,7 +19,7 @@ function initCourses (app) {
     //     socket.destroy();
     // });
     app.get('/courses', passport.authenticationMiddleware(), routes.courses)
-    app.get('/courses/sync', function(req, response){
+    app.get('/courses/sync',passport.authenticationMiddleware(), function(req, response){
         return syncCourses()
             .then((ret)=>{
                 console.log('retorno do syncCourse RESOLVED!%%%%%%%%');

@@ -1,5 +1,7 @@
 const {spawn} = require('child_process');
 const path=require('path');
+const passport = require('passport');
+
 
 // prepara um schedule p/ ser salvo
 function toSave(params) {
@@ -98,7 +100,7 @@ var scheduler_init=function(params) {
 
     // criando endpoint p/ agenda
     // insert/update de agenda
-    app.post('/api/scheduler',function(req,res) {
+    app.post('/api/scheduler',passport.authenticationMiddleware(),function(req,res) {
         const Schedule=require(path.join(__dirname,'schedule'));
         var obj=req.body.objSchedule;
         if(!obj) {
@@ -137,7 +139,7 @@ var scheduler_init=function(params) {
 
 
     // listando agendamentos
-    app.get('/api/scheduler',function(req,res) {
+    app.get('/api/scheduler',passport.authenticationMiddleware(),function(req,res) {
         const db=new require(dbPath)();
         db.init(dbName);
 
@@ -182,7 +184,7 @@ var scheduler_init=function(params) {
     }); // listando agendamentos
 
     // listando logs
-    app.get('/api/scheduler-logs',function(req,res) {
+    app.get('/api/scheduler-logs',passport.authenticationMiddleware(),function(req,res) {
         const db=new require(dbPath)();
         db.init(dbLogName);
 
