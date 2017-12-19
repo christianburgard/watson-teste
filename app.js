@@ -545,6 +545,7 @@ function callWatsonApi (req, res) {
                          callback_parameters.workspace_id = WORKSPACE_ID;
                          callback_parameters.input.api_callback = {"action": "addresses_by_city"};
                          callback_parameters.input.addresses = addresses;
+
                          if (addresses.length > 0) {
                            callback_parameters.input.addresses_found = true;
                            if (taplist) {
@@ -768,6 +769,8 @@ function callWatsonApi (req, res) {
 
              var selector2 = {"selector": { "type": { "$eq": "Unidade" },"nome": {"$in": address} }};
 
+             var address_id_to_name = {};
+
              db.find(selector2,function(err2,res2) {
                if (err2) {
                  console.log("Error: ",err2);
@@ -780,7 +783,9 @@ function callWatsonApi (req, res) {
                    for (var j=0; j < res2.docs.length; j++) {
 //                     var unidade_id = res2.docs[j]._id;
                      unidade_id.push(res2.docs[j]._id);
+                     address_id_to_name[res2.docs[j]._id] = res2.docs[j].nome;
                    }
+                   console.log("_AN address_id_to_name=",address_id_to_name);
                    var selector3;
                    selector3 = {"selector": { "type": { "$eq": "Turma" }}};
 
@@ -812,6 +817,8 @@ function callWatsonApi (req, res) {
                      } else {
                        console.log("Result2: ",res3);
                        var courses = {};
+                       var courses_by_address = {};
+                       var response_text = "";
                        for (var i = 0; i < res3.docs.length; i++) {
                          if (courses[res3.docs[i].titulo]) {
                              //Já existe uma turma deste curso
@@ -819,30 +826,49 @@ function callWatsonApi (req, res) {
                          } else {
                            courses[res3.docs[i].titulo] = [res3.docs[i]];
                          }
-                       }
-                       var response_text = "";
-                       for (course in courses) {
-                         response_text = response_text + "<hr/><strong>"+course+"</strong>:<br/>";
-                         for (var m = 0; m < courses[course].length; m++) {
-                           var additional_info = []
-                           if ((courses[course][m].turno)||(courses[course][m].dataInicioPrevista)) {
-                             if (courses[course][m].turno) {
-                               additional_info.push(courses[course][m].turno);
-                             }
-                             if (courses[course][m].dataInicioPrevista) {
-                               var dataInicioPrevista = new Date(courses[course][m].dataInicioPrevista);
-                               dataInicioPrevista = "início "+dataInicioPrevista.getDate()+'/'+(dataInicioPrevista.getMonth()+1)+'/'+dataInicioPrevista.getFullYear();
-                               additional_info.push(dataInicioPrevista);
-                             }
-                           }
-                           additional_info = additional_info.join(", ");
-                           if (additional_info.length > 0)
-                             additional_info = " ("+additional_info+")";
 
-                           if (res.protocol == "facebook") {
-                             response_text = response_text + "• "+courses[course][m]._id+additional_info+"<br/>";
-                           } else {
-                             response_text = response_text + "• <a onclick=\"ConversationPanel.tapClick('Tenho interesse na turma "+courses[course][m]._id+" do curso "+course+".')\">"+courses[course][m]._id+additional_info+"</a><br/>";
+                         var address_name = address_id_to_name[res3.docs[i].unidade];
+                         console.log("_AN2.1 address_id_to_name=",address_id_to_name);
+                         console.log("_AN2.2 res3.docs[i].unidade = ",res3.docs[i].unidade);
+                         console.log("_AN2.3 address_name = ",address_name);
+
+                         if (address_name) {
+                           //O hash usa o nome da unidade como key, mas vem o ID do banco...
+                           if (!courses_by_address[address_name]) {
+                             courses_by_address[address_name] = {};
+                           }
+                           // ...e o curso também pelo nome.
+                           if (typeof courses_by_address[address_name][res3.docs[i].titulo] == 'undefined') {
+                             courses_by_address[address_name][res3.docs[i].titulo] = [];
+                           }
+                           courses_by_address[address_name][res3.docs[i].titulo].push(res3.docs[i]);
+                         }
+                       }
+                       console.log("_D_ courses_by_address =",courses_by_address);
+                       for (var address in courses_by_address) {
+                         console.log("_D_ Address:",address);
+                         response_text = response_text + "<hr/><strong>"+address+"</strong>:<br/><br/>";
+                         for (var course in courses_by_address[address]) {
+                           console.log("_D_ Course:",course);
+                           response_text = response_text + "<strong>"+course+"</strong>:<br/>";
+                           for (var i=0; i < courses_by_address[address][course].length ;i++) {
+                             console.log("_D_ Turma:",courses_by_address[address][course][i]._id);
+                             var additional_info = [];
+                             var courseclass = courses_by_address[address][course][i];
+                             if ((courseclass.turno)||(courseclass.dataInicioPrevista)) {
+                               if (courseclass.turno) {
+                                 additional_info.push(courseclass.turno);
+                               }
+                               if (courseclass.dataInicioPrevista) {
+                                 var dataInicioPrevista = new Date(courseclass.dataInicioPrevista);
+                                 dataInicioPrevista = "início "+dataInicioPrevista.getDate()+'/'+(dataInicioPrevista.getMonth()+1)+'/'+dataInicioPrevista.getFullYear();
+                                 additional_info.push(dataInicioPrevista);
+                               }
+                             }
+                             additional_info = additional_info.join(", ");
+                             if (additional_info.length > 0)
+                               additional_info = " ("+additional_info+")";
+                             response_text = response_text + "• <a onclick=\"ConversationPanel.tapClick('Tenho interesse na turma "+courseclass._id+" do curso "+course+".')\">"+courseclass._id+additional_info+"</a><br/>";
                            }
                          }
                        }
