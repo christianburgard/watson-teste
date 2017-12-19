@@ -1,35 +1,15 @@
-function conn() {
-    return new Promise((res,rej)=>{
-        var tm=Math.floor(Math.random()*800);
-        return setTimeout(()=>{
-            console.log('time: '+tm);
-            if(tm > 549 && tm < 601) {
-                return res(tm);
-            }
-            return rej(tm);
-        },tm);
-    });
-}
+const crypto=require('crypto');
 
-function run(generator) {
-    var it=generator(done);
+const md5=crypto.createHash('md5');
 
-    function done(promise) {
-        if(promise instanceof Promise) {
-            return promise.then(ret=>it.next(ret),err=>it.next({error:err}));
-        }
-        it.next();
-    }
-    done();
-}
+const var1='oioi';
 
-run(function* (done){
-    var ret;
-    while(true) {
-        ret=yield done(conn());
-        if(typeof ret == 'number') {
-            console.log('RESOLVED',ret);
-            break;
-        }
-    }
-});
+const res=md5.update(var1).digest('hex');
+
+console.log(res);
+
+/*
+cidade: não-me-toque
+não traz o senai;
+Não-Me-Toque
+*/

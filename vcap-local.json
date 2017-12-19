@@ -20,38 +20,6 @@
             ]
         }
     ],
-    "memcachedcloud": [
-        {
-            "credentials": {
-                "password": "LnBS6xdbAmAfAaBc",
-                "servers": "pub-memcache-18098.dal-05.1.sl.garantiadata.com:18098",
-                "username": "a586a3f2-0d2e-4a2a-aed0-130e2428fadd"
-            },
-            "syslog_drain_url": null,
-            "volume_mounts": [],
-            "label": "memcachedcloud",
-            "provider": null,
-            "plan": "30mb",
-            "name": "Memcached Cloud-EDS_interno",
-            "tags": [
-                "DBA",
-                "(S) Cloud",
-                "web_and_app",
-                "Bluemix",
-                "Yes",
-                "Service",
-                "Runs on SoftLayer",
-                "(S) IT Infrastructure",
-                "Analytics",
-                "(P) Analytics",
-                "ibm_dedicated_public",
-                "Data Scientist",
-                "Development",
-                "Application",
-                "ibm_third_party"
-            ]
-        }
-    ],
     "cloudantNoSQLDB": [
         {
             "credentials": {

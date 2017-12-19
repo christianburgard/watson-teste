@@ -1,8 +1,10 @@
 const http = require('http');
 const fs=require('fs');
 const path=require('path');
+const crypto=require('crypto');
 
 var addToCoord=[]; // dados a serem acrescentados no arq coodinates_rs.json
+
 
 const {recreateEntity}=require('./update_entity');
 
@@ -266,10 +268,13 @@ function syncCourses(app) {
                     // aqui podemos ter problemas com JSON.parse
                     try {
                         var classrooms_json = JSON.parse(data);
+                        // const md5Hasher=crypto.createHash('md5');
+                        // const md5=md5Hasher.update(data).digest('hex');
+                        // fs.writeFileSync(`./debug/${md5}-webservice.json`,data);
                     } catch(e) {
                         const error={
                             error:'Houve um erro com os dados recebidos; (JSON inválido)',
-                            errNative:error
+                            errNative:e
                         }
                         return rejMaster(error);
                     }
@@ -524,9 +529,11 @@ function syncCourses(app) {
                     error:""
                 }));
 
+
                 // vamos acrescentar o # de entities atualizadas com sucesso
                 // ret2 será o retorno com sucesso;
                 results.msgScheduleLog+=' ('+ret2.response.totalSynonyms+')Sinonimos;';
+                results.msgScheduleLog+=` ${ret2.alteracao ? 'Houve alteração' : 'Sem alterações'};`;
                 retLog=yield done(makeLog({toMerge:{
                     status:'success',
                     msg:results.msgScheduleLog, // por acaso a msg é a mesma do scheduler, mas poderia ser outra;
