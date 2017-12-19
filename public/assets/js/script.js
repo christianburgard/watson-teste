@@ -169,7 +169,8 @@ function alertPopover(msg, style, params) {
     }
 }
 
-var baseURL = 'http://localhost:3000/';
+// var baseURL = 'http://localhost:3000/';
+var baseURL = '/';
 
 // implementação de btn-dropdown que seleciona valor
 $('.btn-dropdown-change > ul.dropdown-menu').on('click', function (e) {
@@ -197,3 +198,4 @@ $('body').on('change-dropdown', function (evt, data) {
     console.log('$root.data.value', $root.data('value'));
     // $btnUnitText.text(unitText);
 });
+

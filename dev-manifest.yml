@@ -7,5 +7,5 @@ applications:
   host: chatsenai
   disk_quota: 1024M
   services:
-  - Chat-Senai-cloudantNoSQLDB
   - Chat-Senai-conversation
+  - Chat-Senai-cloudantNoSQLDB

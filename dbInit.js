@@ -158,8 +158,7 @@ function initDb(funcs,params) {
                        "schedule": {
                           "$type": "object"
                        },
-                       "schedule.task": "syncCourses",
-                       "schedule.status": "running",
+                       "schedule.task": "syncCourses"
                     }
                  },function(err,results) {
                     if(err) {
@@ -169,10 +168,38 @@ function initDb(funcs,params) {
                     if(docs.length > 1) {
                         return rej({error:'Há mais de um registro de agendamento para sincronização de cursos'});
                     }
+                    if(!docs.length) {
+                        return res(0);
+                    }
                     return res(docs[0]);
                  });
             });
         } // getGeneralSettings
+
+        // criação do syncCourses (apenas se já não existir...)
+        var createSyncCourses=function(db) {
+            const syncCoursesObj={
+                type:"parameter",
+                name:"Sincronização de cursos",
+                schedule:{
+                    task:"syncCourses",
+                    on:0,
+                    status:'',
+                    interval:{
+                        value:300,
+                        cond:null
+                    }
+                }
+            }
+            return new Promise((res,rej)=>{
+                db.insert(syncCoursesObj,function(err,body,header) {
+                    if(err) {
+                        return rej({error:'Não foi possível criar a tarefa de sincronização',errNative:err});
+                    }
+                    return res('Tarefa de sincronização de cursos criada com sucesso!');
+                });
+            });
+        }
 
         return new Promise((res,rej)=>{
 
@@ -181,7 +208,9 @@ function initDb(funcs,params) {
                     let criacao=yield done(create);
                     const db=cloudant.use('general_settings');
                     let syncCourseSchedule=yield done(getGeneralSettings(db));
-                    if(syncCourseSchedule) {
+
+                    if(syncCourseSchedule && syncCourseSchedule.schedule.status=="running") {
+                        // ZERANDO STATUS TRAVADO EM "running"
                         syncCourseSchedule.schedule.status='renew';
                         db.insert(syncCourseSchedule,syncCourseSchedule._id,function(err, body, header) {
                             if(err) {
@@ -190,15 +219,20 @@ function initDb(funcs,params) {
                             console.log('zerando status de syncCourses em general_settings',body);
                             return res('Status de syncCourses zerada!!');
                         });
+                    } else if(!syncCourseSchedule) {
+                        // não há registro de tarefa do "syncCourses", vamos criar!
+                        yield done(createSyncCourses(db));
+                        return res('general_settings db e tarefa "syncCourses" criados com sucesso!');
+                    } else {
+                        return res('general_setting criada e syncCourses verificado.');
                     }
-                    return res('general_setting criada e syncCourses verificado.');
                 } catch(e) {
                     return rej(e);
                 }
             });
         });
     } // initGeneralSettings
-    
+
 
     /**
      * apenas cria a db "general_log", se não existir...

@@ -18,13 +18,14 @@ function initUser(app) {
     app.get('/login',  routes.login);
     app.post('/login', passport.authenticate('local', {
         successRedirect: '/courses',
-        failureRedirect: '/login222?e=1'
+        failureRedirect: '/login',
+        failureFlash:'Usuário ou senha inválidos!'
     }));
      app.get('/logout', function(req, res){
         req.logout();
         req.session.destroy();
         res.redirect("/");
-     });
+    });
 
 
      app.get('/profile',  passport.authenticationMiddleware(), routes.profile);

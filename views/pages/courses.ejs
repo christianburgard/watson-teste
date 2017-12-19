@@ -188,7 +188,7 @@
             var total=params.totalRegs || 0;
             var rootClass=params.rootClass || '.paginator';
             // paginator
-            var pagAtual=parseInt($(rootClass+' select.set-page').val());
+            var pagAtual=parseInt($(rootClass+' select.set-page').val()) || 1;
             var perPage=$(rootClass+' .perPage').val();
             var totalPages=Math.ceil(total/perPage);
             var arrPagesOptions=[];
@@ -197,9 +197,11 @@
             }
             $(rootClass+' select.set-page').html(arrPagesOptions);
             $(rootClass+' select.set-page').val(pagAtual);
-            var de=((pagAtual-1)*perPage)+1;
-            var ate=pagAtual*perPage;
+            var de=((pagAtual-1)*perPage) || 0;
+            if(de) de++;
+            var ate=(pagAtual*perPage) || 0;
             if(ate > total) ate=total;
+            if(ate && ! de) de=1;
             $(rootClass+' '+rootClass+'-de').text(de);
             $(rootClass+' '+rootClass+'-ate').text(ate);
             $(rootClass+' '+rootClass+'-total').text(total);

@@ -263,7 +263,16 @@ function syncCourses(app) {
 
                 // The whole response has been received. Print out the result.
                 resp.on('end', () => {
-                    var classrooms_json = JSON.parse(data);
+                    // aqui podemos ter problemas com JSON.parse
+                    try {
+                        var classrooms_json = JSON.parse(data);
+                    } catch(e) {
+                        const error={
+                            error:'Houve um erro com os dados recebidos; (JSON inválido)',
+                            errNative:error
+                        }
+                        return rejMaster(error);
+                    }
 
                     // validações aqui!
                     if(classrooms_json.length < 2) {

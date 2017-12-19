@@ -1,0 +1,78 @@
+{
+    "conversation": [
+        {
+            "credentials": {
+                "url": "https://gateway.watsonplatform.net/conversation/api",
+                "username": "10a6e314-ed0a-4604-8538-8012ec3ddf0f",
+                "password": "dRE1PK7g0Ut1"
+            },
+            "syslog_drain_url": null,
+            "volume_mounts": [],
+            "label": "conversation",
+            "provider": null,
+            "plan": "standard",
+            "name": "Chat-Senai-conversation",
+            "tags": [
+                "watson",
+                "ibm_created",
+                "ibm_dedicated_public",
+                "lite"
+            ]
+        }
+    ],
+    "memcachedcloud": [
+        {
+            "credentials": {
+                "password": "LnBS6xdbAmAfAaBc",
+                "servers": "pub-memcache-18098.dal-05.1.sl.garantiadata.com:18098",
+                "username": "a586a3f2-0d2e-4a2a-aed0-130e2428fadd"
+            },
+            "syslog_drain_url": null,
+            "volume_mounts": [],
+            "label": "memcachedcloud",
+            "provider": null,
+            "plan": "30mb",
+            "name": "Memcached Cloud-EDS_interno",
+            "tags": [
+                "DBA",
+                "(S) Cloud",
+                "web_and_app",
+                "Bluemix",
+                "Yes",
+                "Service",
+                "Runs on SoftLayer",
+                "(S) IT Infrastructure",
+                "Analytics",
+                "(P) Analytics",
+                "ibm_dedicated_public",
+                "Data Scientist",
+                "Development",
+                "Application",
+                "ibm_third_party"
+            ]
+        }
+    ],
+    "cloudantNoSQLDB": [
+        {
+            "credentials": {
+                "username": "48ca1e0f-7361-4586-9aca-4f982ef8c52d-bluemix",
+                "password": "5a9ebc63cc1f683ebb8f47b483570aeb7142a7035bd712a2ea55b1a138c5e2bd",
+                "host": "48ca1e0f-7361-4586-9aca-4f982ef8c52d-bluemix.cloudant.com",
+                "port": 443,
+                "url": "https://48ca1e0f-7361-4586-9aca-4f982ef8c52d-bluemix:5a9ebc63cc1f683ebb8f47b483570aeb7142a7035bd712a2ea55b1a138c5e2bd@48ca1e0f-7361-4586-9aca-4f982ef8c52d-bluemix.cloudant.com"
+            },
+            "syslog_drain_url": null,
+            "volume_mounts": [],
+            "label": "cloudantNoSQLDB",
+            "provider": null,
+            "plan": "Lite",
+            "name": "Cloudant_FIERGS",
+            "tags": [
+                "data_management",
+                "ibm_created",
+                "lite",
+                "ibm_dedicated_public"
+            ]
+        }
+    ]
+}
