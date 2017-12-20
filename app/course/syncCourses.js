@@ -1,7 +1,8 @@
 const http = require('http');
 const fs=require('fs');
 const path=require('path');
-const crypto=require('crypto');
+// const crypto=require('crypto');
+const concat=require('concat-stream');
 
 var addToCoord=[]; // dados a serem acrescentados no arq coodinates_rs.json
 
@@ -256,15 +257,17 @@ function syncCourses(app) {
             // auth is: 'Basic VGVzdDoxMjM='
 
             http.get(options, (resp) => {
-                let data = '';
+                // let data = '';
 
                 // A chunk of data has been recieved.
-                resp.on('data', (chunk) => {
+                /* resp.on('data', (chunk) => {
                     data += chunk;
-                });
+                }); */
 
                 // The whole response has been received. Print out the result.
-                resp.on('end', () => {
+                // resp.on('end', () => {
+
+                resp.pipe(concat((data) => {
                     // aqui podemos ter problemas com JSON.parse
                     try {
                         var classrooms_json = JSON.parse(data);
@@ -294,11 +297,19 @@ function syncCourses(app) {
                     // rodará uma vez, e raramente quando uma nova unidade for adicionada à lista;
                     var arrAddrPromises=[];
 
+
+                    // debug
+                    let verAddr=[];
+                    let repId=[];
+
                     for(var i = 0; i < classrooms_json.length; i++) {
                         classrooms_json[i]._id = "T"+classrooms_json[i].id.toString();
                         classrooms_json[i].type = "Turma";
 
-
+                        if(verAddr.findIndex(elem=>elem=="U"+classrooms_json[i].unidade.id)>-1)
+                            repId.push("U"+classrooms_json[i].unidade.id);
+                        
+                        verAddr.push("U"+classrooms_json[i].unidade.id);
 
                         addresses["U"+classrooms_json[i].unidade.id] = classrooms_json[i].unidade;
                         addresses["U"+classrooms_json[i].unidade.id].type = "Unidade";
@@ -322,6 +333,8 @@ function syncCourses(app) {
                         arrClassrooms.push(classroom);
                     } // loop principal
 
+                    // debug
+                    console.log(repId);
 
                     for(var key in courses) {
                         arrCourses.push(courses[key]);
@@ -379,7 +392,7 @@ function syncCourses(app) {
                         return rejMaster(err);
 
                     })
-                }); // res.on('end')
+                })); // res.on('end')
             }).on("error", (err) => {
                 const errCode=err.code;
                 var error={error:'Houve um erro de rede!',errNative:err}
