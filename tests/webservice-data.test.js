@@ -71,18 +71,18 @@ function processTest() {
 
 const qtd=20;
 
-let array=[];
-for(let i=1; i<=qtd; i++) {
-    array.push(processTest());
-}
+// let array=[];
+// for(let i=1; i<=qtd; i++) {
+//     array.push(processTest());
+// }
 
-Promise.all(array)
-    .then(ret=>{
-        console.log('RESOLVED!',ret);
-    })
-    .catch(err=>{
-        console.log(err);
-    });
+// Promise.all(array)
+//     .then(ret=>{
+//         console.log('RESOLVED!',ret);
+//     })
+//     .catch(err=>{
+//         console.log(err);
+//     });
 
 processTest()
 .then(ret=>{
