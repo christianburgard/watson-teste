@@ -61,7 +61,7 @@ function findUser(username, callback) {
         //       console.log("Usuários Encontrados:"+len);
         if (len == 0) {
           console.log("usuário não encontrado [find]: " + username);
-	  if (username == "admin") {
+          if (username == "admin") {
             var hash = bcrypt.hashSync("eds@2017", salt);
             user = {
               type: "user",

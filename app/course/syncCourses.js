@@ -298,18 +298,10 @@ function syncCourses(app) {
                     var arrAddrPromises=[];
 
 
-                    // debug
-                    let verAddr=[];
-                    let repId=[];
-
                     for(var i = 0; i < classrooms_json.length; i++) {
                         classrooms_json[i]._id = "T"+classrooms_json[i].id.toString();
                         classrooms_json[i].type = "Turma";
 
-                        if(verAddr.findIndex(elem=>elem=="U"+classrooms_json[i].unidade.id)>-1)
-                            repId.push("U"+classrooms_json[i].unidade.id);
-                        
-                        verAddr.push("U"+classrooms_json[i].unidade.id);
 
                         addresses["U"+classrooms_json[i].unidade.id] = classrooms_json[i].unidade;
                         addresses["U"+classrooms_json[i].unidade.id].type = "Unidade";
@@ -333,8 +325,6 @@ function syncCourses(app) {
                         arrClassrooms.push(classroom);
                     } // loop principal
 
-                    // debug
-                    console.log(repId);
 
                     for(var key in courses) {
                         arrCourses.push(courses[key]);

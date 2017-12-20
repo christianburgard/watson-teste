@@ -199,3 +199,42 @@ $('body').on('change-dropdown', function (evt, data) {
     // $btnUnitText.text(unitText);
 });
 
+// centralização das chamadas ajax;
+function ajaxCall(params) {
+    if(!params) {
+        return false;
+    }
+    var url=params.url;
+    var data=params.data;
+    var method=params.method || 'POST';
+    var dataType=params.dataType || 'json';
+    var extraConfs=params.extraConfs || {};
+    var errorHandler=params.errorHandler || function(error) {
+        if(error) {
+            var error=error.responseJSON;
+            alertPopover(error.error, 'danger',{closeDelay:-1});
+        }
+    }
+    
+    // algo a ser executado tanto no "always"
+    var always=params.always || function() {};
+
+    var confs={
+        url:url,
+        data:data,
+        method:method,
+        dataType:dataType
+    }
+    confs=Object.assign(confs,extraConfs);
+    return new Promise((res,rej)=>{
+        return $.ajax(confs)
+        .done(function(data) {
+            return res({data:data});
+        })
+        .fail(function(error) {
+            errorHandler(error);
+            return rej({error:error});
+        })
+        .always(always);
+    });
+} // ajaxCall
