@@ -646,6 +646,10 @@ function callWatsonApi (req, res) {
                              response.output.text = [].concat(response.output.text).concat(response_text);
                              response.output.text = response.output.text.join(" ");
                              res.sendByProtocol(response);
+                           } else {
+                             response.output.text = [].concat(response.output.text);
+                             response.output.text = response.output.text.join(" ");
+                             res.sendByProtocol(response);
                            }
                          } else {
                            callback_parameters.input.addresses_found = false;
