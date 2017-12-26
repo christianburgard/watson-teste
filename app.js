@@ -526,7 +526,10 @@ function callWatsonApi (req, res) {
                            if (taplist) {
                              response.output.text = [].concat(response.output.text).concat(response_text);
                              response.output.text = response.output.text.join(" ");
-//                             response.output.text = response_text;
+                             res.sendByProtocol(response);
+                           } else {
+                             response.output.text = [].concat(response.output.text);
+                             response.output.text = response.output.text.join(" ");
                              res.sendByProtocol(response);
                            }
                          } else {
