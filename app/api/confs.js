@@ -12,11 +12,6 @@ const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : '1c06
 
 // const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : '69971282-72a4-45d0-ac1e-898c4eae96c6'; // MERGED
 
-<<<<<<< HEAD
-// const WORKSPACE_ID = process.env.WORKSPACE_ID ? process.env.WORKSPACE_ID : 'ce8dcd33-d63d-45d9-b61b-d05cb7c2b148';
-=======
-
->>>>>>> 73779c235571d81d0c32a118b60afb4472cdb275
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ? process.env.PAGE_ACCESS_TOKEN : 'EAAEDrYzsZCxMBALp0o1KXaZC2ibT63FLBn7uRlaoqhIhxrtYJK5krJjZBfDaIzIH9ZCkCqAT9xvAmxJYMZA2LVCFGqA12kvH5Y1bSueVgSfK084wSmGF4cxEI3Quz9NCO4PkKZCCk8VRmxnQvwNEfPAqIbo7xW1NfSXnSsXXKxCgZDZD';
 
 function getConversationCredentials(jsonData) {

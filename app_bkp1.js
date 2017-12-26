@@ -27,22 +27,6 @@ const DEBUG_CLOUDANT = false;
 const DEBUG_CHATLOG = false;
 const DEBUG_SESSION = false;
 
-
-// função para técnica de loop assincrono com generators
-// nome estranho "run115" só p/ não conflitar com nada;
-function run115(generator) {
-  var it=generator(done);
-
-  function done(promise) {
-    if(promise instanceof Promise) {
-      return promise.then(ret=>it.next(ret),err=>it.throw(err));
-    }
-    return it.next();
-  }
-
-  done(1);
-} // run115
-
 console.log('%%%%%%%%% Iniciando pré-configurações %%%%%%%%%');
 initDb()
     .then((ret)=>{
@@ -427,71 +411,34 @@ function callWatsonApi (req, res) {
            }
            if (DEBUG_SESSION)
              console.log("_@_ AFTER response.context.conversation_id =",conversation_id);
+           db_chatlog.find({selector:{_id: conversation_id} },function (err,result) {
+             if (err) {
+               console.log("Error: ",err);
+             } else {
+               var conversation_log = {};
 
-          
-          
-          const chatlogFind115=({selector}={})=>{
-            return new Promise((res,rej)=>{
-              return db_chatlog.find(selector,function (err,result) {
-                if(err) {
-                  console.log("Error: ",err);
-                  return rej(err);
-                }
-                if(result && Array.isArray(result.docs)) {
-                  return res(result.docs);
-                }
-              });
-            });
-           } // chatlogFind115
+               if (result.docs.length > 0) {
+                 conversation_log = result.docs[0];
+                 //console.log(result.docs[0]);
+                 conversation_log._rev = conversation_log._rev;
+               }
 
-           const chatlogSave115=({toSave,id}={})=>{
-            return new Promise((res,rej)=>{
-              return db_chatlog.insert(toSave,id,function(err, body, header) {
-                if (err) {
-                  console.log('_@_ [data.insert] ', err.message);
-                  return rej(err);
-                } else {
-                  if (DEBUG_CHATLOG)
-                    console.log("_@_ Gravada conversa!");
-                  
-                  setTimeout(()=>{
-                    return res({ok:true});
-                  },10000);
-                }
-              });
-            });
-           } // chatlogSave115
+               if (!conversation_log.messages) {
+                 conversation_log.messages = [];
+               }
 
-          
-          run115(function*(done){
-
-            // aqui entramos num loop, e só sairemos quando tudo tiver sido salvo
-            // let ok=false;
-            while(true) {
-              let docs=yield done(chatlogFind115({selector:{selector:{_id: conversation_id}}}));
-              var conversation_log = {};
-   
-              if (docs.length > 0) {
-                conversation_log = docs[0];
-                //console.log(docs[0]);
-                conversation_log._rev = conversation_log._rev;
-              }
-   
-              if (!conversation_log.messages) {
-                conversation_log.messages = [];
-              }
-
-              conversation_log.messages.push(response);
-              //console.log("_@_ Inserindo",conversation_log);
-              let saved=yield done(chatlogSave115({toSave:conversation_log,id:conversation_id}));
-              if(saved && saved.ok) {
-                break;
-              }
-            }
-          });
-
-// 1a008dae-e024-4d2c-af18-65409e2e515d - um registro na chatlog
-
+               conversation_log.messages.push(response);
+               //console.log("_@_ Inserindo",conversation_log);
+               db_chatlog.insert(conversation_log,conversation_id,function(err, body, header) {
+                 if (err) {
+                   console.log('_@_ [data.insert] ', err.message);
+                 } else {
+                   if (DEBUG_CHATLOG)
+                     console.log("_@_ Gravada conversa!");
+                 }
+               });
+             }
+           });
 //         } else {
            // Como esta eh a primeira mensagem,
            // cria nova conversa no conversation log
