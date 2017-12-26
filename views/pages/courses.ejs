@@ -324,22 +324,14 @@
             var url=baseURL+'api/scheduler';
             var coverForm=cover($('fieldset.editing').eq(0));
             var enableBtn=disableBtn($(th));
-            $.ajax(url,{method:'POST',dataType:'json',contentType:'application/json',data:toSave})
-                .done(function(data) {
+            // $.ajax(url,{method:'POST',dataType:'json',contentType:'application/json',data:toSave})
+            ajaxCall({url:url,data:toSave,extraConfs:{contentType:'application/json'},always:function() {coverForm();enableBtn();}})
+                .then(function(data) {
+                    data=data.data;
                     // console.log('saving ret:',data);
 
                     scheduleData._id=data.id;
                     return alertPopover('Agendamento salvo com sucesso!', 'success',{closeDelay:5000});
-                })
-                .fail(function(err) {
-                    if(err) {
-                        var error=err.responseJSON;
-                        alertPopover(error.error, 'danger',{closeDelay:-1});
-                    }
-                })
-                .always(function() {
-                    coverForm();
-                    enableBtn();
                 });
         } // saveSchedule
 
@@ -357,8 +349,10 @@
             // var coverLog=cover($('div.item_list').eq(0));
             
 
-            $.ajax(url,{method:'GET',dateType:'json'})
-                .done(function(data) {
+            // $.ajax(url,{method:'GET',dateType:'json'})
+            return ajaxCall({url:url,method:'GET',dataType:'json',always:function() {coverForm();}})
+                .then(function(data) {
+                    data=data.data;
                     // console.log('data',data);
                     var schedule=data.schedules;
                     coverForm();
@@ -404,11 +398,6 @@
                     scheduleData._id=_id;
                     scheduleData._rev=_rev;
 
-                })
-                .fail(function(err) {
-                    console.log(err);
-                    
-                    coverForm();
                 });
         } // getSchedule
 
@@ -469,11 +458,19 @@
             var enableBtn=disableBtn($('#execNow'));
             var url=baseURL+'courses/sync';
             var perPage=$('.paginator select.perPage').val();
-            $.getJSON(url)
+
+
+            return ajaxCall({url:url,method:'GET',dataType:'json',always:function() {enableBtn();}})
+                .then(function(data) {
+                    data=data.data;
+                    getLogs({pag:1,perPage:perPage});
+                });
+            
+            /* $.getJSON(url)
             .always(function(data) {
                 enableBtn();
                 getLogs({pag:1,perPage:perPage});
-            });
+            }); */
         } // execSync
 
 

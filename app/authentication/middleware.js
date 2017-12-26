@@ -3,7 +3,11 @@ function authenticationMiddleware () {
     if (req.isAuthenticated()) {
       return next();
     }
-    res.redirect('/login');
+    if(req.get('x-requested-with') == 'XMLHttpRequest') {
+      return res.status(401).json({error:'Sessão expirada! Faça login novamente!'});
+    }
+    return res.redirect('/login');
+
   }
 }
 
