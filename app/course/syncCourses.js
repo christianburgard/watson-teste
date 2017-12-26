@@ -1,7 +1,7 @@
 const http = require('http');
 const fs=require('fs');
 const path=require('path');
-// const crypto=require('crypto');
+const crypto=require('crypto');
 const concat=require('concat-stream');
 
 var addToCoord=[]; // dados a serem acrescentados no arq coodinates_rs.json
@@ -21,6 +21,19 @@ var getCoordinates=function() {
 }
 var coordinates=getCoordinates();
 
+
+// generator
+function run(generator) {
+    var it=generator(done);
+
+    function done(promise) {
+        if(promise instanceof Promise) {
+            return promise.then(ret=>it.next(ret),err=>it.next(err));
+        }
+        it.next();
+    }
+    done(1);
+}
 
 
 //DATABASE
@@ -172,7 +185,54 @@ function syncCourses(app) {
     }
 
 
-    
+
+    const getMd5Webservice=()=>{
+        const db = dbSchedule;
+        return new Promise((res,ret)=>{
+
+            return db.find({selector:{
+                type:'parameter_hashes'
+            }},function(err,results) {
+                if(err) {
+                    return rej({error:err})
+                }
+                if(results && results.docs && results.docs.length) {
+                    return res(results.docs[0]);
+                } else {
+                    return run(function*(done) {                
+                        const obj={type:'parameter_hashes',webserviceMD5:''};
+                        yield done(saveMd5Webservice(obj)());
+                        let doc=yield done(getMd5Webservice());
+                        return res(doc);
+                    });
+                };
+            });
+            
+        });
+    }
+
+    const saveMd5Webservice=(obj)=>{
+        const db = dbSchedule;        
+        return ({renew}={})=>{
+            return new Promise((res,rej)=>{
+                return run(function*(done){
+                    if(renew) {
+                        // devemos recarregar o doc antes de salvá-lo, pq pode ter sido alterado no meio tempo;
+                        let newdoc=yield done(getMd5Webservice());
+                        obj=Object.assign(obj,newdoc,{webserviceMD5:obj.webserviceMD5});
+                    }
+                    return db.insert(obj,function(err,result) {
+                        if(err) {
+                            return rej(err);
+                        }
+                        return res({ok:true,result});
+                    });
+                });
+            });
+        }
+    } // saveMd5Webservice
+
+
     // db.init('data');
     
     /**
@@ -268,121 +328,136 @@ function syncCourses(app) {
                 // resp.on('end', () => {
 
                 resp.pipe(concat((data) => {
-                    // aqui podemos ter problemas com JSON.parse
-                    try {
-                        var classrooms_json = JSON.parse(data);
-                        // const md5Hasher=crypto.createHash('md5');
-                        // const md5=md5Hasher.update(data).digest('hex');
-                        // fs.writeFileSync(`./debug/${md5}-webservice.json`,data);
-                    } catch(e) {
-                        const error={
-                            error:'Houve um erro com os dados recebidos; (JSON inválido)',
-                            errNative:e
-                        }
-                        return rejMaster(error);
-                    }
+                    run(function*(done){
+                        let saveMd5WebserviceFnc;
+                        // aqui podemos ter problemas com JSON.parse
+                        try {
+                            var classrooms_json = JSON.parse(data);
+                            const md5Hasher=crypto.createHash('md5');
+                            const md5=md5Hasher.update(data).digest('hex');
 
-                    // validações aqui!
-                    if(classrooms_json.length < 2) {
-                        return rejMaster({error:'Resposta inválida, não há dados!'});
-                    }
+                            let md5Webservice=yield done(getMd5Webservice());
 
-                    var arrClassrooms=[]; // array de informações principais/gerais;
-                    var courses = {};
-                    // var arrCourses=[]; // array de cursos; ESTÁ NUM ESCOPO ACIMA! Será usado fora desse escopo de vars
-                    var addresses = {};
-                    var arrAddresses=[]; // array de endereços;
-
-                    // possível array com processamento de todas as coordenadas não encontradas no arquivo;
-                    // rodará uma vez, e raramente quando uma nova unidade for adicionada à lista;
-                    var arrAddrPromises=[];
+                            if(md5Webservice.webserviceMD5 == md5) {
+                                // nada mudou, vamos encerrar;
+                                return resMaster({noaction:1});
+                            }
+                            md5Webservice.webserviceMD5=md5;
+                            saveMd5WebserviceFnc=saveMd5Webservice(md5Webservice);
 
 
-                    for(var i = 0; i < classrooms_json.length; i++) {
-                        classrooms_json[i]._id = "T"+classrooms_json[i].id.toString();
-                        classrooms_json[i].type = "Turma";
-
-
-                        addresses["U"+classrooms_json[i].unidade.id] = classrooms_json[i].unidade;
-                        addresses["U"+classrooms_json[i].unidade.id].type = "Unidade";
-                        addresses["U"+classrooms_json[i].unidade.id]._id = "U"+classrooms_json[i].unidade.id;
-
-                        classrooms_json[i].unidade = "U"+classrooms_json[i].unidade.id;
-                        courses["C"+classrooms_json[i].idCurso] = {
-                            _id: "C"+classrooms_json[i].idCurso,
-                            titulo: classrooms_json[i].titulo,
-                            sinonimos: classrooms_json[i].sinonimos,
-                            nivel: classrooms_json[i].nivel,
-                            type: "Curso",
-                            escolaridadeMinima: classrooms_json[i].escolaridadeMinima,
-                            idadeMinima: classrooms_json[i].idadeMinima,
-                            areaAtuacao: classrooms_json[i].areaAtuacao,
-                            perfilConclusao: classrooms_json[i].perfilConclusao
+                            // fs.writeFileSync(`./debug/${md5}-webservice.json`,data);
+                        } catch(e) {
+                            const error={
+                                error:'Houve um erro com os dados recebidos; (JSON inválido)',
+                                errNative:e
+                            }
+                            return rejMaster(error);
                         }
 
-                        //console.log("Inserting '",classrooms_json[i].titulo,"' classroom...");
-                        var classroom = classrooms_json[i];
-                        arrClassrooms.push(classroom);
-                    } // loop principal
+                        // validações aqui!
+                        if(classrooms_json.length < 2) {
+                            return rejMaster({error:'Resposta inválida, não há dados!'});
+                        }
+
+                        var arrClassrooms=[]; // array de informações principais/gerais;
+                        var courses = {};
+                        // var arrCourses=[]; // array de cursos; ESTÁ NUM ESCOPO ACIMA! Será usado fora desse escopo de vars
+                        var addresses = {};
+                        var arrAddresses=[]; // array de endereços;
+
+                        // possível array com processamento de todas as coordenadas não encontradas no arquivo;
+                        // rodará uma vez, e raramente quando uma nova unidade for adicionada à lista;
+                        var arrAddrPromises=[];
 
 
-                    for(var key in courses) {
-                        arrCourses.push(courses[key]);
-                    }
+                        for(var i = 0; i < classrooms_json.length; i++) {
+                            classrooms_json[i]._id = "T"+classrooms_json[i].id.toString();
+                            classrooms_json[i].type = "Turma";
 
-                    for (var key in addresses) {
-                        let nome=addresses[key].nome;
-                        let municipio=addresses[key].municipio;
-                        let coordObj=coordinates.find(elem=>elem.nome==nome && elem.municipio==municipio);
-                        if(coordObj) {
-                            addresses[key].geometry={type: "Point",coordinates: coordObj.coordinates};
-                            addresses[key].type="Unidade";
-                            arrAddresses.push(addresses[key]);
-                        } else {
-                            arrAddrPromises.push(new Promise((res,rej)=>{
-                                var address2=Object.assign({},addresses[key]);
 
-                                return googleMapsClient.geocode({
-                                    address: address2.nome+", "+address2.municipio+", Rio Grande do Sul"
-                                },function(err,response) {
-                                    if(err) {
-                                        console.log('########################### erro no GEOCODE',err);
-                                        return rej(err);
-                                    }
-                                    let coords=[response.json.results[0].geometry.location.lng,response.json.results[0].geometry.location.lat];
-                                    address2.geometry = {type: "Point",coordinates: coords};
-                                    address2.type = "Unidade";
-                                    // console.log("Google Geo API Result: geometry=",this.address.geometry);
-                                
-                                    addToCoord.push({
-                                        nome:nome,
-                                        municipio:municipio,
-                                        coordinates:coords
+                            addresses["U"+classrooms_json[i].unidade.id] = classrooms_json[i].unidade;
+                            addresses["U"+classrooms_json[i].unidade.id].type = "Unidade";
+                            addresses["U"+classrooms_json[i].unidade.id]._id = "U"+classrooms_json[i].unidade.id;
+
+                            classrooms_json[i].unidade = "U"+classrooms_json[i].unidade.id;
+                            courses["C"+classrooms_json[i].idCurso] = {
+                                _id: "C"+classrooms_json[i].idCurso,
+                                titulo: classrooms_json[i].titulo,
+                                sinonimos: classrooms_json[i].sinonimos,
+                                nivel: classrooms_json[i].nivel,
+                                type: "Curso",
+                                escolaridadeMinima: classrooms_json[i].escolaridadeMinima,
+                                idadeMinima: classrooms_json[i].idadeMinima,
+                                areaAtuacao: classrooms_json[i].areaAtuacao,
+                                perfilConclusao: classrooms_json[i].perfilConclusao
+                            }
+
+                            //console.log("Inserting '",classrooms_json[i].titulo,"' classroom...");
+                            var classroom = classrooms_json[i];
+                            arrClassrooms.push(classroom);
+                        } // loop principal
+
+
+                        for(var key in courses) {
+                            arrCourses.push(courses[key]);
+                        }
+
+                        for (var key in addresses) {
+                            let nome=addresses[key].nome;
+                            let municipio=addresses[key].municipio;
+                            let coordObj=coordinates.find(elem=>elem.nome==nome && elem.municipio==municipio);
+                            if(coordObj) {
+                                addresses[key].geometry={type: "Point",coordinates: coordObj.coordinates};
+                                addresses[key].type="Unidade";
+                                arrAddresses.push(addresses[key]);
+                            } else {
+                                arrAddrPromises.push(new Promise((res,rej)=>{
+                                    var address2=Object.assign({},addresses[key]);
+
+                                    return googleMapsClient.geocode({
+                                        address: address2.nome+", "+address2.municipio+", Rio Grande do Sul"
+                                    },function(err,response) {
+                                        if(err) {
+                                            console.log('########################### erro no GEOCODE',err);
+                                            return rej(err);
+                                        }
+                                        let coords=[response.json.results[0].geometry.location.lng,response.json.results[0].geometry.location.lat];
+                                        address2.geometry = {type: "Point",coordinates: coords};
+                                        address2.type = "Unidade";
+                                        // console.log("Google Geo API Result: geometry=",this.address.geometry);
+                                    
+                                        addToCoord.push({
+                                            nome:nome,
+                                            municipio:municipio,
+                                            coordinates:coords
+                                        });
+                                        arrAddresses.push(address2);
+                                        return res({ok:true});
                                     });
-                                    arrAddresses.push(address2);
-                                    return res({ok:true});
-                                });
-                            }));
-                        }
+                                }));
+                            }
 
-                    } // loop em addresses
+                        } // loop em addresses
 
-                    // vamos começar processando as possíveis coordenadas não encontradas no arquivo;
-                    Promise.all(arrAddrPromises)
-                    .then(ret=>{
-                        // aqui a "data" já foi deletada;
-                        // essas 3 arrays arrClassrooms,arrCourses,arrAddresses contém as informações que deverão ser inseridas no "data"
-                        
-                        // retorno final
-                        return resMaster({
-                            arrays:[arrClassrooms,arrCourses,arrAddresses]
-                        });
-                    },err=>{
-                        // aqui houve um erro na parte dos addresses
-                        return rejMaster(err);
+                        // vamos começar processando as possíveis coordenadas não encontradas no arquivo;
+                        Promise.all(arrAddrPromises)
+                        .then(ret=>{
+                            // aqui a "data" já foi deletada;
+                            // essas 3 arrays arrClassrooms,arrCourses,arrAddresses contém as informações que deverão ser inseridas no "data"
+                            
+                            // retorno final
+                            return resMaster({
+                                arrays:[arrClassrooms,arrCourses,arrAddresses],
+                                saveMd5WebserviceFnc
+                            });
+                        },err=>{
+                            // aqui houve um erro na parte dos addresses
+                            return rejMaster(err);
 
-                    })
-                })); // res.on('end')
+                        })
+                    });
+                })); // concat()
             }).on("error", (err) => {
                 const errCode=err.code;
                 var error={error:'Houve um erro de rede!',errNative:err}
@@ -414,18 +489,7 @@ function syncCourses(app) {
     }
 
 
-    // generator
-    function run(generator) {
-        var it=generator(done);
 
-        function done(promise) {
-            if(promise instanceof Promise) {
-                return promise.then(ret=>it.next(ret),err=>it.next(err));
-            }
-            it.next();
-        }
-        done(1);
-    }
 
     return setRunningStatus()
     .then(ret=>{
@@ -436,7 +500,43 @@ function syncCourses(app) {
         throw err;
     })
     .then(ret=>{
+        if(ret && ret.noaction) {
+            // nada mudou, apenas registraremos o log;
+            return new Promise((res,rej)=>{
+                return run(function*(done) {
+                    let retLogExec, retLog;
+                    // setando o status p/ success (general_settings)
+                    retLogExec=yield done(saveExec({
+                        now2:new Date(),
+                        status:'success',
+                        error:""
+                    }));
+
+                    let results={
+                        msgScheduleLog:'Não houve alteração nos dados!',
+                        scheduleStatus:'success'
+                    }
+
+                    // registrando log (general_log)
+                    retLog=yield done(makeLog({toMerge:{
+                        status:'success',
+                        msg:results.msgScheduleLog, // por acaso a msg é a mesma do scheduler, mas poderia ser outra;
+                        id_ref:'',
+                        tries:1
+                    }}));
+
+                    // encerramos aqui o processamento;
+                    return res(results);
+                });
+            });
+        }
+
+
+
+
         // aqui conseguimos pegar os dados e fazer os tratamentos, inclusive com coordinates
+        
+        let saveMd5WebserviceFnc=ret.saveMd5WebserviceFnc; // quando finalizarmos com sucesso, devemos salvar o novo MD5 do webservice
         var arrays=ret.arrays; // 3 arrays de dados que devem ser inseridas no "data"
         var geral=arrays[0];
         var courses=arrays[1];
@@ -536,7 +636,7 @@ function syncCourses(app) {
                 // vamos acrescentar o # de entities atualizadas com sucesso
                 // ret2 será o retorno com sucesso;
                 results.msgScheduleLog+=' ('+ret2.response.totalSynonyms+')Sinonimos;';
-                results.msgScheduleLog+=` ${ret2.alteracao ? 'Houve alteração' : 'Sem alterações'};`;
+                results.msgScheduleLog+=` ${ret2.alteracao ? '@Cursos reconstruída' : 'Sem alterações em @Cursos'};`;
                 retLog=yield done(makeLog({toMerge:{
                     status:'success',
                     msg:results.msgScheduleLog, // por acaso a msg é a mesma do scheduler, mas poderia ser outra;
@@ -551,6 +651,7 @@ function syncCourses(app) {
                 console.log('#########################################################');
 
                 // se chegamos até aqui, obtivemos sucesso;
+                yield done(saveMd5WebserviceFnc({renew:1})); // salvando o novo MD5
                 return res(results);
             });
         });
