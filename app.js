@@ -149,6 +149,7 @@ require('./app/course').init(app);
 require('./app/address').init(app);
 require('./app/api').init(app);
 require('./app/chat').init(app);
+require('./app/general_settings').init(app);
 
 /*
 var server;
@@ -216,7 +217,7 @@ io.on('connection', function(client){
         console.log("Emitindo watson-message com seguinte payload:",body);
       client.emit('watson-message',JSON.stringify(body));
     }
-    
+
     callWatsonApi(req, res);
   });
   client.on('disconnect', function(){

@@ -21,6 +21,24 @@
         .paginator p span.next + span {margin-left:-17px;}
         .paginator .perPage-p select {display:inline-block;width:auto;}
         select.select-mini1 {padding:4px 7px;height:auto;}
+
+        /* flex items */
+        .items-row {
+            display:flex;
+            justify-content:space-between;
+        }
+
+        .btn-subform {
+            display:block;
+            box-sizing:border-box;
+            padding-right:20px;
+            margin-top:10px;
+        }
+        .btn-subform button {
+            float:right;
+            margin-left:20px;
+        }
+
     </style>
 
 </head>
@@ -32,131 +50,139 @@
         <div class="main-container">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-sm-2 page-sidebar mobile-filter-sidebar">
-                        <aside>
-                            <div class="inner-box">
-                                <div id="filter_theme" class=" list-filter">
-                                    <h5 class="list-title"><strong><a href="#">Parâmetros</a></strong></h5>
-                                    <div class="filter-date filter-content">
-                                        <div class="loader" style="display: none;"></div>
-                                        <ul id="theme_list" class="menu-tema">
-                                            <li class="selected"><a href="#" class="app-selectTheme">Sincronização de Dados</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div style="clear:both"></div>
-                            </div>
-                        </aside>
-                    </div>
+                    <% include ../partials/left_menu %>
+                    
                     <div id="filter_intent" class="col-sm-2 page-sidebar mobile-filter-sidebar">
 
                     </div>
-                    <!-- Answers -->
-                    <div id="answers" class="col-sm-9">
-                        <h1>Agendar Sincronização de Dados</h1>
-                        <div id="alert" class="hide"></div>
-                        <form role="form" onsubmit="return false" class="form-schedule">
-                            <fieldset disabled="" class="editing">
-                                <div class="col-sm-3">
-                                    <div class="form-group">
-                                        <label>Executar à cada</label>
-                                        <div class="input-group">
-                                            <input class="form-control" style="font-size:1.5em" id="interval" type="text">
-                                            <div class="input-group-btn btn-dropdown-change" id="interval_unit">
-                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span>Minutos </span><span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu pull-right">
-                                                    <li><a href="#" data-value="min">Minutos</a></li>
-                                                    <li><a href="#" data-value="hour">Horas</a></li>
-                                                    <li><a href="#" data-value="day">Dias</a></li>
-                                                </ul>
-                                            </div><!-- /btn-group -->
-                                        </div><!-- /input-group --><!-- /input-group -->
-                                    </div>
-                                </div>
-                                <div class="col-sm-3">
-                                    <div class="form-group">
-                                        <label for="disabledSelect">Início</label>
-                                        <div>
-                                            <select class="select-hour form-control" id="beginHour" style="font-size:1.5em">
-                                                <option>00</option>
-                                            </select> :
-                                            <select class="select-minute form-control" id="beginMinute" style="font-size:1.5em">
-                                                <option>59</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-3">
-                                    <div class="form-group">
-                                        <label for="disabledSelect">Fim</label>
-                                        <div>
-                                            <select class="select-hour form-control" id="endHour" style="font-size:1.5em">
-                                                <option>00</option>
-                                            </select> :
-                                            <select class="select-minute form-control" id="endMinute" style="font-size:1.5em">
-                                                <option>59</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-3">
-                                    <br>
-                                    <div class="checkbox checkbox-primary">
-                                        <input type="checkbox" id="schedule_ativo"><label for="schedule_ativo">Ativo</label>
-                                    </div>
-                                </div>
-                            </fieldset>
-                            <fieldset>
-                                <p id="salvar-btns" class="editing">
-                                    <button type="button" onclick="saveSchedule(this)" class="btn btn-primary">Salvar</button>
-                                    <button type="button" onclick="toggleEditSave()" class="btn">Cancelar</button>
-                                </p>
-                                <p id="editar-btn">
-                                    <button type="button" onclick="toggleEditSave()" class="btn">Editar</button>
-                                </p>
-                                <button class="btn btn-warning" onclick="execSync(this)" id="execNow">Executar agora!</button>
-                            </fieldset>
-                        </form>
-                        <h5 class="list-title log-title">
-                            <strong>Log de Execução</strong>
-                            <div class="paginator">
-                                <p>Mostrando <span class="paginator-de"></span>/<span class="paginator-ate"></span> de <span class="paginator-total"></span></p>
-                                <p title="primeira"><span class="prev icon-left-open-big" aria-hidden="true"></span><span class="prev icon-left-open-big" aria-hidden="true"></span></p>
-                                <p title="anterior"><span class="prev icon-left-open-big" aria-hidden="true"></span></p>
-                                <p>
-                                    <select name="set-page" class="form-control select-mini1 set-page">
-                                        <option value="1">1</option>
-                                    </select>
-                                </p>
-                                <p title="próxima"><span class="next icon-right-open-big" aria-hidden="true"></span></p>
-                                <p title="última"><span class="next icon-right-open-big" aria-hidden="true"></span><span class="next icon-right-open-big" aria-hidden="true"></span></p>
-                                <p class="perPage-p">Por pág:
-                                    <select name="perPage" class="form-control select-mini1 perPage">
-                                        <option value="10">10</option>
-                                        <option value="20">20</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                    </select>
-                                </p>
-                            </div>
-                        </h5>
 
-                        <div class="item_list" id="log_list">
-                            <div style="display: none;"></div>
-                            <table class="table table-condensed">
-                                <thead>
-                                    <tr>
-                                        <th>Data/Hora</th>
-                                        <th>Status</th>
-                                        <th>Mensagem</th>
-                                    </tr>
-                                </thead>
-                                <tbody style="font-size:0.8em">
-                                  
-                                </tbody>
-                            </table>
+                    <div class="col-sm-9">
+                        <div id="alert" class="hide"></div>
+                        <div class="telas" id="sync">
+                            <h1>Agendar Sincronização de Dados</h1>
+                            <form role="form" onsubmit="return false" class="form-schedule">
+                                <fieldset disabled="" class="editing">
+                                    <div class="col-sm-3">
+                                        <div class="form-group">
+                                            <label>Executar à cada</label>
+                                            <div class="input-group">
+                                                <input class="form-control" style="font-size:1.5em" id="interval" type="text">
+                                                <div class="input-group-btn btn-dropdown-change" id="interval_unit">
+                                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span>Minutos </span><span class="caret"></span>
+                                                    </button>
+                                                    <ul class="dropdown-menu pull-right">
+                                                        <li><a href="#" data-value="min">Minutos</a></li>
+                                                        <li><a href="#" data-value="hour">Horas</a></li>
+                                                        <li><a href="#" data-value="day">Dias</a></li>
+                                                    </ul>
+                                                </div><!-- /btn-group -->
+                                            </div><!-- /input-group --><!-- /input-group -->
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="form-group">
+                                            <label for="disabledSelect">Início</label>
+                                            <div>
+                                                <select class="select-hour form-control" id="beginHour" style="font-size:1.5em">
+                                                    <option>00</option>
+                                                </select> :
+                                                <select class="select-minute form-control" id="beginMinute" style="font-size:1.5em">
+                                                    <option>59</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="form-group">
+                                            <label for="disabledSelect">Fim</label>
+                                            <div>
+                                                <select class="select-hour form-control" id="endHour" style="font-size:1.5em">
+                                                    <option>00</option>
+                                                </select> :
+                                                <select class="select-minute form-control" id="endMinute" style="font-size:1.5em">
+                                                    <option>59</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <br>
+                                        <div class="checkbox checkbox-primary">
+                                            <input type="checkbox" id="schedule_ativo"><label for="schedule_ativo">Ativo</label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <fieldset>
+                                    <p id="salvar-btns" class="editing">
+                                        <button type="button" onclick="saveSchedule(this)" class="btn btn-primary">Salvar</button>
+                                        <button type="button" onclick="toggleEditSave()" class="btn">Cancelar</button>
+                                    </p>
+                                    <p id="editar-btn">
+                                        <button type="button" onclick="toggleEditSave()" class="btn">Editar</button>
+                                    </p>
+                                    <button class="btn btn-warning" onclick="execSync(this)" id="execNow">Executar agora!</button>
+                                </fieldset>
+                            </form>
+                            <h5 class="list-title log-title">
+                                <strong>Log de Execução</strong>
+                                <div class="paginator">
+                                    <p>Mostrando <span class="paginator-de"></span>/<span class="paginator-ate"></span> de <span class="paginator-total"></span></p>
+                                    <p title="primeira"><span class="prev icon-left-open-big" aria-hidden="true"></span><span class="prev icon-left-open-big" aria-hidden="true"></span></p>
+                                    <p title="anterior"><span class="prev icon-left-open-big" aria-hidden="true"></span></p>
+                                    <p>
+                                        <select name="set-page" class="form-control select-mini1 set-page">
+                                            <option value="1">1</option>
+                                        </select>
+                                    </p>
+                                    <p title="próxima"><span class="next icon-right-open-big" aria-hidden="true"></span></p>
+                                    <p title="última"><span class="next icon-right-open-big" aria-hidden="true"></span><span class="next icon-right-open-big" aria-hidden="true"></span></p>
+                                    <p class="perPage-p">Por pág:
+                                        <select name="perPage" class="form-control select-mini1 perPage">
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                    </p>
+                                </div>
+                            </h5>
+
+                            <div class="item_list" id="log_list">
+                                <div style="display: none;"></div>
+                                <table class="table table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th>Data/Hora</th>
+                                            <th>Status</th>
+                                            <th>Mensagem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="font-size:0.8em">
+                                    
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+                        <!-- SYNC -->
+
+                        <div class="telas" id="confs-chatbot">
+                            <h1>Configurações do Chatbot</h1>
+                            <div class="items-row">
+
+                                <div class="form-group" id="div-welcome-msg">
+                                    <label for="welcome-msg">Mensagem de boas vindas</label>
+                                    <textarea class="form-control" name="welcome-msg" id="welcome-msg" placeholder="Digite aqui a mensagem de boas vindas" cols="80" rows="10"></textarea>
+                                    <div class="btn-subform">
+
+                                        <button type="button" onclick="f_saveChatConfs({name:'welcome-msg',value:-1,cover:'div-welcome-msg'})" class="btn btn-success">Salvar</button>
+                                    </div>
+
+                                </div>
+                                <!-- welcome-msg -->
+                            </div>
+                        </div>
+                        <!-- CONFS CHATBOT -->
+                    
                     </div>
                     <!-- fim da pesquisa -->
                 </div>
@@ -267,7 +293,6 @@
             $btn.prop('disabled',true);
             return function() {
                 $btn.prop('disabled',false);
-
             }
         }
 
@@ -503,6 +528,51 @@
             $('.editing').prop('disabled',disabled);
         }
 
+
+        // ########################################################################
+        // configurações do chatbot [Inicio]
+        // ########################################################################
+        function f_saveChatConfs(params) {
+            if(!params) params={};
+            var name=params.name;
+            var value=params.value;
+            var $cover=params.cover;
+            if($cover) $cover=$('#'+$cover);
+
+            if(value===-1) {
+                value=$('#'+name).val();
+            }
+
+            var toSave={
+                setting:{
+                    name:name,
+                    value:value
+                }
+            }
+
+            var cover1=cover($cover,params);
+            ajaxCall({
+                url:baseURL+'general_settings/chatbot_confs',
+                data:toSave,
+                always:cover1
+            })
+            .then(ret=>{
+                console.log('ret',ret);
+            });
+
+        } // f_saveChatConfs
+
+
+        function f_getChatConfs(params) {
+            if(!params) params={}
+            var name=params.name;
+
+            
+        } // f_getChatConfs
+
+        // ########################################################################
+        // configurações do chatbot [Fim]
+        // ########################################################################
 
     </script>
 

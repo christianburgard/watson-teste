@@ -167,10 +167,11 @@ function alertPopover(msg, style, params) {
             $("#" + id).alert('close');
         }, closeDelay);
     }
-}
+} // alertPopover
 
 // var baseURL = 'http://localhost:3000/';
 var baseURL = '/';
+
 
 // implementação de btn-dropdown que seleciona valor
 $('.btn-dropdown-change > ul.dropdown-menu').on('click', function (e) {
@@ -199,6 +200,20 @@ $('body').on('change-dropdown', function (evt, data) {
     // $btnUnitText.text(unitText);
 });
 
+// apenas mostra/oculta forms
+function changeForm(params) {
+    if(!params) params={}
+    var id=params.id || '';
+    var th=params.th || null;
+
+    // link do menu
+    $('#left-menu li').removeClass('selected');
+    $(th).parent().addClass('selected');
+
+    $('.telas').hide();
+    $('#'+id).show();
+}
+
 // centralização das chamadas ajax;
 function ajaxCall(params) {
     if(!params) {
@@ -212,12 +227,17 @@ function ajaxCall(params) {
     var errorHandler=params.errorHandler || function(error) {
         if(error) {
             var error=error.responseJSON;
-            alertPopover(error.error, 'danger',{closeDelay:-1});
+            var msgError=error.error;
+            if(typeof msgError == 'object') {
+                msgError=msgError.error;
+            }
+            alertPopover(msgError, 'danger',{closeDelay:-1});
         }
     }
     
     // algo a ser executado tanto no "always"
     var always=params.always || function() {};
+
 
     var confs={
         url:url,

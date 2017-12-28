@@ -191,7 +191,8 @@ function syncCourses(app) {
         return new Promise((res,ret)=>{
 
             return db.find({selector:{
-                type:'parameter_hashes'
+                type:'parameter',
+                name:'hashes'
             }},function(err,results) {
                 if(err) {
                     return rej({error:err})
@@ -200,7 +201,7 @@ function syncCourses(app) {
                     return res(results.docs[0]);
                 } else {
                     return run(function*(done) {                
-                        const obj={type:'parameter_hashes',webserviceMD5:''};
+                        const obj={type:'parameter',name:'hashes',webserviceMD5:''};
                         yield done(saveMd5Webservice(obj)());
                         let doc=yield done(getMd5Webservice());
                         return res(doc);

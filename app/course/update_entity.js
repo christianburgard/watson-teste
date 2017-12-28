@@ -84,7 +84,8 @@ function compareObj(obj1) {
     const getMd5Courses=()=>{
         return new Promise((res,ret)=>{
             return db.find({selector:{
-                type:'parameter_hashes'
+                type:'parameter',
+                name:'hashes'
             }},function(err,results) {
                 if(err) {
                     return rej({error:err})
@@ -92,7 +93,7 @@ function compareObj(obj1) {
                 if(results && results.docs && results.docs.length) {
                     return res(results.docs[0]);
                 } else {
-                    return res({type:'parameter_hashes',entityCoursesMD5:''});
+                    return res({type:'parameter',name:'hashes',entityCoursesMD5:''});
                 };
             });
         });
