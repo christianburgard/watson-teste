@@ -200,7 +200,7 @@ $('body').on('change-dropdown', function (evt, data) {
     // $btnUnitText.text(unitText);
 });
 
-// apenas mostra/oculta forms
+// mostra/oculta forms e carrega infs necessárias;
 function changeForm(params) {
     if(!params) params={}
     var id=params.id || '';
@@ -212,7 +212,13 @@ function changeForm(params) {
 
     $('.telas').hide();
     $('#'+id).show();
-}
+
+    // carregando infs
+    if(id == 'confs-chatbot') {
+        f_getChatConfs({name:'all'});
+    }
+
+} // changeForm
 
 // centralização das chamadas ajax;
 function ajaxCall(params) {
@@ -220,7 +226,7 @@ function ajaxCall(params) {
         return false;
     }
     var url=params.url;
-    var data=params.data;
+    var data=params.data || null;
     var method=params.method || 'POST';
     var dataType=params.dataType || 'json';
     var extraConfs=params.extraConfs || {};

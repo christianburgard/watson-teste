@@ -4,8 +4,12 @@ aqui temos o indice (esses registros na general_settings serão sempre acompanha
 os valores abaixo constarão na prop "name"
 
 welcome-msg - mensagem de boas vindas
-degree-certainty - grau de certeza do conversation
+certainty-degree - grau de certeza do conversation
 timeout - timeout p/ encerramento da conversa
+timeout2 - timeout pós aviso de encerramento
+bot-name - nome do chatbot
+idle-msg - mensagem de aviso de inatividade
+idle-final-msg - mensagem final, quando a conversa for encerrado por conta de timeout
 */
 
 const passport = require('passport');
@@ -90,7 +94,7 @@ const initGeneralSettings=(app)=>{
 
     // carrega as confs do chatbot
     app.get('/general_settings/chatbot_confs',passport.authenticationMiddleware(),function(req,res) {
-        const name=['welcome-msg','degree-certainty','timeout'];
+        const name=['welcome-msg','certainty-degree','timeout','timeout2','bot-name','idle-msg','idle-final-msg'];
 
         return getSetting({name})
             .then(ret=>{

@@ -26,10 +26,28 @@
         .items-row {
             display:flex;
             justify-content:space-between;
+            align-content:center;
+        }
+
+        .items-row > div.cols {
+            width:50%;
+            border:0px solid #f80;
+            box-sizing:border-box;
+            display: flex;
+            flex-direction:column;
+            justify-content: space-around;
+        }
+        .items-row > div.cols.miditems > div.form-group {
+            width:50%;
+            margin-left:15%;
+        }
+
+        .items-row > div.cols:first-child {
+            padding-right:50px;
         }
 
         .btn-subform {
-            display:block;
+            float: right;
             box-sizing:border-box;
             padding-right:20px;
             margin-top:10px;
@@ -168,17 +186,81 @@
                         <div class="telas" id="confs-chatbot">
                             <h1>Configurações do Chatbot</h1>
                             <div class="items-row">
-
-                                <div class="form-group" id="div-welcome-msg">
-                                    <label for="welcome-msg">Mensagem de boas vindas</label>
-                                    <textarea class="form-control" name="welcome-msg" id="welcome-msg" placeholder="Digite aqui a mensagem de boas vindas" cols="80" rows="10"></textarea>
-                                    <div class="btn-subform">
-
-                                        <button type="button" onclick="f_saveChatConfs({name:'welcome-msg',value:-1,cover:'div-welcome-msg'})" class="btn btn-success">Salvar</button>
+                                
+                                <div class="cols">
+                                    <!-- welcome-msg -->
+                                    <div class="form-group" id="div-welcome-msg">
+                                        <label for="welcome-msg">Mensagem de boas vindas</label>
+                                        <textarea class="form-control" name="welcome-msg" id="welcome-msg" placeholder="Digite aqui a mensagem de boas vindas" cols="80" rows="10"></textarea>
+                                        <div class="btn-subform">
+                                            <button type="button" onclick="f_saveChatConfs({name:'welcome-msg',value:-1,cover:'div-welcome-msg'})" class="btn btn-success">Salvar</button>
+                                        </div>
                                     </div>
+                                    <!-- welcome-msg -->
+
+                                    <!-- idle-msg -->
+                                    <div class="form-group" id="div-idle-msg">
+                                        <label for="idle-msg">Aviso de inatividade</label>
+                                        <textarea class="form-control" name="idle-msg" id="idle-msg" placeholder="Digite aqui a mensagem de aviso de inatividade" cols="80" rows="10"></textarea>
+                                        <div class="btn-subform">
+                                            <button type="button" onclick="f_saveChatConfs({name:'idle-msg',value:-1,cover:'div-idle-msg'})" class="btn btn-success">Salvar</button>
+                                        </div>
+                                    </div>
+                                    <!-- idle-msg -->
+                                    <!-- idle-final-msg -->
+                                    <div class="form-group" id="div-idle-final-msg">
+                                        <label for="idle-final-msg">Mensagem de encerramento por timeout</label>
+                                        <textarea class="form-control" name="idle-final-msg" id="idle-final-msg" placeholder="Digite aqui a mensagem de encerramento por timeout" cols="80" rows="10"></textarea>
+                                        <div class="btn-subform">
+                                            <button type="button" onclick="f_saveChatConfs({name:'idle-final-msg',value:-1,cover:'div-idle-final-msg'})" class="btn btn-success">Salvar</button>
+                                        </div>
+                                    </div>
+                                    <!-- idle-final-msg -->
+                                </div>
+
+                                <div class="cols miditems">
+                                    <!-- certainty-degree -->
+                                    <div class="form-group" id="div-certainty-degree">
+                                        <label for="certainty-degree">Grau de certeza</label>
+                                        <input type="number" class="form-control" step="0.1" value="0.4" min="0" max="1" name="certainty-degree" id="certainty-degree" >
+                                        <div class="btn-subform">
+                                            <button type="button" onclick="f_saveChatConfs({name:'certainty-degree',value:-1,cover:'div-certainty-degree'})" class="btn btn-success">Salvar</button>
+                                        </div>
+                                    </div>
+                                    <!-- certainty-degree -->
+
+                                    <!-- timeout -->
+                                    <div class="form-group" id="div-timeout">
+                                        <label for="timeout">Tempo de inatividade <small>(* em segundos)</small></label>
+                                        <input type="number" step="1" value="" min="0" name="timeout" id="timeout" class="form-control" >
+                                        <div class="btn-subform">
+                                            <button type="button" onclick="f_saveChatConfs({name:'timeout',value:-1,cover:'div-timeout'})" class="btn btn-success">Salvar</button>
+                                        </div>
+                                    </div>
+                                    <!-- timeout -->
+
+                                    <!-- timeout2 -->
+                                    <div class="form-group" id="div-timeout2">
+                                        <label for="timeout2">Tempo pré encerramento <small>(* em segundos)</small></label>
+                                        <input type="number" step="1" value="" min="0" name="timeout2" id="timeout2" class="form-control" >
+                                        <div class="btn-subform">
+                                            <button type="button" onclick="f_saveChatConfs({name:'timeout2',value:-1,cover:'div-timeout2'})" class="btn btn-success">Salvar</button>
+                                        </div>
+                                    </div>
+                                    <!-- timeout2 -->
+
+                                    <!-- bot-name -->
+                                    <div class="form-group" id="div-bot-name">
+                                        <label for="bot-name">Nome do robo</label>
+                                        <input type="text" value="" name="bot-name" id="bot-name" class="form-control" >
+                                        <div class="btn-subform">
+                                            <button type="button" onclick="f_saveChatConfs({name:'bot-name',value:-1,cover:'div-bot-name'})" class="btn btn-success">Salvar</button>
+                                        </div>
+                                    </div>
+                                    <!-- bot-name -->
+
 
                                 </div>
-                                <!-- welcome-msg -->
                             </div>
                         </div>
                         <!-- CONFS CHATBOT -->
@@ -557,7 +639,8 @@
                 always:cover1
             })
             .then(ret=>{
-                console.log('ret',ret);
+                // salvou com sucesso
+                // console.log('ret',ret);
             });
 
         } // f_saveChatConfs
@@ -566,6 +649,45 @@
         function f_getChatConfs(params) {
             if(!params) params={}
             var name=params.name;
+            var url;
+            var fncCover;
+            if(name=='all') {
+                url=baseURL+'general_settings/chatbot_confs';
+                var cover1=cover($('#div-welcome-msg'));
+                var cover2=cover($('#div-certainty-degree'));
+                var cover3=cover($('#div-timeout'));
+                var cover4=cover($('#div-timeout2'));
+                var cover5=cover($('#div-idle-msg'));
+                var cover6=cover($('#div-idle-final-msg'));
+                var cover7=cover($('#div-bot-name'));
+                fncCover=function() {
+                    cover1();
+                    cover2();
+                    cover3();
+                    cover4();
+                    cover5();
+                    cover6();
+                    cover7();
+                }
+            }
+
+            ajaxCall({
+                url:url,
+                method:'GET',
+                always:fncCover
+            })
+            .then(ret=>{
+
+                var data=ret.data;
+                if(data && Array.isArray(data)) {
+                    data.forEach(elem=>{
+                        var name=elem.name;
+                        var value=elem.value;
+
+                        $('#'+name).val(value);
+                    });
+                }
+            });
 
             
         } // f_getChatConfs
