@@ -215,6 +215,7 @@ io.on('connection', function(client){
       }
       if (DEBUG_WATSON)
         console.log("Emitindo watson-message com seguinte payload:",body);
+      
       client.emit('watson-message',JSON.stringify(body));
     }
 
@@ -454,16 +455,13 @@ function callWatsonApi (req, res) {
                 } else {
                   if (DEBUG_CHATLOG)
                     console.log("_@_ Gravada conversa!");
-                  
-                  setTimeout(()=>{
-                    return res({ok:true});
-                  },10000);
+                  return res({ok:true});
                 }
               });
             });
            } // chatlogSave115
 
-          
+
           run115(function*(done){
 
             // aqui entramos num loop, e só sairemos quando tudo tiver sido salvo

@@ -168,6 +168,10 @@ function initApi (app) {
               var history_payloads = [];
               for (var i=0; i < conversation_log.messages.length; i++) {
                 history_payloads.push({"message":conversation_log.messages[i].input.text,"from":"user"});
+                // precisamos verificar aqui se há algo no input.response_text
+                if(conversation_log.messages[i].input.response_text) {
+                  history_payloads.push({"message":conversation_log.messages[i].input.response_text,"from":"watson"});
+                }
                 history_payloads.push({"message":conversation_log.messages[i].output.text,"from":"watson"});
               }
               console.log(history_payloads);

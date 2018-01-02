@@ -169,6 +169,30 @@ function deleteEntity(params) {
     });
 } // deleteEntity
 
+function createEntity() {
+    if(!params) params={}
+    const entity=params.entity || 'cursos';
+    const params2 = {
+        workspace_id: WORKSPACE_ID,
+        entity: entity
+    };
+
+    return new Promise((res,rej)=>{
+        console.log('########### CREATING ENTITY!! #########');                
+        return conversation.createEntity(entity, function(err, response) {
+            if (err) {
+                console.error(err);
+                return rej({error:err});
+            }
+
+            response.totalSynonyms=totalSynonyms;
+            return res({ok:true,response,alteracao:1});
+        });
+    });
+}
+
+
+// (@cursos)
 function recreateEntity(params) {
 
     const deletenRecreate=(params)=>{
@@ -243,9 +267,10 @@ function recreateEntity(params) {
     // return Promise.resolve({ok:true,msg:'TESTANDO...',response:{totalSynonyms}});
 
 
-} // recreateEntity
+} // recreateEntity (@cursos)
 
 
+// @cursos
 // cria UM objeto Entity p/ ser salvo (com mock de synonyms!)
 function createEntityObj(params) {
 
